@@ -28,11 +28,11 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **grok-2-1212**: Modelo experimental de xAI.
 
 ### Modelos de Imagen:
-- **hyper-flux-8step**: Generación rápida y económica
+- **hyper-flux-8step**: Generación rápida y económica.
 - **photomaker**: Optimizado y mejorado para rostros (requiere imagen de referencia).
 - **flux-pulid**: Optimizado para rostros (requiere también de imagen).
 - **hyper-flux-16step**: Balance entre velocidad y calidad.
-- **sdxl-lightning-4step**: Económico sin filtros.
+- **sdxl-lightning-4step**: Económico sin censura.
 - **flux-schnell**: Enfocado en velocidad.
 - **flux-diego**: Estilo meme.
 
