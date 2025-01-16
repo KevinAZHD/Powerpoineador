@@ -46,11 +46,11 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 
 ## Instalación
 
-### Usando el ejecutable (.exe):
+### Método 1: Ejecutable
 1. Descarga el último release desde la sección "Releases".
 2. Ejecuta `Powerpoineador.exe`.
 
-### Usando el código fuente (.py):
+### Método 2: Código Fuente
 1. Instala Python 3.9 o superior.
 2. Clona el repositorio:
 ```bash
