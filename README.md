@@ -73,7 +73,7 @@ python Powerpoineador.py
 3. Genera un nuevo token.
 4. Copia el token en el programa.
 
-### xAI API (Grok):
+### xAI API:
 1. Solicita acceso en [xAI](https://console.x.ai)
 2. Una vez aprobado, genera tu clave API.
 3. Copia la clave que comienza con "xai-" en el programa.
