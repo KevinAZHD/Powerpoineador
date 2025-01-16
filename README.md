@@ -47,7 +47,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 ## Instalación
 
 ### Método 1: Ejecutable
-1. Descarga el último release desde la sección [Releases](https://github.com/KevinAZHD/Powerpoineador/releases/)
+1. Descarga la última actualización desde [Releases](https://github.com/KevinAZHD/Powerpoineador/releases/)
 2. Ejecuta `Powerpoineador.exe`
 
 ### Método 2: Código Fuente
