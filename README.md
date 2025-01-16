@@ -48,7 +48,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 
 ### Método 1: Ejecutable
 1. Descarga el último release desde la sección "Releases".
-2. Ejecuta `Powerpoineador.exe`.
+2. Ejecuta `Powerpoineador.exe`
 
 ### Método 2: Código Fuente
 1. Instala Python 3.9 o superior.
@@ -68,13 +68,13 @@ python Powerpoineador.py
 ## Obtención de APIs
 
 ### Replicate API:
-1. Crea una cuenta en [Replicate](https://replicate.com).
+1. Crea una cuenta en [Replicate](https://replicate.com)
 2. Ve a tu perfil → API Tokens.
 3. Genera un nuevo token.
 4. Copia el token en el programa.
 
 ### xAI API (Grok):
-1. Solicita acceso en [xAI](https://console.x.ai).
+1. Solicita acceso en [xAI](https://console.x.ai)
 2. Una vez aprobado, genera tu clave API.
 3. Copia la clave que comienza con "xai-" en el programa.
 
@@ -90,7 +90,7 @@ Por favor, tenga en cuenta que este proyecto se mantiene con la intención de se
 
 ## Créditos
 
-- Este proyecto ha sido desarrollado por [Kevin Adán Zamora](https://github.com/KevinAZHD) y [Diego Martínez Fernández](https://github.com/Dgmtnz).
-- Interfaz gráfica desarrollada con PySide6 gracias a [Kevin Adán Zamora](https://github.com/KevinAZHD).
+- Este proyecto ha sido desarrollado por [Kevin Adán Zamora](https://github.com/KevinAZHD) y [Diego Martínez Fernández](https://github.com/Dgmtnz)
+- Interfaz gráfica desarrollada con PySide6 gracias a [Kevin Adán Zamora](https://github.com/KevinAZHD)
 - Todos los enlaces proporcionados anteriormente.
 - Gracias por leer y utilizar esta guía de Powerpoineador.
