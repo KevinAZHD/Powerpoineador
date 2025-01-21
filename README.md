@@ -38,11 +38,11 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 
 ## Requisitos
 
-- Windows 7 o superior.
+- Sistema operativo Windows con soporte.
 - Microsoft PowerPoint (opcional si desactiva la apertura automática).
 - Conexión a Internet.
 - Clave API de Replicate y/o xAI (opcional).
-- Python 3.9+ (solo para ejecución desde código fuente).
+- Python a la última versión si es posible (solo para ejecución desde código fuente).
 
 ## Instalación
 
