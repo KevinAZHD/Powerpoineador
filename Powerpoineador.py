@@ -206,7 +206,10 @@ class MainWindow(QMainWindow):
         self.setup_menu()
         self.setup_main_widget()
         
-        self.validate_replicate_api()
+        if not (self.api_key or self.grok_api_key):
+            self.disable_functionality()
+        else:
+            self.validate_replicate_api()
         
         self.setAttribute(Qt.WA_DeleteOnClose)
 
@@ -236,6 +239,11 @@ class MainWindow(QMainWindow):
 
     # Función para validar la clave API de Replicate
     def validate_replicate_api(self):
+        replicate_invalid = False
+        grok_invalid = False
+        has_saved_replicate = bool(self.load_api_key())
+        has_saved_grok = bool(self.load_grok_api_key())
+        
         if self.api_key:
             try:
                 headers = {"Authorization": f"Token {self.api_key}"}
@@ -247,25 +255,70 @@ class MainWindow(QMainWindow):
                     self.save_api_key()
                     if os.environ.get("REPLICATE_API_TOKEN"):
                         del os.environ["REPLICATE_API_TOKEN"]
+                    replicate_invalid = True
                     if not self.grok_api_key:
                         self.disable_functionality()
-                    else:
-                        self.delete_action.setEnabled(False)
-                        self.widget.populate_fields()
+                
             except Exception:
                 self.api_key = None
                 self.save_api_key()
                 if os.environ.get("REPLICATE_API_TOKEN"):
                     del os.environ["REPLICATE_API_TOKEN"]
+                replicate_invalid = True
                 if not self.grok_api_key:
                     self.disable_functionality()
-                else:
-                    self.delete_action.setEnabled(False)
-                    self.widget.populate_fields()
-        elif self.grok_api_key:
-            self.validate_grok_api()
         else:
+            replicate_invalid = has_saved_replicate
+
+        if self.grok_api_key:
+            try:
+                headers = {
+                    "Authorization": f"Bearer {self.grok_api_key}",
+                    "Content-Type": "application/json"
+                }
+                response = requests.get(
+                    "https://api.x.ai/v1/models",
+                    headers=headers,
+                    timeout=10
+                )
+                
+                if response.status_code in [200, 403]:
+                    self.enable_functionality()
+                else:
+                    self.grok_api_key = None
+                    self.save_grok_api_key()
+                    if os.environ.get("GROK_API_KEY"):
+                        del os.environ["GROK_API_KEY"]
+                    grok_invalid = True
+                    if not self.api_key:
+                        self.disable_functionality()
+                
+            except Exception:
+                self.grok_api_key = None
+                self.save_grok_api_key()
+                if os.environ.get("GROK_API_KEY"):
+                    del os.environ["GROK_API_KEY"]
+                grok_invalid = True
+                if not self.api_key:
+                    self.disable_functionality()
+        else:
+            grok_invalid = has_saved_grok
+
+        if replicate_invalid and grok_invalid and (has_saved_replicate or has_saved_grok):
             self.disable_functionality()
+            QTimer.singleShot(100, lambda: self.show_all_apis_invalid_message())
+        elif replicate_invalid and has_saved_replicate:
+            if not self.grok_api_key:
+                self.disable_functionality()
+            self.delete_action.setEnabled(False)
+            QTimer.singleShot(100, lambda: self.show_invalid_api_message())
+        elif grok_invalid and has_saved_grok:
+            if not self.api_key:
+                self.disable_functionality()
+            self.grok_delete_action.setEnabled(False)
+            QTimer.singleShot(100, lambda: self.show_invalid_grok_api_message())
+        
+        self.initial_validation = False
 
     # Función para cargar la clave API de xAI
     def load_grok_api_key(self):
@@ -331,33 +384,49 @@ class MainWindow(QMainWindow):
 
     # Función para borrar la clave API de Replicate
     def delete_api_key(self):
-        confirm_msg = QMessageBox()
-        confirm_msg.setWindowTitle('Confirmar borrado')
-        confirm_msg.setText('¿Está seguro de que desea borrar la clave API de Replicate?')
-        confirm_msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        confirm_msg.setDefaultButton(QMessageBox.No)
-        confirm_msg.setIcon(QMessageBox.Question)
-        confirm_msg.setWindowIcon(QIcon(resource_path("iconos/replicate.png")))
+        msg = QMessageBox()
+        msg.setWindowTitle('Confirmar borrado API')
+        msg.setText('¿Está seguro de que desea borrar la clave API de Replicate?')
+        msg.setIcon(QMessageBox.Question)
+        msg.setWindowIcon(QIcon(resource_path("iconos/replicate.png")))
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.No)
+        msg.button(QMessageBox.Yes).setText('Sí')
+        msg.button(QMessageBox.No).setText('No')
         
-        confirm_msg.button(QMessageBox.Yes).setText('Sí')
-        confirm_msg.button(QMessageBox.No).setText('No')
+        QApplication.beep()
         
-        if confirm_msg.exec() == QMessageBox.Yes:
-            if not self.grok_api_key:
-                self.disable_functionality()
-                
+        msg.show()
+        msg.hide()
+        
+        msg_pos = self.geometry().center() - msg.rect().center()
+        msg.move(msg_pos)
+        
+        if msg.exec() == QMessageBox.Yes:
             self.api_key = None
             self.save_api_key()
+            if os.environ.get("REPLICATE_API_TOKEN"):
+                del os.environ["REPLICATE_API_TOKEN"]
             
-            if self.grok_api_key:
-                self.widget.populate_fields()
+            if not self.grok_api_key:
+                self.disable_functionality()
+            else:
                 self.delete_action.setEnabled(False)
+                if self.widget:
+                    self.widget.populate_fields()
             
             success_msg = QMessageBox()
-            success_msg.setWindowTitle('API borrada')
-            success_msg.setText('La clave API de Replicate ha sido borrada correctamente')
+            success_msg.setWindowTitle('Clave API borrada')
+            success_msg.setText('La clave API de Replicate ha sido borrada correctamente.')
             success_msg.setIcon(QMessageBox.Information)
             success_msg.setWindowIcon(QIcon(resource_path("iconos/replicate.png")))
+            
+            success_msg.show()
+            success_msg.hide()
+            
+            success_pos = self.geometry().center() - success_msg.rect().center()
+            success_msg.move(success_pos)
+            
             success_msg.exec()
 
     # Función para mostrar la ventana de configuración de la clave API de xAI
@@ -367,40 +436,56 @@ class MainWindow(QMainWindow):
 
     # Función para borrar la clave API de xAI
     def delete_grok_api_key(self):
-        confirm_msg = QMessageBox()
-        confirm_msg.setWindowTitle('Confirmar borrado')
-        confirm_msg.setText('¿Está seguro de que desea borrar la clave API de xAI?')
-        confirm_msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        confirm_msg.setDefaultButton(QMessageBox.No)
-        confirm_msg.setIcon(QMessageBox.Question)
-        confirm_msg.setWindowIcon(QIcon(resource_path("iconos/xai.jpg")))
+        msg = QMessageBox()
+        msg.setWindowTitle('Confirmar borrado API')
+        msg.setText('¿Está seguro de que desea borrar la clave API de xAI?')
+        msg.setIcon(QMessageBox.Question)
+        msg.setWindowIcon(QIcon(resource_path("iconos/xai.jpg")))
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.No)
+        msg.button(QMessageBox.Yes).setText('Sí')
+        msg.button(QMessageBox.No).setText('No')
         
-        confirm_msg.button(QMessageBox.Yes).setText('Sí')
-        confirm_msg.button(QMessageBox.No).setText('No')
+        QApplication.beep()
         
-        if confirm_msg.exec() == QMessageBox.Yes:
-            if not self.api_key:
-                self.disable_functionality()
-            
+        msg.show()
+        msg.hide()
+        
+        msg_pos = self.geometry().center() - msg.rect().center()
+        msg.move(msg_pos)
+        
+        if msg.exec() == QMessageBox.Yes:
             self.grok_api_key = None
             self.save_grok_api_key()
+            if os.environ.get("GROK_API_KEY"):
+                del os.environ["GROK_API_KEY"]
             
-            if self.api_key:
-                self.widget.populate_fields()
+            if not self.api_key:
+                self.disable_functionality()
+            else:
                 self.grok_delete_action.setEnabled(False)
+                if self.widget:
+                    self.widget.populate_fields()
             
             success_msg = QMessageBox()
-            success_msg.setWindowTitle('API borrada')
-            success_msg.setText('La clave API de xAI ha sido borrada correctamente')
+            success_msg.setWindowTitle('Clave API borrada')
+            success_msg.setText('La clave API de xAI ha sido borrada correctamente.')
             success_msg.setIcon(QMessageBox.Information)
             success_msg.setWindowIcon(QIcon(resource_path("iconos/xai.jpg")))
+            
+            success_msg.show()
+            success_msg.hide()
+            
+            success_pos = self.geometry().center() - success_msg.rect().center()
+            success_msg.move(success_pos)
+            
             success_msg.exec()
 
     # Función para configurar la ventana principal
     def setup_main_widget(self):
         self.widget = PowerpoineatorWidget()
         self.setCentralWidget(self.widget)
-        self.setWindowTitle('Powerpoineador v0.1b')
+        self.setWindowTitle('Powerpoineador v0.1.1b')
         self.setMinimumSize(700, 400)
         self.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
         
@@ -423,7 +508,7 @@ class MainWindow(QMainWindow):
             self.widget.texto_combo.clear()
             
             self.widget.descripcion_text.clear()
-            self.widget.descripcion_text.setPlaceholderText("Configure una clave API de Replicate o xAI para poder utilizar el programa")
+            self.widget.descripcion_text.setPlaceholderText("Configura una clave API de Replicate o xAI para poder utilizar el programa")
             
             self.widget.clear_fields()
             self.widget.contador_label.hide()
@@ -453,7 +538,7 @@ class MainWindow(QMainWindow):
             self.widget.contador_label.show()
             
             self.widget.imagen_combo.setEnabled(bool(self.api_key))
-            
+
             self.widget.populate_fields()
             
             self.delete_action.setEnabled(bool(self.api_key))
@@ -482,46 +567,67 @@ class MainWindow(QMainWindow):
                 return
         event.accept()
 
-    # Función para validar la clave API de xAI
-    def validate_grok_api(self):
-        if self.grok_api_key:
-            try:
-                headers = {
-                    "Authorization": f"Bearer {self.grok_api_key}",
-                    "Content-Type": "application/json"
-                }
-                response = requests.get(
-                    "https://api.x.ai/v1/models",
-                    headers=headers,
-                    timeout=10
-                )
-                
-                if response.status_code in [200, 403]:
-                    self.enable_functionality()
-                else:
-                    self.grok_api_key = None
-                    self.save_grok_api_key()
-                    if os.environ.get("GROK_API_KEY"):
-                        del os.environ["GROK_API_KEY"]
-                    if not self.api_key:
-                        self.disable_functionality()
-                    else:
-                        self.grok_delete_action.setEnabled(False)
-                        self.widget.populate_fields()
-            except Exception:
-                self.grok_api_key = None
-                self.save_grok_api_key()
-                if os.environ.get("GROK_API_KEY"):
-                    del os.environ["GROK_API_KEY"]
-                if not self.api_key:
-                    self.disable_functionality()
-                else:
-                    self.grok_delete_action.setEnabled(False)
-                    self.widget.populate_fields()
+    # Función para mostrar el mensaje de clave API inválida de Replicate
+    def show_invalid_api_message(self):
+        msg = QMessageBox()
+        msg.setWindowTitle('API Replicate inválida')
+        msg.setText('La clave API de Replicate no es válida. Escribe una nueva clave API de Replicate.')
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowIcon(QIcon(resource_path("iconos/replicate.png")))
+        msg.exec()
 
-    # Función para actualizar el estado del menú
-    def update_menu_state(self):
-        self.enable_functionality()
+    # Función para mostrar el mensaje de error de conexión con Replicate
+    def show_connection_error_message(self):
+        msg = QMessageBox()
+        msg.setWindowTitle('Error de conexión con Replicate')
+        msg.setText('No se pudo validar la clave API de Replicate. Verifica tu conexión a internet.')
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowIcon(QIcon(resource_path("iconos/replicate.png")))
+        msg.exec()
+
+    # Función para mostrar el mensaje de clave API inválida de xAI
+    def show_invalid_grok_api_message(self):
+        msg = QMessageBox()
+        msg.setWindowTitle('API xAI inválida')
+        msg.setText('La clave API de xAI no es válida. Escribe una nueva clave API de xAI.')
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowIcon(QIcon(resource_path("iconos/xai.jpg")))
+        msg.exec()
+
+    # Función para mostrar el mensaje de error de conexión con xAI
+    def show_grok_connection_error_message(self):
+        msg = QMessageBox()
+        msg.setWindowTitle('Error de conexión con xAI')
+        msg.setText('No se pudo validar la clave API de xAI. Verifica tu conexión a internet.')
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowIcon(QIcon(resource_path("iconos/xai.jpg")))
+        msg.exec()
+
+    # Función para mostrar el mensaje de claves API inválidas
+    def show_all_apis_invalid_message(self):
+        msg = QMessageBox()
+        msg.setWindowTitle('Claves API inválidas')
+        msg.setText('No hay ninguna clave API válida configurada. Escriba al menos una clave API válida para usar el programa.')
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
+        msg.exec()
+
+    def validate_grok_api(self):
+        if not self.grok_api_key:
+            return False
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.grok_api_key}",
+                "Content-Type": "application/json"
+            }
+            response = requests.get(
+                "https://api.x.ai/v1/models",
+                headers=headers,
+                timeout=10
+            )
+            return response.status_code in [200, 403]
+        except:
+            return False
 
 # Clase para la ventana principal de la aplicación
 class PowerpoineatorWidget(QWidget):
@@ -623,7 +729,7 @@ class PowerpoineatorWidget(QWidget):
                 'flux-diego (meme)'
             ])
         
-        if hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key:
+        if hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key and self.parent().validate_grok_api():
             self.texto_combo.addItem('grok-2-1212 (experimental)')
             if not (hasattr(self.parent(), 'api_key') and self.parent().api_key):
                 self.imagen_combo.setEnabled(False)
@@ -684,8 +790,7 @@ class PowerpoineatorWidget(QWidget):
         )
 
         if file_path:
-            self.log_window = LogWindow()
-            self.log_window.parent = self
+            self.log_window = LogWindow(self.parent())
             self.log_window.show()
             self.log_window.start_generation(
                 modelo_texto,
@@ -808,10 +913,25 @@ class PowerpoineatorWidget(QWidget):
                     texto_modelo = config.get('texto_modelo', '')
                     imagen_modelo = config.get('imagen_modelo', '')
                     
+                    parent = self.parent()
                     if texto_modelo and self.texto_combo.count() > 0:
-                        index = self.texto_combo.findText(texto_modelo)
-                        if index >= 0:
-                            self.texto_combo.setCurrentIndex(index)
+                        if texto_modelo == 'grok-2-1212 (experimental)':
+                            if parent and parent.grok_api_key and parent.validate_grok_api():
+                                index = self.texto_combo.findText(texto_modelo)
+                                if index >= 0:
+                                    self.texto_combo.setCurrentIndex(index)
+                            else:
+                                self.texto_combo.setCurrentIndex(0)
+                                config['texto_modelo'] = self.texto_combo.currentText()
+                                with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                                    json.dump(config, f, ensure_ascii=False)
+                        else:
+                            if parent.api_key:
+                                index = self.texto_combo.findText(texto_modelo)
+                                if index >= 0:
+                                    self.texto_combo.setCurrentIndex(index)
+                            else:
+                                self.texto_combo.setCurrentIndex(0)
                     
                     if imagen_modelo and self.imagen_combo.isEnabled() and self.imagen_combo.count() > 0:
                         index = self.imagen_combo.findText(imagen_modelo)

@@ -60,8 +60,9 @@ class GenerationWorker(QThread):
 
 # Clase principal de la ventana de log
 class LogWindow(QWidget):
-    def __init__(self):
+    def __init__(self, parent=None):
         super().__init__()
+        self.parent = parent
         # Configuración inicial de la ventana
         self.setWindowTitle('Generando PowerPoint...')
         self.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
@@ -99,7 +100,7 @@ class LogWindow(QWidget):
         self.closed_by_user = False
         self.worker = None
         
-        # Centrar la ventana
+        # Centrar la ventana con respecto al padre
         self.center_window()
         
         # Contadores para el progreso
@@ -108,11 +109,22 @@ class LogWindow(QWidget):
     
     # Método para centrar la ventana en la pantalla
     def center_window(self):
-        self.adjustSize()
-        screen = QApplication.primaryScreen().availableGeometry()
-        x = (screen.width() - self.width()) // 2
-        y = (screen.height() - self.height()) // 2
-        self.move(x, y)
+        if self.parent:
+            # Asegurar que la ventana tenga un tamaño antes de centrarla
+            self.adjustSize()
+            
+            # Obtener la geometría de la ventana principal
+            parent_geometry = self.parent.geometry()
+            
+            # Calcular el centro de la ventana principal
+            center_x = parent_geometry.x() + parent_geometry.width() // 2
+            center_y = parent_geometry.y() + parent_geometry.height() // 2
+            
+            # Mover la ventana de log al centro, ajustando por su tamaño
+            self.move(
+                center_x - (self.width() // 2),
+                center_y - (self.height() // 2)
+            )
 
     # Método para mostrar errores
     def show_error(self, error_msg):
@@ -167,6 +179,15 @@ class LogWindow(QWidget):
                     msg.setText(f'Su presentación "{nombre_archivo}" ha sido generada correctamente en:\n{ruta_completa}')
                     msg.setIcon(QMessageBox.Information)
                     msg.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
+                    
+                    # Forzar el cálculo del tamaño del mensaje
+                    msg.show()
+                    msg.hide()
+                    
+                    # Centrar el mensaje en la ventana del log
+                    msg_pos = self.geometry().center() - msg.rect().center()
+                    msg.move(msg_pos)
+                    
                     msg.exec()
                     
                     self.close()
@@ -211,6 +232,17 @@ class LogWindow(QWidget):
             msg.button(QMessageBox.Yes).setText('Sí')
             msg.button(QMessageBox.No).setText('No')
             
+            # Forzar el cálculo del tamaño del mensaje
+            msg.show()
+            msg.hide()
+            
+            # Centrar el mensaje en la ventana del log
+            msg_pos = self.geometry().center() - msg.rect().center()
+            msg.move(msg_pos)
+            
+            # Reproducir sonido de sistema
+            QApplication.beep()
+            
             if msg.exec() == QMessageBox.Yes:
                 self.cancel_generation()
                 event.accept()
@@ -227,7 +259,8 @@ class LogWindow(QWidget):
     # Método llamado cuando se cierra la ventana
     def on_window_closed(self):
         if hasattr(self, 'parent') and self.parent:
-            self.parent.log_window = None
+            if hasattr(self.parent, 'widget') and self.parent.widget:
+                self.parent.widget.log_window = None
     
     # Método para actualizar la barra de progreso
     def update_progress(self, current, total):
