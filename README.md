@@ -45,13 +45,12 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - Python a la última versión si es posible (solo para ejecución desde código fuente).
 
 ## Instalación
-
 ### Método 1: Ejecutable
 1. Descarga la última actualización desde [Releases](https://github.com/KevinAZHD/Powerpoineador/releases/)
 2. Ejecuta `Powerpoineador.exe`
 
 ### Método 2: Código Fuente
-1. Instala Python 3.9 o superior.
+1. Instala la última versión de Python si es posible.
 2. Clona el repositorio:
 ```bash
 git clone https://github.com/tu_nombre_de_usuario/Powerpoineador.git
@@ -66,17 +65,28 @@ python Powerpoineador.py
 ```
 
 ## Obtención de APIs
-
 ### Replicate API:
+#### Método 1: Desde el programa
+1. Al abrir el programa, selecciona la opción "Obtener clave API de Replicate" en el apartado de "Replicate".
+2. Serás redirigido al sitio web de Replicate para obtener su API (necesitas tener cuenta registrada, véase en el método 2).
+3. Copia y pega la API en el programa.
+
+#### Método 2: Manual
 1. Crea una cuenta en [Replicate](https://replicate.com)
 2. Ve a tu perfil → API Tokens.
 3. Genera un nuevo token.
-4. Copia el token en el programa.
+4. Copia y pega el token en el programa.
 
 ### xAI API:
+#### Método 1: Desde el programa
+1. Al abrir el programa, selecciona la opción "Obtener clave API de xAI" en el apartado de "xAI".
+2. Serás redirigido al sitio web de xAI para obtener su API (necesitas tener cuenta registrada, véase en el método 2).
+3. Copia y pega la API en el programa.
+
+#### Método 2: Manual
 1. Solicita acceso en [xAI](https://console.x.ai)
 2. Una vez aprobado, genera tu clave API.
-3. Copia la clave que comienza con "xai-" en el programa.
+3. Copia y pega la clave que comienza con "xai-" en el programa.
 
 ## Licencia
 
