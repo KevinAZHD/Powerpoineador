@@ -1,4 +1,4 @@
-import sys, os, requests, json
+import sys, os, requests, json, webbrowser
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon, QPixmap, QAction
 from PySide6.QtWidgets import (
@@ -211,13 +211,19 @@ class MainWindow(QMainWindow):
         else:
             self.validate_replicate_api()
         
+        if not self.load_window_position():
+            screen = QApplication.primaryScreen().geometry()
+            x = (screen.width() - self.width()) // 2
+            y = (screen.height() - self.height()) // 2
+            self.move(x, y)
+        
         self.setAttribute(Qt.WA_DeleteOnClose)
 
     # Función para cargar la clave API de Replicate
     def load_api_key(self):
         try:
             if os.path.exists(CONFIG_FILE):
-                with open(CONFIG_FILE, 'r') as f:
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
                     return config.get('api_key')
         except (FileNotFoundError, json.JSONDecodeError):
@@ -228,12 +234,12 @@ class MainWindow(QMainWindow):
         try:
             config = {}
             if os.path.exists(CONFIG_FILE):
-                with open(CONFIG_FILE, 'r') as f:
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
             config['api_key'] = self.api_key
             config['grok_api_key'] = self.grok_api_key
-            with open(CONFIG_FILE, 'w') as f:
-                json.dump(config, f)
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
         except Exception as e:
             print(f"Error al guardar las claves API: {str(e)}")
 
@@ -323,7 +329,7 @@ class MainWindow(QMainWindow):
     # Función para cargar la clave API de xAI
     def load_grok_api_key(self):
         try:
-            with open(CONFIG_FILE, 'r') as f:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 config = json.load(f)
                 return config.get('grok_api_key')
         except (FileNotFoundError, json.JSONDecodeError):
@@ -332,14 +338,14 @@ class MainWindow(QMainWindow):
     # Función para guardar la clave API de xAI
     def save_grok_api_key(self):
         try:
-            with open(CONFIG_FILE, 'r') as f:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 config = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             config = {}
         
         config['grok_api_key'] = self.grok_api_key
-        with open(CONFIG_FILE, 'w') as f:
-            json.dump(config, f)
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(config, f, ensure_ascii=False, indent=4)
 
     # Función para establecer la clave API de xAI
     def set_grok_api_key(self, api_key):
@@ -353,6 +359,11 @@ class MainWindow(QMainWindow):
         menubar = self.menuBar()
         
         api_menu = menubar.addMenu('Replicate')
+        
+        get_api_action = QAction(QIcon(resource_path("iconos/web.png")), 'Obtener clave API de Replicate', self)
+        get_api_action.triggered.connect(lambda: webbrowser.open('https://replicate.com/account/api-tokens'))
+        api_menu.addAction(get_api_action)
+        
         config_action = QAction(QIcon(resource_path("iconos/conf.png")), 'Configurar clave API de Replicate', self)
         config_action.triggered.connect(self.show_api_dialog)
         api_menu.addAction(config_action)
@@ -362,6 +373,11 @@ class MainWindow(QMainWindow):
         api_menu.addAction(self.delete_action)
 
         grok_menu = menubar.addMenu('xAI')
+        
+        get_grok_api_action = QAction(QIcon(resource_path("iconos/web.png")), 'Obtener clave API de xAI', self)
+        get_grok_api_action.triggered.connect(lambda: webbrowser.open('https://console.x.ai'))
+        grok_menu.addAction(get_grok_api_action)
+        
         grok_config_action = QAction(QIcon(resource_path("iconos/conf.png")), 'Configurar clave API de xAI', self)
         grok_config_action.triggered.connect(self.show_grok_api_dialog)
         grok_menu.addAction(grok_config_action)
@@ -485,7 +501,7 @@ class MainWindow(QMainWindow):
     def setup_main_widget(self):
         self.widget = PowerpoineatorWidget()
         self.setCentralWidget(self.widget)
-        self.setWindowTitle('Powerpoineador v0.1.1b')
+        self.setWindowTitle('Powerpoineador v0.1.2b')
         self.setMinimumSize(700, 400)
         self.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
         
@@ -546,6 +562,7 @@ class MainWindow(QMainWindow):
 
     # Función para manejar el evento de cierre de la ventana
     def closeEvent(self, event):
+        self.save_window_position()
         if hasattr(self, 'widget') and self.widget:
             if hasattr(self.widget, 'log_window') and self.widget.log_window:
                 msg = QMessageBox()
@@ -564,7 +581,7 @@ class MainWindow(QMainWindow):
                     event.accept()
                 else:
                     event.ignore()
-                return
+            return
         event.accept()
 
     # Función para mostrar el mensaje de clave API inválida de Replicate
@@ -612,6 +629,7 @@ class MainWindow(QMainWindow):
         msg.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
         msg.exec()
 
+    # Función para validar la clave API de xAI
     def validate_grok_api(self):
         if not self.grok_api_key:
             return False
@@ -629,6 +647,55 @@ class MainWindow(QMainWindow):
         except:
             return False
 
+    # Función para guardar la posición de la ventana
+    def save_window_position(self):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            
+            is_maximized = self.isMaximized()
+            config['window_maximized'] = is_maximized
+            
+            if not is_maximized:
+                geometry = self.geometry()
+                config['window_position'] = {
+                    'x': geometry.x(),
+                    'y': geometry.y(),
+                    'width': geometry.width(),
+                    'height': geometry.height()
+                }
+            
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar la posición de la ventana: {str(e)}")
+
+    # Función para cargar la posición de la ventana
+    def load_window_position(self):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    
+                    if config.get('window_maximized', False):
+                        QTimer.singleShot(0, self.showMaximized)
+                        return True
+                    
+                    position = config.get('window_position')
+                    if position:
+                        self.setGeometry(
+                            position['x'],
+                            position['y'],
+                            position['width'],
+                            position['height']
+                        )
+                        return True
+        except Exception as e:
+            print(f"Error al cargar la posición de la ventana: {str(e)}")
+        return False
+
 # Clase para la ventana principal de la aplicación
 class PowerpoineatorWidget(QWidget):
     def __init__(self):
@@ -637,6 +704,7 @@ class PowerpoineatorWidget(QWidget):
         self.imagen_personalizada = None
         self.populate_fields()
         self.load_description()
+        self.load_auto_open_state()
 
     # Función para configurar la interfaz de usuario
     def setup_ui(self):
@@ -689,6 +757,7 @@ class PowerpoineatorWidget(QWidget):
         
         self.auto_open_checkbox = QCheckBox('Abrir presentación automáticamente')
         self.auto_open_checkbox.setChecked(False)
+        self.auto_open_checkbox.stateChanged.connect(self.save_auto_open_state)
         contador_checkbox_layout.addWidget(self.auto_open_checkbox)
         
         contador_checkbox_layout.addStretch()
@@ -899,7 +968,7 @@ class PowerpoineatorWidget(QWidget):
                 config['imagen_modelo'] = self.imagen_combo.currentText()
             
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-                json.dump(config, f, ensure_ascii=False)
+                json.dump(config, f, ensure_ascii=False, indent=4)
         except Exception as e:
             print(f"Error al guardar la selección de modelos: {str(e)}")
 
@@ -924,7 +993,7 @@ class PowerpoineatorWidget(QWidget):
                                 self.texto_combo.setCurrentIndex(0)
                                 config['texto_modelo'] = self.texto_combo.currentText()
                                 with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-                                    json.dump(config, f, ensure_ascii=False)
+                                    json.dump(config, f, ensure_ascii=False, indent=4)
                         else:
                             if parent.api_key:
                                 index = self.texto_combo.findText(texto_modelo)
@@ -954,6 +1023,32 @@ class PowerpoineatorWidget(QWidget):
     # Función para guardar la selección de modelos cuando cambia el texto
     def on_texto_combo_changed(self, texto):
         self.save_combo_selection()
+
+    # Función para guardar el estado de auto-abrir
+    def save_auto_open_state(self):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            
+            config['auto_open'] = self.auto_open_checkbox.isChecked()
+            
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar el estado de auto-abrir: {str(e)}")
+
+    # Función para cargar el estado de auto-abrir
+    def load_auto_open_state(self):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    auto_open = config.get('auto_open', False)
+                    self.auto_open_checkbox.setChecked(auto_open)
+        except Exception as e:
+            print(f"Error al cargar el estado de auto-abrir: {str(e)}")
 
 # Función principal para iniciar la aplicación
 if __name__ == "__main__":

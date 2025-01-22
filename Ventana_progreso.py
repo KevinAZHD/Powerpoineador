@@ -1,6 +1,6 @@
 import sys, os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QProgressBar, QMessageBox, QApplication
-from PySide6.QtCore import Qt, Signal, QObject, QThread, QPropertyAnimation, QEasingCurve
+from PySide6.QtCore import Qt, Signal, QObject, QThread, QPropertyAnimation, QEasingCurve, QTimer
 from PySide6.QtGui import QIcon
 
 # Función para manejar rutas de recursos tanto en modo desarrollo como en modo ejecutable
@@ -81,9 +81,13 @@ class LogWindow(QWidget):
         # Barra de progreso
         self.progress_bar = QProgressBar()
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
+        self.progress_bar.setRange(0, 0)
         layout.addWidget(self.progress_bar)
+        
+        # Configuración del timer para la animación inicial
+        self.loading_timer = QTimer()
+        self.loading_timer.timeout.connect(self.update_loading_animation)
+        self.loading_timer.start(50)
         
         # Asignar el layout a la ventana
         self.setLayout(layout)
@@ -150,8 +154,10 @@ class LogWindow(QWidget):
     
     # Método llamado cuando termina la generación
     def generation_finished(self):
-        self.log_text.append("\n¡Presentación generada exitosamente!")
+        self.loading_timer.stop()
+        self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(100)
+        self.log_text.append("\n¡Presentación generada exitosamente!")
         self.generation_completed = True
         
         filename = self.worker.filename if self.worker else None
@@ -197,6 +203,7 @@ class LogWindow(QWidget):
     
     # Método para cancelar la generación
     def cancel_generation(self):
+        self.loading_timer.stop()
         try:
             if self.worker and self.worker.isRunning():
                 self.worker.terminate()
@@ -264,15 +271,21 @@ class LogWindow(QWidget):
     
     # Método para actualizar la barra de progreso
     def update_progress(self, current, total):
-        self.total_images = total
-        self.current_image = current
+        # Detener la animación de carga inicial
+        self.loading_timer.stop()
+        self.progress_bar.setRange(0, 100)
+        
+        # Continuar con la animación normal de progreso
         target_percentage = int((current / total) * 100)
         current_percentage = self.progress_bar.value()
         
-        # Crear animación para la barra de progreso
         self.progress_animation = QPropertyAnimation(self.progress_bar, b"value")
         self.progress_animation.setDuration(500)
         self.progress_animation.setStartValue(current_percentage)
         self.progress_animation.setEndValue(target_percentage)
         self.progress_animation.setEasingCurve(QEasingCurve.InOutQuad)
         self.progress_animation.start()
+
+    def update_loading_animation(self):
+        if self.progress_bar.maximum() == 0:
+            self.progress_bar.setValue(0)
