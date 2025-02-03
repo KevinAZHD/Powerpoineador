@@ -25,6 +25,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 ### Modelos de Texto:
 - **meta-llama-3.1-405b-instruct**: Modelo con censura de contenido (recomendado).
 - **dolphin-2.9-llama3-70b-gguf**: Modelo sin censura de contenido.
+- **deepseek-r1**: Modelo chino razonador.
 - **grok-2-1212**: Modelo experimental de xAI.
 
 ### Modelos de Imagen:
