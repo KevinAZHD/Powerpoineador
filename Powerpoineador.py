@@ -3,14 +3,20 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon, QPixmap, QAction
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
-    QLabel, QMessageBox, QCheckBox, QMainWindow, QLineEdit, QFileDialog)
+    QLabel, QMessageBox, QCheckBox, QMainWindow, QLineEdit, QFileDialog, QMenuBar)
 from Ventana_progreso import LogWindow
+from Version_checker import obtener_url_descarga, obtener_ultima_version, obtener_version_actual
 
-# Definir la ruta de la carpeta de datos de la aplicación
-APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
+# Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
+if sys.platform == 'win32':
+    APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
+else:
+    APP_DATA_DIR = os.path.join(os.path.expanduser('~'), '.Powerpoineador')
+
 # Verificar si la carpeta de datos de la aplicación existe, y si no, crearla
 if not os.path.exists(APP_DATA_DIR):
     os.makedirs(APP_DATA_DIR)
+
 # Definir la ruta del archivo de configuración
 CONFIG_FILE = os.path.join(APP_DATA_DIR, 'config.json')
 
@@ -24,6 +30,34 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     
     return os.path.join(base_path, relative_path)
+
+# Función para verificar la conexión a Internet
+def verificar_conexion_internet():
+    try:
+        requests.get("https://www.google.com", timeout=3)
+        return True
+    except requests.RequestException:
+        return False
+
+# Función para mostrar el mensaje de error de conexión
+def mostrar_error_conexion():
+    msg = QMessageBox()
+    msg.setWindowTitle('Error de conexión')
+    msg.setText('No se detectó conexión a Internet.\nPowerpoineador necesita una conexión a Internet para funcionar.')
+    msg.setIcon(QMessageBox.Critical)
+    msg.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
+    msg.setStandardButtons(QMessageBox.Retry | QMessageBox.Cancel)
+    msg.button(QMessageBox.Retry).setText('Reintentar')
+    msg.button(QMessageBox.Cancel).setText('Salir')
+    
+    msg.show()
+    msg.hide()
+    
+    screen = QApplication.primaryScreen().geometry()
+    msg_pos = screen.center() - msg.rect().center()
+    msg.move(msg_pos)
+    
+    return msg.exec()
 
 # Clase para la ventana de configuración de la clave API de Replicate
 class APIKeyWindow(QWidget):
@@ -358,8 +392,9 @@ class MainWindow(QMainWindow):
     def setup_menu(self):
         menubar = self.menuBar()
         
-        api_menu = menubar.addMenu('Replicate')
+        left_menubar = QMenuBar(menubar)
         
+        api_menu = left_menubar.addMenu('Replicate')
         get_api_action = QAction(QIcon(resource_path("iconos/web.png")), 'Obtener clave API de Replicate', self)
         get_api_action.triggered.connect(lambda: webbrowser.open('https://replicate.com/account/api-tokens'))
         api_menu.addAction(get_api_action)
@@ -372,8 +407,7 @@ class MainWindow(QMainWindow):
         self.delete_action.triggered.connect(self.delete_api_key)
         api_menu.addAction(self.delete_action)
 
-        grok_menu = menubar.addMenu('xAI')
-        
+        grok_menu = left_menubar.addMenu('xAI')
         get_grok_api_action = QAction(QIcon(resource_path("iconos/web.png")), 'Obtener clave API de xAI', self)
         get_grok_api_action.triggered.connect(lambda: webbrowser.open('https://console.x.ai'))
         grok_menu.addAction(get_grok_api_action)
@@ -385,6 +419,15 @@ class MainWindow(QMainWindow):
         self.grok_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), 'Borrar clave API de xAI', self)
         self.grok_delete_action.triggered.connect(self.delete_grok_api_key)
         grok_menu.addAction(self.grok_delete_action)
+
+        menubar.setCornerWidget(left_menubar, Qt.TopLeftCorner)
+
+        right_menubar = QMenuBar(menubar)
+        github_action = QAction(QIcon(resource_path("iconos/github.png")), '', self)
+        github_action.triggered.connect(lambda: webbrowser.open('https://github.com/KevinAZHD/Powerpoineador'))
+        right_menubar.addAction(github_action)
+        
+        menubar.setCornerWidget(right_menubar, Qt.TopRightCorner)
 
     # Función para establecer la clave API de Replicate
     def set_api_key(self, api_key):
@@ -501,7 +544,7 @@ class MainWindow(QMainWindow):
     def setup_main_widget(self):
         self.widget = PowerpoineatorWidget()
         self.setCentralWidget(self.widget)
-        self.setWindowTitle('Powerpoineador v0.1.2b')
+        self.setWindowTitle('Powerpoineador')
         self.setMinimumSize(700, 400)
         self.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
         
@@ -1052,7 +1095,62 @@ class PowerpoineatorWidget(QWidget):
 
 # Función principal para iniciar la aplicación
 if __name__ == "__main__":
-    app = QApplication([])
+    app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
+    
+    while not verificar_conexion_internet():
+        if mostrar_error_conexion() == QMessageBox.Cancel:
+            sys.exit()
+    
+    from Splash_carga import SplashScreen
+    from Version_checker import obtener_url_descarga
+    
+    splash = SplashScreen()
+    splash.show()
+    app.processEvents()
+    
     window = MainWindow()
-    window.show()
+    
+    # Función para verificar y mostrar la ventana principal
+    def check_and_show_main_window():
+        if not verificar_conexion_internet():
+            window.close()
+            if mostrar_error_conexion() == QMessageBox.Cancel:
+                app.quit()
+            else:
+                QTimer.singleShot(100, check_and_show_main_window)
+            return
+        
+        if not splash.check_thread.is_alive():
+            window.show()
+            splash.close()
+            
+            if splash.hay_actualizacion:
+                ultima_version = obtener_ultima_version()
+                version_actual = obtener_version_actual()
+                msg = QMessageBox()
+                msg.setWindowTitle('Actualización disponible')
+                msg.setText(f'Hay una nueva versión de Powerpoineador disponible.\n\nVersión actual: {version_actual}\nNueva versión: {ultima_version}\n\n¿Desea descargarla?')
+                msg.setIcon(QMessageBox.Information)
+                msg.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
+                msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                msg.setDefaultButton(QMessageBox.Yes)
+                msg.button(QMessageBox.Yes).setText('Sí')
+                msg.button(QMessageBox.No).setText('No')
+                
+                msg.show()
+                msg.hide()
+                
+                msg_pos = window.geometry().center() - msg.rect().center()
+                msg.move(msg_pos)
+                
+                if msg.exec() == QMessageBox.Yes:
+                    webbrowser.open(obtener_url_descarga())
+                    window.close()
+                    app.quit()
+                    sys.exit()
+        else:
+            QTimer.singleShot(100, check_and_show_main_window)
+    
+    check_and_show_main_window()
     app.exec()
