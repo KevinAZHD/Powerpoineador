@@ -2,7 +2,7 @@
 
 Powerpoineador es un programa de escritorio que genera automáticamente presentaciones de PowerPoint utilizando diferentes modelos de Inteligencia Artificial, tanto para la generación de texto como para las imágenes.
 
-![Interfaz principal del programa]
+![Interfaz principal del programa](imágenes/captura_programa.png)
 
 ## Descripción
 
