@@ -1,16 +1,27 @@
-import random, os
+import sys, os, random
 from pptx import Presentation
 from Diseños_diapositivas import Diapositivas
-from IA_llama import obtener_respuesta_modelo as obtener_respuesta_modelo_llama
-from IA_dolphin import obtener_respuesta_modelo as obtener_respuesta_modelo_dolphin
-from IA_grok import obtener_respuesta_modelo as obtener_respuesta_modelo_grok
-from IA_sdxl import generar_imagen as generar_imagen_sdxl
-from IA_fluxschnell import generar_imagen as generar_imagen_fluxschnell
-from IA_flux8 import generar_imagen as generar_imagen_flux8
-from IA_flux16 import generar_imagen as generar_imagen_flux16
-from IA_dgmtnzflux import generar_imagen as generar_imagen_diego
-from IA_fluxpulid import generar_imagen as generar_imagen_flux
-from IA_photomaker import generar_imagen as generar_imagen_photomaker
+from modelos.IA_llama import obtener_respuesta_modelo as obtener_respuesta_modelo_llama
+from modelos.IA_dolphin import obtener_respuesta_modelo as obtener_respuesta_modelo_dolphin
+from modelos.IA_grok import obtener_respuesta_modelo as obtener_respuesta_modelo_grok
+from modelos.IA_sdxl import generar_imagen as generar_imagen_sdxl
+from modelos.IA_fluxschnell import generar_imagen as generar_imagen_fluxschnell
+from modelos.IA_flux8 import generar_imagen as generar_imagen_flux8
+from modelos.IA_flux16 import generar_imagen as generar_imagen_flux16
+from modelos.IA_dgmtnzflux import generar_imagen as generar_imagen_diego
+from modelos.IA_fluxpulid import generar_imagen as generar_imagen_flux
+from modelos.IA_photomaker import generar_imagen as generar_imagen_photomaker
+
+# Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
+if sys.platform == 'win32':
+    APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
+else:
+    APP_DATA_DIR = os.path.join(os.path.expanduser('~'), '.Powerpoineador')
+
+# Crear carpeta de imágenes si no existe
+IMAGES_DIR = os.path.join(APP_DATA_DIR, 'images')
+if not os.path.exists(IMAGES_DIR):
+    os.makedirs(IMAGES_DIR)
 
 # Función para obtener respuesta del modelo con reintentos
 def intentar_obtener_respuesta(descripcion, signals=None):
@@ -22,7 +33,7 @@ def intentar_obtener_respuesta(descripcion, signals=None):
 
     try:
         # Obtener la respuesta del modelo
-        from IA_llama import obtener_respuesta_modelo
+        from modelos.IA_llama import obtener_respuesta_modelo
         respuesta = obtener_respuesta_modelo(descripcion, signals)
         # Verificar si la respuesta es un diccionario válido
         if respuesta:
@@ -47,13 +58,13 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         
         # Verificar cuál es el modelo que se está utilizando
         if modelo == 'meta-llama-3.1-405b-instruct (con censura)':
-            from IA_llama import intentar_obtener_respuesta
+            from modelos.IA_llama import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'grok-2-1212 (experimental)':
-            from IA_grok import intentar_obtener_respuesta
+            from modelos.IA_grok import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         else:
-            from IA_dolphin import intentar_obtener_respuesta
+            from modelos.IA_dolphin import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
 
         # Verificar si se pudo obtener respuesta del modelo
@@ -102,12 +113,6 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
             signals.update_log.emit(str(msg))
 
     try:
-        # Obtener la ruta de la carpeta de imágenes
-        APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
-        IMAGES_DIR = os.path.join(APP_DATA_DIR, 'images')
-        if not os.path.exists(IMAGES_DIR):
-            os.makedirs(IMAGES_DIR)
-        
         # Crear una nueva presentación
         presentation = Presentation()
         # Crear un objeto para aplicar diseños a las diapositivas
