@@ -40,7 +40,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 ## Requisitos
 
 - Sistema operativo Windows con soporte, o cualquier distribución de Linux (experimental).
-- Microsoft PowerPoint, o LibreOffice Impress (opcional si desactiva la apertura automática).
+- Microsoft PowerPoint, o LibreOffice Impress (opcionales si desactiva la apertura automática).
 - Conexión a Internet.
 - Clave API de Replicate y/o xAI (opcional).
 - Python a la última versión si es posible (solo para ejecución desde código fuente).
