@@ -2,7 +2,7 @@
 
 Powerpoineador es un programa de escritorio que genera automáticamente presentaciones de PowerPoint utilizando diferentes modelos de Inteligencia Artificial, tanto para la generación de texto como para las imágenes.
 
-![Interfaz principal del programa](imágenes/captura_programa.png)
+![Interfaz principal del programa]
 
 ## Descripción
 
@@ -23,19 +23,19 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 ## Modelos Disponibles
 
 ### Modelos de Texto:
+- **deepseek-r1**: Nuevo modelo chino razonador.
 - **meta-llama-3.1-405b-instruct**: Modelo con censura de contenido (recomendado).
 - **dolphin-2.9-llama3-70b-gguf**: Modelo sin censura de contenido.
-- **deepseek-r1**: Modelo chino razonador.
 - **grok-2-1212**: Modelo experimental de xAI.
 
 ### Modelos de Imagen:
-- **hyper-flux-8step**: Generación rápida y económica.
+- **flux-schnell**: Enfocado en velocidad.
 - **photomaker**: Optimizado y mejorado para rostros (requiere imagen de referencia).
 - **flux-pulid**: Optimizado para rostros (requiere también de imagen).
+- **hyper-flux-8step**: Generación rápida y económica.
 - **hyper-flux-16step**: Balance entre velocidad y calidad.
 - **sdxl-lightning-4step**: Económico sin censura.
-- **flux-schnell**: Enfocado en velocidad.
-- **flux-diego**: Estilo meme.
+- **dgmtnzflux**: Estilo meme.
 
 ## Requisitos
 
@@ -95,13 +95,13 @@ Este proyecto se ha creado de manera Open-Source bajo la licencia GPL (Licencia 
 
 ## Soporte
 
-Si tiene algún problema o duda con respecto a esta guía o al Powerpoineador, no dude en comunicarlo. Estamos aquí tanto yo como el co-creador del proyecto para ayudar y mejorar continuamente este recurso para la comunidad.
+Si tiene algún problema o duda con respecto a esta guía o al Powerpoineador, no dude en comunicarlo. Estamos aquí tanto yo como los demás integrantes del proyecto para ayudar y mejorar continuamente este recurso para la comunidad.
 
 Por favor, tenga en cuenta que este proyecto se mantiene con la intención de ser un recurso útil y profesional. Cualquier contribución o sugerencia para mejorar es siempre bienvenida.
 
 ## Créditos
 
-- Este proyecto ha sido desarrollado por [Kevin Adán Zamora](https://github.com/KevinAZHD) y [Diego Martínez Fernández](https://github.com/Dgmtnz)
+- Este proyecto ha sido desarrollado por [Kevin Adán Zamora](https://github.com/KevinAZHD), [Diego Martínez Fernández](https://github.com/Dgmtnz), y [Leandro Pérez Martínez](https://github.com/Skade2050)
 - Interfaz gráfica desarrollada con PySide6 gracias a [Kevin Adán Zamora](https://github.com/KevinAZHD)
 - Todos los enlaces proporcionados anteriormente.
 - Gracias por leer y utilizar esta guía de Powerpoineador.
