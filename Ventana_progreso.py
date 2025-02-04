@@ -151,6 +151,12 @@ class LogWindow(QWidget):
         self.log_text.verticalScrollBar().setValue(
             self.log_text.verticalScrollBar().maximum()
         )
+        
+        # Detectar cuando comienza la generación de imágenes
+        if "Generando imagen 1/" in text:
+            self.loading_timer.stop()
+            self.progress_bar.setRange(0, 100)
+            self.progress_bar.setValue(0)
     
     # Método llamado cuando termina la generación
     def generation_finished(self):

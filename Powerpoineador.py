@@ -545,7 +545,7 @@ class MainWindow(QMainWindow):
         self.widget = PowerpoineatorWidget()
         self.setCentralWidget(self.widget)
         self.setWindowTitle('Powerpoineador')
-        self.setMinimumSize(700, 400)
+        self.setMinimumSize(735, 400)
         self.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
         
         screen = QApplication.primaryScreen().geometry()
@@ -826,23 +826,21 @@ class PowerpoineatorWidget(QWidget):
         self.imagen_combo.clear()
         
         if hasattr(self.parent(), 'api_key') and self.parent().api_key:
-            self.texto_combo.addItems([
-                'meta-llama-3.1-405b-instruct (con censura)',
-                'dolphin-2.9-llama3-70b-gguf (sin censura)'
-            ])
+            self.texto_combo.addItem(QIcon(resource_path("iconos/deepseek.png")), 'deepseek-r1 (razonador)')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct (con censura)')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf (sin censura)')
+            
             self.imagen_combo.setEnabled(True)
-            self.imagen_combo.addItems([
-                'hyper-flux-8step (rápida y muy barata)',
-                'photomaker (con caras mejorado)',
-                'flux-pulid (con caras)',
-                'hyper-flux-16step (rápida y barata)',
-                'sdxl-lightning-4step (barata sin censura)',
-                'flux-schnell (rápida)',
-                'flux-diego (meme)'
-            ])
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell (rápida)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker (con caras mejorado)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid (con caras)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step (rápida y muy barata)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step (rápida y barata)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step (barata sin censura)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/dgmtnzflux.png")), 'dgmtnzflux (meme)')
         
         if hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key and self.parent().validate_grok_api():
-            self.texto_combo.addItem('grok-2-1212 (experimental)')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/grok.png")), 'grok-2-1212 (experimental)')
             if not (hasattr(self.parent(), 'api_key') and self.parent().api_key):
                 self.imagen_combo.setEnabled(False)
         

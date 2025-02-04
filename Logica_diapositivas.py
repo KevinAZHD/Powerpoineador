@@ -1,9 +1,6 @@
 import sys, os, random
 from pptx import Presentation
 from Diseños_diapositivas import Diapositivas
-from modelos.IA_llama import obtener_respuesta_modelo as obtener_respuesta_modelo_llama
-from modelos.IA_dolphin import obtener_respuesta_modelo as obtener_respuesta_modelo_dolphin
-from modelos.IA_grok import obtener_respuesta_modelo as obtener_respuesta_modelo_grok
 from modelos.IA_sdxl import generar_imagen as generar_imagen_sdxl
 from modelos.IA_fluxschnell import generar_imagen as generar_imagen_fluxschnell
 from modelos.IA_flux8 import generar_imagen as generar_imagen_flux8
@@ -24,27 +21,6 @@ if not os.path.exists(IMAGES_DIR):
     os.makedirs(IMAGES_DIR)
 
 # Función para obtener respuesta del modelo con reintentos
-def intentar_obtener_respuesta(descripcion, signals=None):
-    # Función interna para manejar logs
-    def log_message(msg):
-        print(msg)
-        if signals:
-            signals.update_log.emit(str(msg))
-
-    try:
-        # Obtener la respuesta del modelo
-        from modelos.IA_llama import obtener_respuesta_modelo
-        respuesta = obtener_respuesta_modelo(descripcion, signals)
-        # Verificar si la respuesta es un diccionario válido
-        if respuesta:
-            log_message(f"Respuesta del modelo: {respuesta}")
-        return respuesta
-    except Exception as e:
-        error_msg = f"Error al obtener respuesta: {str(e)}"
-        log_message(error_msg)
-        return None
-
-# Función para obtener respuesta del modelo con reintentos
 def obtener_respuesta_ia(descripcion, modelo, signals=None):
     # Función interna para manejar logs
     def log_message(msg):
@@ -63,6 +39,9 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         elif modelo == 'grok-2-1212 (experimental)':
             from modelos.IA_grok import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'deepseek-r1 (razonador)':
+            from modelos.IA_deepseek import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
         else:
             from modelos.IA_dolphin import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
@@ -79,7 +58,6 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         # Imprimir un mensaje indicando que ocurrió un error al obtener la respuesta
         log_message(f"Error en obtener_respuesta_ia: {str(e)}")
         return None
-    # Finalizar la ejecución del programa
     finally:
         import gc
         gc.collect()
@@ -97,7 +75,7 @@ def generar_imagen_ia(section, content, descripcion, modelo, image1):
             return generar_imagen_photomaker(section, content, descripcion, image1)
         elif modelo == 'hyper-flux-16step (rápida y barata)':
             return generar_imagen_flux16(section, content, descripcion)
-        elif modelo == 'flux-diego (meme)':
+        elif modelo == 'dgmtnzflux (meme)':
             return generar_imagen_diego(section, content, descripcion)
         else:
             return generar_imagen_flux(section, content, descripcion, image1)
@@ -224,54 +202,3 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
         # Liberar memoria
         import gc
         gc.collect()
-
-# Función para obtener respuesta del modelo con reintentos
-def intentar_obtener_respuesta_llama(descripcion, signals=None):
-    # Función interna para manejar logs
-    def log_message(msg):
-        print(msg)
-        if signals:
-            signals.update_log.emit(str(msg))
-            
-    try:
-        # Obtener la respuesta del modelo
-        return obtener_respuesta_modelo_llama(descripcion, signals)
-    except Exception as e:
-        # Imprimir un mensaje indicando que ocurrió un error al obtener la respuesta
-        error_msg = f"Error al obtener respuesta: {str(e)}"
-        log_message(error_msg)
-        return None
-
-# Función para obtener respuesta del modelo con reintentos
-def intentar_obtener_respuesta_dolphin(descripcion, signals=None):
-    # Función interna para manejar logs
-    def log_message(msg):
-        print(msg)
-        if signals:
-            signals.update_log.emit(str(msg))
-            
-    try:
-        # Obtener la respuesta del modelo
-        return obtener_respuesta_modelo_dolphin(descripcion, signals)
-    except Exception as e:
-        # Imprimir un mensaje indicando que ocurrió un error al obtener la respuesta
-        error_msg = f"Error al obtener respuesta: {str(e)}"
-        log_message(error_msg)
-        return None
-
-# Función para obtener respuesta del modelo con reintentos
-def intentar_obtener_respuesta_grok(descripcion, signals=None):
-    # Función interna para manejar logs
-    def log_message(msg):
-        print(msg)
-        if signals:
-            signals.update_log.emit(str(msg))
-            
-    try:
-        # Obtener la respuesta del modelo
-        return obtener_respuesta_modelo_grok(descripcion, signals)
-    except Exception as e:
-        # Imprimir un mensaje indicando que ocurrió un error al obtener la respuesta
-        error_msg = f"Error al obtener respuesta: {str(e)}"
-        log_message(error_msg)
-        return None
