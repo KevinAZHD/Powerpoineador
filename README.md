@@ -23,19 +23,23 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 ## Modelos Disponibles
 
 ### Modelos de Texto:
+
 - **deepseek-r1**: Nuevo modelo chino razonador.
-- **meta-llama-3.1-405b-instruct**: Modelo con censura de contenido (recomendado).
+- **meta-llama-3.1-405b-instruct**: Modelo con censura de contenido.
 - **dolphin-2.9-llama3-70b-gguf**: Modelo sin censura de contenido.
 - **grok-2-1212**: Modelo experimental de xAI.
 
 ### Modelos de Imagen:
-- **flux-schnell**: Enfocado en velocidad.
-- **photomaker**: Optimizado y mejorado para rostros (requiere imagen de referencia).
-- **flux-pulid**: Optimizado para rostros (requiere también de imagen).
-- **hyper-flux-8step**: Generación rápida y económica.
-- **hyper-flux-16step**: Balance entre velocidad y calidad.
-- **sdxl-lightning-4step**: Económico sin censura.
-- **dgmtnzflux**: Estilo meme.
+
+- **flux-schnell**: Modelo rápido con buena calidad.
+- **imagen-3**: Modelo de Google con la mejor calidad de imagen.
+- **imagen-3-fast**: Modelo de Google rápido y económico.
+- **photomaker**: Modelo especializado en caras (requiere imagen de referencia).
+- **fluxpulid**: Modelo también especializado en caras equilibrado entre calidad y velocidad (requiere imagen de referencia).
+- **hyper-flux-8step**: Modelo muy rápido y económico.
+- **hyper-flux-16step**: Modelo rápido y económico con mejor calidad.
+- **sdxl-lightning-4step**: Modelo rápido y económico sin censura.
+- **dgmtnzflux**: Modelo estilo meme.
 
 ## Requisitos
 
@@ -46,45 +50,60 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - Python a la última versión si es posible (solo para ejecución desde código fuente).
 
 ## Instalación
+
 ### Método 1: Ejecutable
+
 1. Descarga la última actualización desde [Releases](https://github.com/KevinAZHD/Powerpoineador/releases/)
 2. Ejecuta `Powerpoineador.exe`
 
 ### Método 2: Código Fuente
+
 1. Instala la última versión de Python si es posible.
 2. Clona el repositorio:
+
 ```bash
 git clone https://github.com/tu_nombre_de_usuario/Powerpoineador.git
 ```
+
 3. Instala las dependencias:
+
 ```bash
 pip install -r requirements.txt
 ```
+
 4. Ejecuta el programa:
+
 ```bash
 python Powerpoineador.py
 ```
 
 ## Obtención de APIs
+
 ### Replicate API:
+
 #### Método 1: Desde el programa
+
 1. Al abrir el programa, selecciona la opción "Obtener clave API de Replicate" en el apartado de "Replicate".
 2. Serás redirigido al sitio web de Replicate para obtener su API (necesitas tener cuenta registrada, véase en el método 2).
 3. Copia y pega la API en el programa.
 
 #### Método 2: Manual
+
 1. Crea una cuenta en [Replicate](https://replicate.com)
 2. Ve a tu perfil → API Tokens.
 3. Genera un nuevo token.
 4. Copia y pega el token en el programa.
 
 ### xAI API:
+
 #### Método 1: Desde el programa
+
 1. Al abrir el programa, selecciona la opción "Obtener clave API de xAI" en el apartado de "xAI".
 2. Serás redirigido al sitio web de xAI para obtener su API (necesitas tener cuenta registrada, véase en el método 2).
 3. Copia y pega la API en el programa.
 
 #### Método 2: Manual
+
 1. Solicita acceso en [xAI](https://console.x.ai)
 2. Una vez aprobado, genera tu clave API.
 3. Copia y pega la clave que comienza con "xai-" en el programa.
