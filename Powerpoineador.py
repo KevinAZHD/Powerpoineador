@@ -832,6 +832,8 @@ class PowerpoineatorWidget(QWidget):
             
             self.imagen_combo.setEnabled(True)
             self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell (rápida)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 (mejor calidad)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast (barata y rápida)')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker (con caras mejorado)')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid (con caras)')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step (rápida y muy barata)')

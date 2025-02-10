@@ -8,6 +8,8 @@ from modelos.IA_flux16 import generar_imagen as generar_imagen_flux16
 from modelos.IA_dgmtnzflux import generar_imagen as generar_imagen_diego
 from modelos.IA_fluxpulid import generar_imagen as generar_imagen_flux
 from modelos.IA_photomaker import generar_imagen as generar_imagen_photomaker
+from modelos.IA_imagen3 import generar_imagen as generar_imagen_imagen3
+from modelos.IA_imagen3fast import generar_imagen as generar_imagen_imagen3fast
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -77,6 +79,10 @@ def generar_imagen_ia(section, content, descripcion, modelo, image1):
             return generar_imagen_flux16(section, content, descripcion)
         elif modelo == 'dgmtnzflux (meme)':
             return generar_imagen_diego(section, content, descripcion)
+        elif modelo == 'imagen-3 (mejor calidad)':
+            return generar_imagen_imagen3(section, content, descripcion)
+        elif modelo == 'imagen-3-fast (barata y rápida)':
+            return generar_imagen_imagen3fast(section, content, descripcion)
         else:
             return generar_imagen_flux(section, content, descripcion, image1)
     except Exception as e:
