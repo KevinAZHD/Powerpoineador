@@ -10,6 +10,7 @@ from modelos.IA_fluxpulid import generar_imagen as generar_imagen_flux
 from modelos.IA_photomaker import generar_imagen as generar_imagen_photomaker
 from modelos.IA_imagen3 import generar_imagen as generar_imagen_imagen3
 from modelos.IA_imagen3fast import generar_imagen as generar_imagen_imagen3fast
+from modelos.IA_sana import generar_imagen as generar_imagen_sana
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -35,13 +36,19 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         log_message(f"Intentando generar respuesta con el modelo {modelo}...")
         
         # Verificar cuál es el modelo que se está utilizando
-        if modelo == 'meta-llama-3.1-405b-instruct (con censura)':
+        if modelo == 'meta-llama-3.1-405b-instruct (con censura) [$0.0067]':
             from modelos.IA_llama import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'claude-3.5-sonnet (inteligente) [$0.0131]':
+            from modelos.IA_sonnet import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'claude-3.5-haiku (económico) [$0.0035]':
+            from modelos.IA_haiku import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'grok-2-1212 (experimental)':
             from modelos.IA_grok import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
-        elif modelo == 'deepseek-r1 (razonador)':
+        elif modelo == 'deepseek-r1 (razonador) [$0.007]':
             from modelos.IA_deepseek import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         else:
@@ -67,21 +74,23 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
 # Función para generar una imagen con un modelo de IA
 def generar_imagen_ia(section, content, descripcion, modelo, image1):
     try:
-        if modelo == 'sdxl-lightning-4step (barata sin censura)':
+        if modelo == 'sdxl-lightning-4step (barata sin censura) [$0.0014]':
             return generar_imagen_sdxl(section, content, descripcion)
-        elif modelo == 'flux-schnell (rápida)':
+        elif modelo == 'flux-schnell (rápida) [$0.003]':
             return generar_imagen_fluxschnell(section, content, descripcion)
-        elif modelo == 'hyper-flux-8step (rápida y muy barata)':
+        elif modelo == 'hyper-flux-8step (rápida y muy barata) [$0.0063]':
             return generar_imagen_flux8(section, content, descripcion)
-        elif modelo == 'photomaker (con caras mejorado)':
+        elif modelo == 'photomaker (con caras mejorado) [$0.0069]':
             return generar_imagen_photomaker(section, content, descripcion, image1)
-        elif modelo == 'hyper-flux-16step (rápida y barata)':
+        elif modelo == 'hyper-flux-16step (rápida y barata) [$0.0667]':
             return generar_imagen_flux16(section, content, descripcion)
-        elif modelo == 'dgmtnzflux (meme)':
+        elif modelo == 'dgmtnzflux (meme) [$0.03]':
             return generar_imagen_diego(section, content, descripcion)
-        elif modelo == 'imagen-3 (mejor calidad)':
+        elif modelo == 'sana (calidad-precio) [$0.0042]':
+            return generar_imagen_sana(section, content, descripcion)
+        elif modelo == 'imagen-3 (mejor calidad) [$0.05]':
             return generar_imagen_imagen3(section, content, descripcion)
-        elif modelo == 'imagen-3-fast (barata y rápida)':
+        elif modelo == 'imagen-3-fast (barata y rápida) [$0.025]':
             return generar_imagen_imagen3fast(section, content, descripcion)
         else:
             return generar_imagen_flux(section, content, descripcion, image1)
@@ -127,9 +136,9 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
             log_message(f"\nGenerando imagen {slide_number}/{total_slides}")
             try:
                 # Verificar cuál es el modelo que se está utilizando
-                if modelo_imagen == 'flux-pulid (con caras)':
+                if modelo_imagen == 'flux-pulid (con caras) [$0.037]':
                     img = generar_imagen_flux(section, content, descripcion, imagen_personalizada)
-                elif modelo_imagen == 'photomaker (con caras mejorado)':
+                elif modelo_imagen == 'photomaker (con caras mejorado) [$0.0069]':
                     img = generar_imagen_photomaker(section, content, descripcion, imagen_personalizada)
                 else:
                     img = generar_imagen_ia(section, content, descripcion, modelo_imagen, None)

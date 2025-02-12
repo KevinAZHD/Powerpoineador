@@ -110,6 +110,9 @@ class LogWindow(QWidget):
         # Contadores para el progreso
         self.total_images = 0
         self.current_image = 0
+        
+        # Iniciar el contador de imágenes totales
+        self.total_images = 0
     
     # Método para centrar la ventana en la pantalla
     def center_window(self):
@@ -152,11 +155,17 @@ class LogWindow(QWidget):
             self.log_text.verticalScrollBar().maximum()
         )
         
-        # Detectar cuando comienza la generación de imágenes
+        # Detectar cuando comienza la generación de imágenes y obtener el total
         if "Generando imagen 1/" in text:
             self.loading_timer.stop()
             self.progress_bar.setRange(0, 100)
             self.progress_bar.setValue(0)
+            # Extraer el número total de imágenes
+            try:
+                total_images = int(text.split('/')[-1].split()[0])
+                self.total_images = total_images
+            except:
+                self.total_images = 1
     
     # Método llamado cuando termina la generación
     def generation_finished(self):
@@ -168,6 +177,10 @@ class LogWindow(QWidget):
         
         filename = self.worker.filename if self.worker else None
         auto_open = self.worker.auto_open if self.worker else False
+        
+        # Registrar los costos solo cuando la presentación se ha generado exitosamente
+        if hasattr(self.parent, 'widget') and self.parent.widget:
+            self.parent.widget.registrar_costos_finales()
         
         # Limpieza del worker
         if self.worker:

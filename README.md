@@ -25,7 +25,9 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 ### Modelos de Texto:
 
 - **deepseek-r1**: Nuevo modelo chino razonador.
-- **meta-llama-3.1-405b-instruct**: Modelo con censura de contenido.
+- **claude-3-5-sonnet**: El mejor modelo inteligente.
+- **claude-3-5-haiku**: Modelo lite y económico.
+- **meta-llama-3.1-405b-instruct**: Modelo rápido con censura de contenido.
 - **dolphin-2.9-llama3-70b-gguf**: Modelo sin censura de contenido.
 - **grok-2-1212**: Modelo experimental de xAI.
 
@@ -34,6 +36,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **flux-schnell**: Modelo rápido con buena calidad.
 - **imagen-3**: Modelo de Google con la mejor calidad de imagen.
 - **imagen-3-fast**: Modelo de Google rápido y económico.
+- **sana**: Modelo de NVIDIA equilibrado entre calidad y velocidad.
 - **photomaker**: Modelo especializado en caras (requiere imagen de referencia).
 - **fluxpulid**: Modelo también especializado en caras equilibrado entre calidad y velocidad (requiere imagen de referencia).
 - **hyper-flux-8step**: Modelo muy rápido y económico.

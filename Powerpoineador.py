@@ -3,9 +3,11 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon, QPixmap, QAction
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
-    QLabel, QMessageBox, QCheckBox, QMainWindow, QLineEdit, QFileDialog, QMenuBar)
+    QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QDialog)
 from Ventana_progreso import LogWindow
 from Version_checker import obtener_url_descarga, obtener_ultima_version, obtener_version_actual
+from apis.Replicate import ReplicateAPIKeyWindow
+from apis.xAI import GrokAPIKeyWindow
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -58,171 +60,6 @@ def mostrar_error_conexion():
     msg.move(msg_pos)
     
     return msg.exec()
-
-# Clase para la ventana de configuración de la clave API de Replicate
-class APIKeyWindow(QWidget):
-    def __init__(self, parent=None):
-        super().__init__()
-        self.parent = parent
-        self.setWindowTitle('Configuración API Replicate')
-        self.setFixedSize(400, 300)
-        self.setWindowIcon(QIcon(resource_path("iconos/replicate.png")))
-        self.setWindowModality(Qt.ApplicationModal)
-        
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.clear_status)
-        
-        if self.parent:
-            parent_geometry = self.parent.geometry()
-            x = parent_geometry.x() + (parent_geometry.width() - self.width()) // 2
-            y = parent_geometry.y() + (parent_geometry.height() - self.height()) // 2 - (parent_geometry.height() // 8)
-            self.move(x, y)
-        
-        layout = QVBoxLayout()
-        
-        logo_label = QLabel()
-        pixmap = QPixmap(resource_path("iconos/replicate.png"))
-        if not pixmap.isNull():
-            scaled_pixmap = pixmap.scaled(150, 150, Qt.KeepAspectRatio)
-            logo_label.setPixmap(scaled_pixmap)
-            layout.addWidget(logo_label, alignment=Qt.AlignCenter)
-        
-        layout.addWidget(QLabel('Escriba su clave API de Replicate:'))
-        self.api_input = QLineEdit()
-        self.api_input.setMinimumWidth(300)
-        self.api_input.textChanged.connect(self.clear_status)
-        if parent and parent.api_key:
-            self.api_input.setText(parent.api_key)
-        
-        self.status_label = QLabel('')
-        self.status_label.setStyleSheet("color: red; qproperty-alignment: AlignCenter;")
-        
-        validate_btn = QPushButton('Validar y guardar')
-        validate_btn.clicked.connect(self.validate_api)
-        layout.addWidget(self.api_input)
-        layout.addWidget(self.status_label)
-        layout.addWidget(validate_btn)
-        self.setLayout(layout)
-
-    # Función para limpiar el estado de la ventana
-    def clear_status(self):
-        if hasattr(self, 'status_label'):
-            self.status_label.clear()
-            self.timer.stop()
-    # Función para mostrar un mensaje de estado
-    def show_status(self, message):
-        self.status_label.setText(message)
-        self.timer.start(2000)
-
-    # Función para validar la clave API de Replicate
-    def validate_api(self):
-        api_key = self.api_input.text().strip()
-        if not api_key:
-            self.show_status('No puede dejar el campo vacío')
-            return
-        try:
-            headers = {"Authorization": f"Token {api_key}"}
-            response = requests.get("https://api.replicate.com/v1/models", headers=headers)
-            if response.status_code == 200:
-                if self.parent:
-                    self.parent.set_api_key(api_key)
-                self.close()
-            else:
-                self.show_status('Clave inválida')
-        except Exception as e:
-            self.show_status(f'Error de conexión: {str(e)}')
-
-# Clase para la ventana de configuración de la clave API de xAI
-class GrokAPIKeyWindow(QWidget):
-    def __init__(self, parent=None):
-        super().__init__()
-        self.parent = parent
-        self.setWindowTitle('Configuración API xAI')
-        self.setFixedSize(650, 300)
-        self.setWindowIcon(QIcon(resource_path("iconos/xai.jpg")))
-        self.setWindowModality(Qt.ApplicationModal)
-        
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.clear_status)
-        
-        if self.parent:
-            parent_geometry = self.parent.geometry()
-            x = parent_geometry.x() + (parent_geometry.width() - self.width()) // 2
-            y = parent_geometry.y() + (parent_geometry.height() - self.height()) // 2 - (parent_geometry.height() // 8)
-            self.move(x, y)
-        
-        layout = QVBoxLayout()
-        
-        logo_label = QLabel()
-        pixmap = QPixmap(resource_path("iconos/xai.jpg"))
-        if not pixmap.isNull():
-            scaled_pixmap = pixmap.scaled(150, 150, Qt.KeepAspectRatio)
-            logo_label.setPixmap(scaled_pixmap)
-            layout.addWidget(logo_label, alignment=Qt.AlignCenter)
-        
-        layout.addWidget(QLabel('Escriba su clave API de xAI:'))
-        self.api_input = QLineEdit()
-        self.api_input.setMinimumWidth(300)
-        self.api_input.textChanged.connect(self.clear_status)
-        if parent and parent.grok_api_key:
-            self.api_input.setText(parent.grok_api_key)
-        
-        self.status_label = QLabel('')
-        self.status_label.setStyleSheet("color: red; qproperty-alignment: AlignCenter;")
-        
-        validate_btn = QPushButton('Validar y guardar')
-        validate_btn.clicked.connect(self.validate_api)
-        layout.addWidget(self.api_input)
-        layout.addWidget(self.status_label)
-        layout.addWidget(validate_btn)
-        self.setLayout(layout)
-
-    # Función para limpiar el estado de la ventana
-    def clear_status(self):
-        if hasattr(self, 'status_label'):
-            self.status_label.clear()
-            self.timer.stop()
-
-    # Función para mostrar un mensaje de estado
-    def show_status(self, message):
-        self.status_label.setText(message)
-        self.timer.start(2000)
-
-    # Función para validar la clave API de xAI
-    def validate_api(self):
-        api_key = self.api_input.text().strip()
-        if not api_key:
-            self.show_status('No puede dejar el campo vacío')
-            return
-        
-        if not api_key.startswith("xai-"):
-            self.show_status('Clave inválida')
-            return
-        
-        try:
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            }
-            response = requests.get(
-                "https://api.x.ai/v1/models",
-                headers=headers,
-                timeout=10
-            )
-            
-            if response.status_code in [200, 403]:
-                if self.parent:
-                    self.parent.set_grok_api_key(api_key)
-                self.close()
-            else:
-                self.show_status('Clave inválida')
-                
-        except requests.exceptions.Timeout:
-            self.show_status('Error de conexión: Timeout')
-        except requests.exceptions.ConnectionError:
-            self.show_status('Error de conexión: No se pudo conectar al servidor')
-        except Exception as e:
-            self.show_status(f'Error de conexión: {str(e)}')
 
 # Clase para la ventana principal de la aplicación
 class MainWindow(QMainWindow):
@@ -423,10 +260,24 @@ class MainWindow(QMainWindow):
         menubar.setCornerWidget(left_menubar, Qt.TopLeftCorner)
 
         right_menubar = QMenuBar(menubar)
+
+        balance_action = QAction(QIcon(resource_path("iconos/coin.png")), '', self)
+        balance_action.setStatusTip('Consultar costos totales aproximados acumulados')
+        balance_action.triggered.connect(self.calcular_costos_totales)
+        balance_action.setEnabled(bool(self.api_key or self.grok_api_key))
+        right_menubar.addAction(balance_action)
+        self.balance_action = balance_action
+
+        donate_action = QAction(QIcon(resource_path("iconos/paypal.png")), '', self)
+        donate_action.setStatusTip('Apoyar el desarrollo con una donación')
+        donate_action.triggered.connect(lambda: webbrowser.open('https://paypal.me/KevinAZHD'))
+        right_menubar.addAction(donate_action)
+        
         github_action = QAction(QIcon(resource_path("iconos/github.png")), '', self)
+        github_action.setStatusTip('Visitar el repositorio')
         github_action.triggered.connect(lambda: webbrowser.open('https://github.com/KevinAZHD/Powerpoineador'))
         right_menubar.addAction(github_action)
-        
+
         menubar.setCornerWidget(right_menubar, Qt.TopRightCorner)
 
     # Función para establecer la clave API de Replicate
@@ -438,7 +289,7 @@ class MainWindow(QMainWindow):
 
     # Función para mostrar la ventana de configuración de la clave API de Replicate
     def show_api_dialog(self):
-        self.api_window = APIKeyWindow(self)
+        self.api_window = ReplicateAPIKeyWindow(self)
         self.api_window.show()
 
     # Función para borrar la clave API de Replicate
@@ -469,10 +320,22 @@ class MainWindow(QMainWindow):
             
             if not self.grok_api_key:
                 self.disable_functionality()
+                try:
+                    if os.path.exists(CONFIG_FILE):
+                        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                            config = json.load(f)
+                        if 'costos_totales' in config:
+                            del config['costos_totales']
+                        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                            json.dump(config, f, ensure_ascii=False, indent=4)
+                except Exception as e:
+                    print(f"Error al borrar costos totales: {str(e)}")
             else:
                 self.delete_action.setEnabled(False)
                 if self.widget:
                     self.widget.populate_fields()
+            
+            self.balance_action.setEnabled(bool(self.grok_api_key))
             
             success_msg = QMessageBox()
             success_msg.setWindowTitle('Clave API borrada')
@@ -521,10 +384,23 @@ class MainWindow(QMainWindow):
             
             if not self.api_key:
                 self.disable_functionality()
+                # Borrar los costos totales cuando no hay ninguna API
+                try:
+                    if os.path.exists(CONFIG_FILE):
+                        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                            config = json.load(f)
+                        if 'costos_totales' in config:
+                            del config['costos_totales']
+                        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                            json.dump(config, f, ensure_ascii=False, indent=4)
+                except Exception as e:
+                    print(f"Error al borrar costos totales: {str(e)}")
             else:
                 self.grok_delete_action.setEnabled(False)
                 if self.widget:
                     self.widget.populate_fields()
+            
+            self.balance_action.setEnabled(bool(self.api_key))
             
             success_msg = QMessageBox()
             success_msg.setWindowTitle('Clave API borrada')
@@ -545,7 +421,7 @@ class MainWindow(QMainWindow):
         self.widget = PowerpoineatorWidget()
         self.setCentralWidget(self.widget)
         self.setWindowTitle('Powerpoineador')
-        self.setMinimumSize(735, 400)
+        self.setMinimumSize(833, 400)
         self.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
         
         screen = QApplication.primaryScreen().geometry()
@@ -555,6 +431,20 @@ class MainWindow(QMainWindow):
 
     # Función para deshabilitar la funcionalidad de la aplicación
     def disable_functionality(self):
+        if hasattr(self, 'balance_action'):
+            self.balance_action.setEnabled(False)
+            # Borrar los costos totales cuando se deshabilita
+            try:
+                if os.path.exists(CONFIG_FILE):
+                    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                        config = json.load(f)
+                    if 'costos_totales' in config:
+                        del config['costos_totales']
+                    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(config, f, ensure_ascii=False, indent=4)
+            except Exception as e:
+                print(f"Error al borrar costos totales: {str(e)}")
+        
         if self.widget:
             self.widget.generar_btn.setEnabled(False)
             self.widget.descripcion_text.setEnabled(False)
@@ -563,8 +453,8 @@ class MainWindow(QMainWindow):
             self.widget.auto_open_checkbox.setEnabled(False)
             self.widget.cargar_imagen_btn.setEnabled(False)
             self.widget.ver_imagen_btn.setEnabled(False)
-            self.widget.imagen_combo.clear()
-            self.widget.texto_combo.clear()
+            self.widget.imagen_combo.setEnabled(False)
+            self.widget.texto_combo.setEnabled(False)
             
             self.widget.descripcion_text.clear()
             self.widget.descripcion_text.setPlaceholderText("Configura una clave API de Replicate o xAI para poder utilizar el programa")
@@ -580,6 +470,9 @@ class MainWindow(QMainWindow):
 
     # Función para habilitar la funcionalidad de la aplicación
     def enable_functionality(self):
+        if hasattr(self, 'balance_action'):
+            self.balance_action.setEnabled(True)
+        
         if self.widget:
             api_available = bool(self.api_key or self.grok_api_key)
             
@@ -739,6 +632,151 @@ class MainWindow(QMainWindow):
             print(f"Error al cargar la posición de la ventana: {str(e)}")
         return False
 
+    def calcular_costos_totales(self):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            
+            if 'costos_totales' not in config:
+                config['costos_totales'] = {
+                    'texto': 0.0,
+                    'imagen': 0.0
+                }
+            
+            total = config['costos_totales']['texto'] + config['costos_totales']['imagen']
+            
+            dialog = QDialog(self)
+            dialog.setWindowTitle('Saldo total')
+            dialog.setWindowIcon(QIcon(resource_path("iconos/coin.png")))
+            dialog.setFixedSize(400, 300)
+            dialog.setWindowModality(Qt.ApplicationModal)
+            
+            layout = QVBoxLayout()
+            layout.setSpacing(15)
+            
+            # Icono superior
+            icon_label = QLabel()
+            pixmap = QPixmap(resource_path("iconos/coin.png"))
+            if not pixmap.isNull():
+                scaled_pixmap = pixmap.scaled(64, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                icon_label.setPixmap(scaled_pixmap)
+                layout.addWidget(icon_label, alignment=Qt.AlignCenter)
+            
+            # Título
+            titulo = QLabel('Costos totales aproximados acumulados')
+            font_titulo = titulo.font()
+            font_titulo.setPointSize(11)
+            font_titulo.setBold(True)
+            titulo.setFont(font_titulo)
+            titulo.setAlignment(Qt.AlignCenter)
+            layout.addWidget(titulo)
+            
+            # Costos de texto
+            label_texto = QLabel(f'Texto: ${config["costos_totales"]["texto"]:.4f}')
+            font_normal = label_texto.font()
+            font_normal.setPointSize(10)
+            label_texto.setFont(font_normal)
+            label_texto.setAlignment(Qt.AlignCenter)
+            layout.addWidget(label_texto)
+            
+            # Costos de imágenes
+            label_imagenes = QLabel(f'Imágenes: ${config["costos_totales"]["imagen"]:.4f}')
+            label_imagenes.setFont(font_normal)
+            label_imagenes.setAlignment(Qt.AlignCenter)
+            layout.addWidget(label_imagenes)
+            
+            # Total
+            label_total = QLabel(f'Total: ${total:.4f}')
+            font_total = label_total.font()
+            font_total.setPointSize(11)
+            font_total.setBold(True)
+            label_total.setFont(font_total)
+            label_total.setAlignment(Qt.AlignCenter)
+            layout.addWidget(label_total)
+            
+            # Botones
+            btn_layout = QHBoxLayout()
+            
+            # Botón Aceptar
+            btn_ok = QPushButton('Aceptar')
+            btn_ok.setFixedWidth(100)
+            btn_ok.setDefault(True)  # Hacer que este botón sea el predeterminado
+            btn_ok.clicked.connect(dialog.accept)
+
+            # Botón Reiniciar
+            btn_reset = QPushButton('Reiniciar costes')
+            btn_reset.setFixedWidth(100)
+            btn_reset.clicked.connect(lambda: self.confirmar_reinicio_costes(dialog))
+            
+            btn_layout.addStretch()
+            btn_layout.addWidget(btn_reset)
+            btn_layout.addWidget(btn_ok)
+            btn_layout.addStretch()
+            
+            layout.addLayout(btn_layout)
+            dialog.setLayout(layout)
+            
+            # Centrado mejorado
+            parent_geometry = self.geometry()
+            x = parent_geometry.x() + (parent_geometry.width() - dialog.width()) // 2
+            y = parent_geometry.y() + (parent_geometry.height() - dialog.height()) // 2 - (parent_geometry.height() // 8)
+            dialog.move(x, y)
+            
+            dialog.exec()
+            
+        except Exception as e:
+            print(f"Error al calcular costos totales: {str(e)}")
+
+    def confirmar_reinicio_costes(self, parent_dialog):
+        msg = QMessageBox(parent_dialog)
+        msg.setWindowTitle('Confirmar reinicio')
+        msg.setText('¿Está seguro de que desea reiniciar los costes a cero?')
+        msg.setIcon(QMessageBox.Question)
+        msg.setWindowIcon(QIcon(resource_path("iconos/coin.png")))
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.No)
+        msg.button(QMessageBox.Yes).setText('Sí')
+        msg.button(QMessageBox.No).setText('No')
+        
+        QApplication.beep()
+        
+        msg.show()
+        msg.hide()
+        msg_pos = parent_dialog.geometry().center() - msg.rect().center()
+        msg.move(msg_pos)
+        
+        if msg.exec() == QMessageBox.Yes:
+            try:
+                if os.path.exists(CONFIG_FILE):
+                    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                        config = json.load(f)
+                    config['costos_totales'] = {
+                        'texto': 0.0,
+                        'imagen': 0.0
+                    }
+                    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(config, f, ensure_ascii=False, indent=4)
+                    
+                parent_dialog.accept()
+                
+                success_msg = QMessageBox()
+                success_msg.setWindowTitle('Costes reiniciados')
+                success_msg.setText('Los costes han sido reiniciados correctamente.')
+                success_msg.setIcon(QMessageBox.Information)
+                success_msg.setWindowIcon(QIcon(resource_path("iconos/coin.png")))
+                
+                success_msg.show()
+                success_msg.hide()
+                
+                success_pos = self.geometry().center() - success_msg.rect().center()
+                success_msg.move(success_pos)
+                
+                success_msg.exec()
+                
+            except Exception as e:
+                print(f"Error al reiniciar los costes: {str(e)}")
+
 # Clase para la ventana principal de la aplicación
 class PowerpoineatorWidget(QWidget):
     def __init__(self):
@@ -811,7 +849,15 @@ class PowerpoineatorWidget(QWidget):
         
         main_layout.addLayout(contador_checkbox_layout)
 
-        self.generar_btn = QPushButton('Generar PowerPoint')
+        self.generar_btn = QPushButton('POWERPOINEAR')
+        self.generar_btn.setMinimumWidth(200)
+        self.generar_btn.setFixedHeight(40)
+
+        font = self.generar_btn.font()
+        font.setPointSize(13)
+        font.setBold(True)
+        self.generar_btn.setFont(font)
+
         self.generar_btn.clicked.connect(self.generar_presentacion_event)
         main_layout.addWidget(self.generar_btn)
 
@@ -826,20 +872,23 @@ class PowerpoineatorWidget(QWidget):
         self.imagen_combo.clear()
         
         if hasattr(self.parent(), 'api_key') and self.parent().api_key:
-            self.texto_combo.addItem(QIcon(resource_path("iconos/deepseek.png")), 'deepseek-r1 (razonador)')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct (con censura)')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf (sin censura)')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/deepseek.png")), 'deepseek-r1 (razonador) [$0.007]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-sonnet (inteligente) [$0.0131]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-haiku (económico) [$0.0035]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct (con censura) [$0.0067]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf (sin censura) [$0.0086]')
             
             self.imagen_combo.setEnabled(True)
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell (rápida)')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 (mejor calidad)')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast (barata y rápida)')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker (con caras mejorado)')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid (con caras)')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step (rápida y muy barata)')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step (rápida y barata)')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step (barata sin censura)')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/dgmtnzflux.png")), 'dgmtnzflux (meme)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell (rápida) [$0.003]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 (mejor calidad) [$0.05]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast (barata y rápida) [$0.025]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana (calidad-precio) [$0.0042]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker (con caras mejorado) [$0.0069]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid (con caras) [$0.037]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step (rápida y muy barata) [$0.0063]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step (rápida y barata) [$0.0667]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step (barata sin censura) [$0.0014]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/dgmtnzflux.png")), 'dgmtnzflux (meme) [$0.03]')
         
         if hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key and self.parent().validate_grok_api():
             self.texto_combo.addItem(QIcon(resource_path("iconos/grok.png")), 'grok-2-1212 (experimental)')
@@ -879,7 +928,7 @@ class PowerpoineatorWidget(QWidget):
         descripcion = self.descripcion_text.toPlainText()
         auto_open = self.auto_open_checkbox.isChecked()
 
-        if modelo_imagen in ['photomaker (con caras mejorado)','flux-pulid (con caras)'] and not self.imagen_personalizada:
+        if modelo_imagen in ['photomaker (con caras mejorado) [$0.0069]', 'flux-pulid (con caras) [$0.037]'] and not self.imagen_personalizada:
             QMessageBox.warning(self, 'Error', 'Debe cargar una imagen para usar este modelo')
             return
 
@@ -969,7 +1018,7 @@ class PowerpoineatorWidget(QWidget):
 
     # Función para manejar el cambio en la selección de modelos de imagen
     def on_imagen_combo_changed(self, texto):
-        if texto in ['flux-pulid (con caras)', 'photomaker (con caras mejorado)']:
+        if texto in ['flux-pulid (con caras) [$0.037]', 'photomaker (con caras mejorado) [$0.0069]']:
             self.cargar_imagen_btn.show()
             self.ver_imagen_btn.show()
             self.cargar_imagen_btn.setEnabled(True)
@@ -1049,7 +1098,7 @@ class PowerpoineatorWidget(QWidget):
                         index = self.imagen_combo.findText(imagen_modelo)
                         if index >= 0:
                             self.imagen_combo.setCurrentIndex(index)
-                            if imagen_modelo in ['flux-pulid (con caras)', 'photomaker (con caras mejorado)']:
+                            if imagen_modelo in ['flux-pulid (con caras) [$0.037]', 'photomaker (con caras mejorado) [$0.0069]']:
                                 self.cargar_imagen_btn.show()
                                 self.ver_imagen_btn.show()
                                 self.cargar_imagen_btn.setEnabled(True)
@@ -1092,6 +1141,49 @@ class PowerpoineatorWidget(QWidget):
                     self.auto_open_checkbox.setChecked(auto_open)
         except Exception as e:
             print(f"Error al cargar el estado de auto-abrir: {str(e)}")
+
+    def extraer_precio_modelo(self, texto_modelo):
+        try:
+            inicio = texto_modelo.find('[$')
+            fin = texto_modelo.find(']')
+            if inicio != -1 and fin != -1:
+                precio = float(texto_modelo[inicio+2:fin])
+                return precio
+            return 0.0
+        except:
+            return 0.0
+
+    def registrar_costos(self, modelo_texto=None, modelo_imagen=None, num_imagenes=1):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            
+            if 'costos_totales' not in config:
+                config['costos_totales'] = {
+                    'texto': 0.0,
+                    'imagen': 0.0
+                }
+            
+            if modelo_texto:
+                precio_texto = self.extraer_precio_modelo(modelo_texto)
+                config['costos_totales']['texto'] += precio_texto
+            
+            if modelo_imagen:
+                precio_imagen = self.extraer_precio_modelo(modelo_imagen)
+                if hasattr(self, 'log_window') and self.log_window:
+                    num_imagenes = self.log_window.total_images
+                config['costos_totales']['imagen'] += precio_imagen * num_imagenes
+            
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al registrar costos: {str(e)}")
+
+    def registrar_costos_finales(self):
+        self.registrar_costos(modelo_texto=self.texto_combo.currentText())
+        self.registrar_costos(modelo_imagen=self.imagen_combo.currentText(), num_imagenes=1)
 
 # Función principal para iniciar la aplicación
 if __name__ == "__main__":
