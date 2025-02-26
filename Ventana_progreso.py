@@ -1,7 +1,8 @@
 import sys, os
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QProgressBar, QMessageBox, QApplication
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QProgressBar, QMessageBox, QApplication, QHBoxLayout, QGridLayout
 from PySide6.QtCore import Qt, Signal, QObject, QThread, QPropertyAnimation, QEasingCurve, QTimer
 from PySide6.QtGui import QIcon
+from Vista_previa import VentanaVistaPrevia
 
 # Función para manejar rutas de recursos tanto en modo desarrollo como en modo ejecutable
 def resource_path(relative_path):
@@ -27,6 +28,8 @@ class LogSignals(QObject):
     closed = Signal()
     # Señal para actualizar la barra de progreso
     update_progress = Signal(int, int)
+    # Señal para agregar una nueva diapositiva
+    nueva_diapositiva = Signal(str, str, str)
 
 # Clase worker para ejecutar la generación en un hilo separado
 class GenerationWorker(QThread):
@@ -41,6 +44,7 @@ class GenerationWorker(QThread):
         self.filename = filename
         self.signals = signals
 
+    # Función para ejecutar la generación de la presentación
     def run(self):
         try:
             # Importa e inicia la generación de la presentación
@@ -66,31 +70,47 @@ class LogWindow(QWidget):
         # Configuración inicial de la ventana
         self.setWindowTitle('Generando PowerPoint...')
         self.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
-        self.setMinimumSize(600, 400)
+        self.setMinimumSize(1200, 600)
         self.setWindowModality(Qt.ApplicationModal)
         self.generation_completed = False
         
-        # Creación del layout principal
-        layout = QVBoxLayout()
+        # Crear layout de cuadrícula para mejor alineación
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(10)
+        
+        # Crear widget para el panel izquierdo con el log
+        left_widget = QWidget()
+        left_layout = QVBoxLayout(left_widget)
+        left_layout.setContentsMargins(0, 0, 0, 0)
         
         # Área de texto para el log
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        layout.addWidget(self.log_text)
+        left_layout.addWidget(self.log_text)
         
         # Barra de progreso
         self.progress_bar = QProgressBar()
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setRange(0, 0)
-        layout.addWidget(self.progress_bar)
+        left_layout.addWidget(self.progress_bar)
         
         # Configuración del timer para la animación inicial
         self.loading_timer = QTimer()
         self.loading_timer.timeout.connect(self.update_loading_animation)
         self.loading_timer.start(50)
         
-        # Asignar el layout a la ventana
-        self.setLayout(layout)
+        # Agregar panel izquierdo y vista previa al grid
+        grid_layout.addWidget(left_widget, 0, 0)
+        
+        # Crear vista previa
+        self.vista_previa = VentanaVistaPrevia()
+        grid_layout.addWidget(self.vista_previa, 0, 1)
+        
+        # Establecer proporciones de columna
+        grid_layout.setColumnStretch(0, 1)
+        grid_layout.setColumnStretch(1, 1)
+        
+        self.setLayout(grid_layout)
         
         # Configuración de señales
         self.signals = LogSignals()
@@ -99,12 +119,13 @@ class LogWindow(QWidget):
         self.signals.error.connect(self.show_error)
         self.signals.closed.connect(self.on_window_closed)
         self.signals.update_progress.connect(self.update_progress)
+        self.signals.nueva_diapositiva.connect(self.agregar_diapositiva)
         
         # Variables de control
         self.closed_by_user = False
         self.worker = None
         
-        # Centrar la ventana con respecto al padre
+        # Centrar la ventana en la pantalla
         self.center_window()
         
         # Contadores para el progreso
@@ -114,32 +135,28 @@ class LogWindow(QWidget):
         # Iniciar el contador de imágenes totales
         self.total_images = 0
     
-    # Método para centrar la ventana en la pantalla
+    # Función para centrar la ventana en la pantalla independientemente del padre
     def center_window(self):
-        if self.parent:
-            # Asegurar que la ventana tenga un tamaño antes de centrarla
-            self.adjustSize()
-            
-            # Obtener la geometría de la ventana principal
-            parent_geometry = self.parent.geometry()
-            
-            # Calcular el centro de la ventana principal
-            center_x = parent_geometry.x() + parent_geometry.width() // 2
-            center_y = parent_geometry.y() + parent_geometry.height() // 2
-            
-            # Mover la ventana de log al centro, ajustando por su tamaño
-            self.move(
-                center_x - (self.width() // 2),
-                center_y - (self.height() // 2)
-            )
+        # Calcular el tamaño de la ventana
+        self.adjustSize()
+        
+        # Obtener la geometría de la pantalla principal
+        screen = QApplication.primaryScreen().availableGeometry()
+        
+        # Calcular las coordenadas para centrar la ventana
+        x = screen.center().x() - self.width() // 2
+        y = screen.center().y() - self.height() // 2
+        
+        # Mover la ventana al centro de la pantalla
+        self.move(x, y)
 
-    # Método para mostrar errores
+    # Función para mostrar errores
     def show_error(self, error_msg):
         from PySide6.QtWidgets import QMessageBox
         QMessageBox.critical(self, 'Error', f'Error al generar la presentación: {error_msg}')
         self.close()
 
-    # Método para iniciar la generación
+    # Función para iniciar la generación
     def start_generation(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename):
         self.worker = GenerationWorker(
             modelo_texto, modelo_imagen, descripcion, 
@@ -148,7 +165,7 @@ class LogWindow(QWidget):
         )
         self.worker.start()
     
-    # Método para actualizar el log
+    # Función para actualizar el log
     def update_log(self, text):
         self.log_text.append(text)
         self.log_text.verticalScrollBar().setValue(
@@ -167,7 +184,7 @@ class LogWindow(QWidget):
             except:
                 self.total_images = 1
     
-    # Método llamado cuando termina la generación
+    # Función llamada cuando termina la generación
     def generation_finished(self):
         self.loading_timer.stop()
         self.progress_bar.setRange(0, 100)
@@ -220,7 +237,7 @@ class LogWindow(QWidget):
             print(f"Error en generation_finished: {str(e)}")
             QMessageBox.critical(self, 'Error', f'Error al finalizar la generación: {str(e)}')
     
-    # Método para cancelar la generación
+    # Función para cancelar la generación
     def cancel_generation(self):
         self.loading_timer.stop()
         try:
@@ -244,7 +261,7 @@ class LogWindow(QWidget):
         finally:
             self.close()
 
-    # Método llamado al cerrar la ventana
+    # Función llamada al cerrar la ventana
     def closeEvent(self, event):
         if self.worker and self.worker.isRunning() and not self.generation_completed:
             # Mostrar diálogo de confirmación
@@ -282,13 +299,13 @@ class LogWindow(QWidget):
             self.signals.closed.emit()
             event.accept()
             
-    # Método llamado cuando se cierra la ventana
+    # Función llamada cuando se cierra la ventana
     def on_window_closed(self):
         if hasattr(self, 'parent') and self.parent:
             if hasattr(self.parent, 'widget') and self.parent.widget:
                 self.parent.widget.log_window = None
     
-    # Método para actualizar la barra de progreso
+    # Función para actualizar la barra de progreso
     def update_progress(self, current, total):
         # Detener la animación de carga inicial
         self.loading_timer.stop()
@@ -305,6 +322,11 @@ class LogWindow(QWidget):
         self.progress_animation.setEasingCurve(QEasingCurve.InOutQuad)
         self.progress_animation.start()
 
+    # Función para actualizar la animación de carga
     def update_loading_animation(self):
         if self.progress_bar.maximum() == 0:
             self.progress_bar.setValue(0)
+
+    # Función para agregar una nueva diapositiva a la vista previa
+    def agregar_diapositiva(self, imagen_path, titulo, contenido):
+        self.vista_previa.agregar_diapositiva(imagen_path, titulo, contenido)

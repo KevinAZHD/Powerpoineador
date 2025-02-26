@@ -24,11 +24,12 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 
 ### Modelos de Texto:
 
-- **deepseek-r1**: Nuevo modelo chino razonador.
-- **claude-3-5-sonnet**: El mejor modelo inteligente.
-- **claude-3-5-haiku**: Modelo lite y económico.
-- **meta-llama-3.1-405b-instruct**: Modelo rápido con censura de contenido.
-- **dolphin-2.9-llama3-70b-gguf**: Modelo sin censura de contenido.
+- **deepseek-r1** - Modelo chino optimizado para razonamiento y estructuración lógica.
+- **claude-3.7-sonnet** - Nuevo modelo de Anthropic, más inteligente y con mejor capacidad de razonamiento.
+- **claude-3.5-sonnet** - Modelo equilibrado de Anthropic con buena capacidad de comprensión.
+- **claude-3.5-haiku** - Versión económica de Claude, excelente relación calidad-precio.
+- **meta-llama-3.1-405b-instruct** - Modelo de Meta con controles de contenido.
+- **dolphin-2.9-llama3-70b-gguf** - Modelo sin censura para contenido más flexible.
 - **grok-2-1212**: Modelo experimental de xAI.
 
 ### Modelos de Imagen:

@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon, QPixmap, QAction
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
-    QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QDialog)
+    QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar)
 from Ventana_progreso import LogWindow
 from Version_checker import obtener_url_descarga, obtener_ultima_version, obtener_version_actual
 from apis.Replicate import ReplicateAPIKeyWindow
@@ -632,7 +632,93 @@ class MainWindow(QMainWindow):
             print(f"Error al cargar la posición de la ventana: {str(e)}")
         return False
 
+    # Función para calcular los costos totales
     def calcular_costos_totales(self):
+        self.balance_window = BalanceWindow(self)
+        self.balance_window.show()
+
+# Clase para la ventana de saldo total
+class BalanceWindow(QWidget):
+    def __init__(self, parent=None):
+        super().__init__()
+        self.parent = parent
+        self.setWindowTitle('Saldo total')
+        self.setFixedSize(400, 300)
+        self.setWindowIcon(QIcon(resource_path("iconos/coin.png")))
+        self.setWindowModality(Qt.ApplicationModal)
+        
+        if self.parent:
+            parent_geometry = self.parent.geometry()
+            x = parent_geometry.x() + (parent_geometry.width() - self.width()) // 2
+            y = parent_geometry.y() + (parent_geometry.height() - self.height()) // 2 - (parent_geometry.height() // 8)
+            self.move(x, y)
+        
+        self.setup_ui()
+
+    # Función para configurar la interfaz de usuario
+    def setup_ui(self):
+        layout = QVBoxLayout()
+        layout.setSpacing(15)
+        
+        icon_label = QLabel()
+        pixmap = QPixmap(resource_path("iconos/coin.png"))
+        if not pixmap.isNull():
+            scaled_pixmap = pixmap.scaled(64, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            icon_label.setPixmap(scaled_pixmap)
+            layout.addWidget(icon_label, alignment=Qt.AlignCenter)
+        
+        titulo = QLabel('Costos totales aproximados acumulados')
+        font_titulo = titulo.font()
+        font_titulo.setPointSize(11)
+        font_titulo.setBold(True)
+        titulo.setFont(font_titulo)
+        titulo.setAlignment(Qt.AlignCenter)
+        layout.addWidget(titulo)
+        
+        config = self.load_costs()
+        
+        label_texto = QLabel(f'Texto: ${config["costos_totales"]["texto"]:.4f}')
+        font_normal = label_texto.font()
+        font_normal.setPointSize(10)
+        label_texto.setFont(font_normal)
+        label_texto.setAlignment(Qt.AlignCenter)
+        layout.addWidget(label_texto)
+        
+        label_imagenes = QLabel(f'Imágenes: ${config["costos_totales"]["imagen"]:.4f}')
+        label_imagenes.setFont(font_normal)
+        label_imagenes.setAlignment(Qt.AlignCenter)
+        layout.addWidget(label_imagenes)
+        
+        total = config["costos_totales"]["texto"] + config["costos_totales"]["imagen"]
+        label_total = QLabel(f'Total: ${total:.4f}')
+        font_total = label_total.font()
+        font_total.setPointSize(11)
+        font_total.setBold(True)
+        label_total.setFont(font_total)
+        label_total.setAlignment(Qt.AlignCenter)
+        layout.addWidget(label_total)
+        
+        btn_layout = QHBoxLayout()
+        
+        btn_ok = QPushButton('Aceptar')
+        btn_ok.setFixedWidth(100)
+        btn_ok.setDefault(True)
+        btn_ok.clicked.connect(self.close)
+        
+        btn_reset = QPushButton('Reiniciar costes')
+        btn_reset.setFixedWidth(100)
+        btn_reset.clicked.connect(self.confirmar_reinicio_costes)
+        
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_reset)
+        btn_layout.addWidget(btn_ok)
+        btn_layout.addStretch()
+        
+        layout.addLayout(btn_layout)
+        self.setLayout(layout)
+
+    # Función para cargar los costos
+    def load_costs(self):
         try:
             if os.path.exists(CONFIG_FILE):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
@@ -643,93 +729,14 @@ class MainWindow(QMainWindow):
                     'texto': 0.0,
                     'imagen': 0.0
                 }
-            
-            total = config['costos_totales']['texto'] + config['costos_totales']['imagen']
-            
-            dialog = QDialog(self)
-            dialog.setWindowTitle('Saldo total')
-            dialog.setWindowIcon(QIcon(resource_path("iconos/coin.png")))
-            dialog.setFixedSize(400, 300)
-            dialog.setWindowModality(Qt.ApplicationModal)
-            
-            layout = QVBoxLayout()
-            layout.setSpacing(15)
-            
-            # Icono superior
-            icon_label = QLabel()
-            pixmap = QPixmap(resource_path("iconos/coin.png"))
-            if not pixmap.isNull():
-                scaled_pixmap = pixmap.scaled(64, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                icon_label.setPixmap(scaled_pixmap)
-                layout.addWidget(icon_label, alignment=Qt.AlignCenter)
-            
-            # Título
-            titulo = QLabel('Costos totales aproximados acumulados')
-            font_titulo = titulo.font()
-            font_titulo.setPointSize(11)
-            font_titulo.setBold(True)
-            titulo.setFont(font_titulo)
-            titulo.setAlignment(Qt.AlignCenter)
-            layout.addWidget(titulo)
-            
-            # Costos de texto
-            label_texto = QLabel(f'Texto: ${config["costos_totales"]["texto"]:.4f}')
-            font_normal = label_texto.font()
-            font_normal.setPointSize(10)
-            label_texto.setFont(font_normal)
-            label_texto.setAlignment(Qt.AlignCenter)
-            layout.addWidget(label_texto)
-            
-            # Costos de imágenes
-            label_imagenes = QLabel(f'Imágenes: ${config["costos_totales"]["imagen"]:.4f}')
-            label_imagenes.setFont(font_normal)
-            label_imagenes.setAlignment(Qt.AlignCenter)
-            layout.addWidget(label_imagenes)
-            
-            # Total
-            label_total = QLabel(f'Total: ${total:.4f}')
-            font_total = label_total.font()
-            font_total.setPointSize(11)
-            font_total.setBold(True)
-            label_total.setFont(font_total)
-            label_total.setAlignment(Qt.AlignCenter)
-            layout.addWidget(label_total)
-            
-            # Botones
-            btn_layout = QHBoxLayout()
-            
-            # Botón Aceptar
-            btn_ok = QPushButton('Aceptar')
-            btn_ok.setFixedWidth(100)
-            btn_ok.setDefault(True)  # Hacer que este botón sea el predeterminado
-            btn_ok.clicked.connect(dialog.accept)
-
-            # Botón Reiniciar
-            btn_reset = QPushButton('Reiniciar costes')
-            btn_reset.setFixedWidth(100)
-            btn_reset.clicked.connect(lambda: self.confirmar_reinicio_costes(dialog))
-            
-            btn_layout.addStretch()
-            btn_layout.addWidget(btn_reset)
-            btn_layout.addWidget(btn_ok)
-            btn_layout.addStretch()
-            
-            layout.addLayout(btn_layout)
-            dialog.setLayout(layout)
-            
-            # Centrado mejorado
-            parent_geometry = self.geometry()
-            x = parent_geometry.x() + (parent_geometry.width() - dialog.width()) // 2
-            y = parent_geometry.y() + (parent_geometry.height() - dialog.height()) // 2 - (parent_geometry.height() // 8)
-            dialog.move(x, y)
-            
-            dialog.exec()
-            
+            return config
         except Exception as e:
-            print(f"Error al calcular costos totales: {str(e)}")
+            print(f"Error al cargar costos: {str(e)}")
+            return {'costos_totales': {'texto': 0.0, 'imagen': 0.0}}
 
-    def confirmar_reinicio_costes(self, parent_dialog):
-        msg = QMessageBox(parent_dialog)
+    # Función para confirmar el reinicio de los costos
+    def confirmar_reinicio_costes(self):
+        msg = QMessageBox(self)
         msg.setWindowTitle('Confirmar reinicio')
         msg.setText('¿Está seguro de que desea reiniciar los costes a cero?')
         msg.setIcon(QMessageBox.Question)
@@ -741,41 +748,15 @@ class MainWindow(QMainWindow):
         
         QApplication.beep()
         
-        msg.show()
-        msg.hide()
-        msg_pos = parent_dialog.geometry().center() - msg.rect().center()
-        msg.move(msg_pos)
-        
         if msg.exec() == QMessageBox.Yes:
             try:
-                if os.path.exists(CONFIG_FILE):
-                    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-                        config = json.load(f)
-                    config['costos_totales'] = {
-                        'texto': 0.0,
-                        'imagen': 0.0
-                    }
-                    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-                        json.dump(config, f, ensure_ascii=False, indent=4)
-                    
-                parent_dialog.accept()
-                
-                success_msg = QMessageBox()
-                success_msg.setWindowTitle('Costes reiniciados')
-                success_msg.setText('Los costes han sido reiniciados correctamente.')
-                success_msg.setIcon(QMessageBox.Information)
-                success_msg.setWindowIcon(QIcon(resource_path("iconos/coin.png")))
-                
-                success_msg.show()
-                success_msg.hide()
-                
-                success_pos = self.geometry().center() - success_msg.rect().center()
-                success_msg.move(success_pos)
-                
-                success_msg.exec()
-                
+                config = self.load_costs()
+                config['costos_totales'] = {'texto': 0.0, 'imagen': 0.0}
+                with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(config, f, ensure_ascii=False, indent=4)
+                self.close()
             except Exception as e:
-                print(f"Error al reiniciar los costes: {str(e)}")
+                print(f"Error al reiniciar costos: {str(e)}")
 
 # Clase para la ventana principal de la aplicación
 class PowerpoineatorWidget(QWidget):
@@ -873,6 +854,7 @@ class PowerpoineatorWidget(QWidget):
         
         if hasattr(self.parent(), 'api_key') and self.parent().api_key:
             self.texto_combo.addItem(QIcon(resource_path("iconos/deepseek.png")), 'deepseek-r1 (razonador) [$0.007]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.7-sonnet (más inteligente) [$0.0105]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-sonnet (inteligente) [$0.0131]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-haiku (económico) [$0.0035]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct (con censura) [$0.0067]')

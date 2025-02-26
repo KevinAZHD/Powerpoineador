@@ -39,8 +39,11 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         if modelo == 'meta-llama-3.1-405b-instruct (con censura) [$0.0067]':
             from modelos.IA_llama import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'claude-3.7-sonnet (más inteligente) [$0.0105]':
+            from modelos.IA_sonnet_3_7 import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'claude-3.5-sonnet (inteligente) [$0.0131]':
-            from modelos.IA_sonnet import intentar_obtener_respuesta
+            from modelos.IA_sonnet_3_5 import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'claude-3.5-haiku (económico) [$0.0035]':
             from modelos.IA_haiku import intentar_obtener_respuesta
@@ -150,6 +153,10 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
                 imagenes_generadas.append(imagen_path)
                 # Imprimir un mensaje indicando que la imagen se generó correctamente
                 log_message(f"Imagen {slide_number} generada correctamente")
+                
+                # Emitir señal para actualizar la vista previa con imagen y texto
+                if signals:
+                    signals.nueva_diapositiva.emit(imagen_path, section, content)
                 
                 if signals:
                     # Emitir una señal para actualizar el progreso
