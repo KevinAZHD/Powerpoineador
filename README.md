@@ -8,8 +8,8 @@ Powerpoineador es un programa de escritorio que genera automáticamente presenta
 
 El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede generar presentaciones de PowerPoint de manera automática, utilizando la Inteligencia Artificial soportada por dos tipos de APIs:
 
-- **Replicate API**: Para generar tanto texto como imágenes.
-- **xAI API**: Para generación de texto (experimental).
+- **Replicate API** - Para generar tanto texto como imágenes.
+- **xAI API** - Para generación de texto (experimental).
 
 ## Características
 
@@ -30,20 +30,20 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **claude-3.5-haiku** - Versión económica de Claude, excelente relación calidad-precio.
 - **meta-llama-3.1-405b-instruct** - Modelo de Meta con controles de contenido.
 - **dolphin-2.9-llama3-70b-gguf** - Modelo sin censura para contenido más flexible.
-- **grok-2-1212**: Modelo experimental de xAI.
+- **grok-2-1212** - Modelo experimental de xAI.
 
 ### Modelos de Imagen:
 
-- **flux-schnell**: Modelo rápido con buena calidad.
-- **imagen-3**: Modelo de Google con la mejor calidad de imagen.
-- **imagen-3-fast**: Modelo de Google rápido y económico.
-- **sana**: Modelo de NVIDIA equilibrado entre calidad y velocidad.
-- **photomaker**: Modelo especializado en caras (requiere imagen de referencia).
-- **fluxpulid**: Modelo también especializado en caras equilibrado entre calidad y velocidad (requiere imagen de referencia).
-- **hyper-flux-8step**: Modelo muy rápido y económico.
-- **hyper-flux-16step**: Modelo rápido y económico con mejor calidad.
-- **sdxl-lightning-4step**: Modelo rápido y económico sin censura.
-- **dgmtnzflux**: Modelo estilo meme.
+- **flux-schnell** - Modelo rápido con buena calidad.
+- **imagen-3** - Modelo de Google con la mejor calidad de imagen.
+- **imagen-3-fast** - Modelo de Google rápido y económico.
+- **sana** - Modelo de NVIDIA equilibrado entre calidad y velocidad.
+- **photomaker** - Modelo especializado en caras (requiere imagen de referencia).
+- **fluxpulid** - Modelo también especializado en caras equilibrado entre calidad y velocidad (requiere imagen de referencia).
+- **hyper-flux-8step** - Modelo muy rápido y económico.
+- **hyper-flux-16step** - Modelo rápido y económico con mejor calidad.
+- **sdxl-lightning-4step** - Modelo rápido y económico sin censura.
+- **dgmtnzflux** - Modelo estilo meme.
 
 ## Requisitos
 
