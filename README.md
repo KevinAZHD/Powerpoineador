@@ -43,6 +43,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **hyper-flux-8step** - Modelo muy rápido y económico.
 - **hyper-flux-16step** - Modelo rápido y económico con mejor calidad.
 - **sdxl-lightning-4step** - Modelo rápido y económico sin censura.
+- **model3_4** - Modelo muy económico y sin censura.
 - **dgmtnzflux** - Modelo estilo meme.
 
 ## Requisitos

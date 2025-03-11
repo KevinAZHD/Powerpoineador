@@ -11,6 +11,7 @@ from modelos.IA_photomaker import generar_imagen as generar_imagen_photomaker
 from modelos.IA_imagen3 import generar_imagen as generar_imagen_imagen3
 from modelos.IA_imagen3fast import generar_imagen as generar_imagen_imagen3fast
 from modelos.IA_sana import generar_imagen as generar_imagen_sana
+from modelos.IA_model3_4 import generar_imagen as generar_imagen_model3_4
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -95,6 +96,8 @@ def generar_imagen_ia(section, content, descripcion, modelo, image1):
             return generar_imagen_imagen3(section, content, descripcion)
         elif modelo == 'imagen-3-fast (barata y rápida) [$0.025]':
             return generar_imagen_imagen3fast(section, content, descripcion)
+        elif modelo == 'model3_4 (muy económico y sin censura) [$0.00098]':
+            return generar_imagen_model3_4(section, content, descripcion)
         else:
             return generar_imagen_flux(section, content, descripcion, image1)
     except Exception as e:

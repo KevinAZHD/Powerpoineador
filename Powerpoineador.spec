@@ -29,6 +29,7 @@ a = Analysis(
         'modelos/IA_imagen3.py',
         'modelos/IA_imagen3fast.py',
         'modelos/IA_sana.py',
+        'modelos/IA_model3_4.py',
         'Logica_diapositivas.py',
         'Ventana_progreso.py',
         'Splash_carga.py',

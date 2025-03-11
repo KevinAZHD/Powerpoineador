@@ -677,20 +677,20 @@ class BalanceWindow(QWidget):
         
         config = self.load_costs()
         
-        label_texto = QLabel(f'Texto: ${config["costos_totales"]["texto"]:.4f}')
+        label_texto = QLabel(f'Texto: ${config["costos_totales"]["texto"]:.5f}')
         font_normal = label_texto.font()
         font_normal.setPointSize(10)
         label_texto.setFont(font_normal)
         label_texto.setAlignment(Qt.AlignCenter)
         layout.addWidget(label_texto)
         
-        label_imagenes = QLabel(f'Imágenes: ${config["costos_totales"]["imagen"]:.4f}')
+        label_imagenes = QLabel(f'Imágenes: ${config["costos_totales"]["imagen"]:.5f}')
         label_imagenes.setFont(font_normal)
         label_imagenes.setAlignment(Qt.AlignCenter)
         layout.addWidget(label_imagenes)
         
         total = config["costos_totales"]["texto"] + config["costos_totales"]["imagen"]
-        label_total = QLabel(f'Total: ${total:.4f}')
+        label_total = QLabel(f'Total: ${total:.5f}')
         font_total = label_total.font()
         font_total.setPointSize(11)
         font_total.setBold(True)
@@ -870,6 +870,7 @@ class PowerpoineatorWidget(QWidget):
             self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step (rápida y muy barata) [$0.0063]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step (rápida y barata) [$0.0667]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step (barata sin censura) [$0.0014]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/lightweight.png")), 'model3_4 (muy económico y sin censura) [$0.00098]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/dgmtnzflux.png")), 'dgmtnzflux (meme) [$0.03]')
         
         if hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key and self.parent().validate_grok_api():
@@ -878,6 +879,9 @@ class PowerpoineatorWidget(QWidget):
                 self.imagen_combo.setEnabled(False)
         
         self.load_combo_selection()
+        
+        self.texto_combo.setMaxVisibleItems(self.texto_combo.count())
+        self.imagen_combo.setMaxVisibleItems(self.imagen_combo.count())
         
         self.texto_combo.blockSignals(False)
         self.imagen_combo.blockSignals(False)
