@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
 import requests, sys, os
+from PySide6.QtWidgets import QApplication
 
 # Función para manejar rutas de recursos en modo desarrollo y ejecutable
 def resource_path(relative_path):
@@ -51,20 +52,36 @@ class ReplicateAPIKeyWindow(QWidget):
         
         # Campo de entrada para la clave API
         layout.addWidget(QLabel('Escriba su clave API de Replicate:'))
+        input_layout = QHBoxLayout()
         self.api_input = QLineEdit()
         self.api_input.setMinimumWidth(300)
         self.api_input.textChanged.connect(self.clear_status)
-        if self.parent and self.parent.api_key:
-            self.api_input.setText(self.parent.api_key)
-        
+
         # Etiqueta para mostrar mensajes de estado
         self.status_label = QLabel('')
         self.status_label.setStyleSheet("color: red; qproperty-alignment: AlignCenter;")
+
+        # Nueva condición para deshabilitar si ya hay clave
+        if self.parent and self.parent.api_key:
+            self.api_input.setText(self.parent.api_key)
+            self.api_input.setDisabled(True)
+            self.copy_btn = QPushButton(QIcon(resource_path("iconos/copy.png")), '')
+            self.copy_btn.setToolTip('Copiar API al portapapeles')
+            self.copy_btn.clicked.connect(lambda: QApplication.clipboard().setText(self.parent.api_key))
+            input_layout.addWidget(self.api_input)
+            input_layout.addWidget(self.copy_btn)
+            self.status_label.setText('Clave válida')
+            self.status_label.setStyleSheet("color: green; qproperty-alignment: AlignCenter;")
+        else:
+            input_layout.addWidget(self.api_input)
+
+        layout.addLayout(input_layout)
         
         # Botón de validación
         validate_btn = QPushButton('Validar y guardar')
         validate_btn.clicked.connect(self.validate_api)
-        layout.addWidget(self.api_input)
+        if self.parent and self.parent.api_key:
+            validate_btn.setDisabled(True)
         layout.addWidget(self.status_label)
         layout.addWidget(validate_btn)
         self.setLayout(layout)
@@ -85,6 +102,7 @@ class ReplicateAPIKeyWindow(QWidget):
         api_key = self.api_input.text().strip()
         if not api_key:
             self.show_status('No puede dejar el campo vacío')
+            self.status_label.setStyleSheet("color: red; qproperty-alignment: AlignCenter;")
             return
         try:
             # Intenta validar la clave API con una solicitud al servidor
@@ -93,8 +111,13 @@ class ReplicateAPIKeyWindow(QWidget):
             if response.status_code == 200:
                 if self.parent:
                     self.parent.set_api_key(api_key)
+                self.status_label.setText('Clave válida')
+                self.status_label.setStyleSheet("color: green; qproperty-alignment: AlignCenter;")
+                self.timer.stop()  # Detener el timer para que el mensaje se mantenga
                 self.close()
             else:
                 self.show_status('Clave inválida')
+                self.status_label.setStyleSheet("color: red; qproperty-alignment: AlignCenter;")
         except Exception as e:
             self.show_status(f'Error de conexión: {str(e)}')
+            self.status_label.setStyleSheet("color: red; qproperty-alignment: AlignCenter;")
