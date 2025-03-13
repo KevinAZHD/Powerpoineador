@@ -225,6 +225,8 @@ class MainWindow(QMainWindow):
         os.environ["GROK_API_KEY"] = api_key
         self.enable_functionality()
 
+        self.get_grok_api_action.setEnabled(False)
+
     # Función para configurar el menú de la aplicación
     def setup_menu(self):
         menubar = self.menuBar()
@@ -232,9 +234,10 @@ class MainWindow(QMainWindow):
         left_menubar = QMenuBar(menubar)
         
         api_menu = left_menubar.addMenu('Replicate')
-        get_api_action = QAction(QIcon(resource_path("iconos/web.png")), 'Obtener clave API de Replicate', self)
-        get_api_action.triggered.connect(lambda: webbrowser.open('https://replicate.com/account/api-tokens'))
-        api_menu.addAction(get_api_action)
+        self.get_api_action = QAction(QIcon(resource_path("iconos/web.png")), 'Obtener clave API de Replicate', self)
+        self.get_api_action.triggered.connect(lambda: webbrowser.open('https://replicate.com/account/api-tokens'))
+        self.get_api_action.setEnabled(not bool(self.api_key))
+        api_menu.addAction(self.get_api_action)
         
         config_action = QAction(QIcon(resource_path("iconos/conf.png")), 'Configurar clave API de Replicate', self)
         config_action.triggered.connect(self.show_api_dialog)
@@ -245,9 +248,10 @@ class MainWindow(QMainWindow):
         api_menu.addAction(self.delete_action)
 
         grok_menu = left_menubar.addMenu('xAI')
-        get_grok_api_action = QAction(QIcon(resource_path("iconos/web.png")), 'Obtener clave API de xAI', self)
-        get_grok_api_action.triggered.connect(lambda: webbrowser.open('https://console.x.ai'))
-        grok_menu.addAction(get_grok_api_action)
+        self.get_grok_api_action = QAction(QIcon(resource_path("iconos/web.png")), 'Obtener clave API de xAI', self)
+        self.get_grok_api_action.triggered.connect(lambda: webbrowser.open('https://console.x.ai/team/default/api-keys'))
+        self.get_grok_api_action.setEnabled(not bool(self.grok_api_key))
+        grok_menu.addAction(self.get_grok_api_action)
         
         grok_config_action = QAction(QIcon(resource_path("iconos/conf.png")), 'Configurar clave API de xAI', self)
         grok_config_action.triggered.connect(self.show_grok_api_dialog)
@@ -286,6 +290,7 @@ class MainWindow(QMainWindow):
         self.save_api_key()
         os.environ["REPLICATE_API_TOKEN"] = api_key
         self.enable_functionality()
+        self.get_api_action.setEnabled(False)
 
     # Función para mostrar la ventana de configuración de la clave API de Replicate
     def show_api_dialog(self):
@@ -317,6 +322,8 @@ class MainWindow(QMainWindow):
             self.save_api_key()
             if os.environ.get("REPLICATE_API_TOKEN"):
                 del os.environ["REPLICATE_API_TOKEN"]
+
+            self.get_api_action.setEnabled(True)
             
             if not self.grok_api_key:
                 self.disable_functionality()
@@ -381,6 +388,8 @@ class MainWindow(QMainWindow):
             self.save_grok_api_key()
             if os.environ.get("GROK_API_KEY"):
                 del os.environ["GROK_API_KEY"]
+            
+            self.get_grok_api_action.setEnabled(True)
             
             if not self.api_key:
                 self.disable_functionality()
@@ -698,21 +707,32 @@ class BalanceWindow(QWidget):
         label_total.setAlignment(Qt.AlignCenter)
         layout.addWidget(label_total)
         
-        btn_layout = QHBoxLayout()
+        btn_xai = QPushButton('Revisar en xAI')
+        btn_xai.setFixedWidth(120)
+        btn_xai.clicked.connect(self.abrir_saldo_xai)
+
+        if self.parent and hasattr(self.parent, 'grok_api_key') and self.parent.grok_api_key:
+            btn_xai.setEnabled(True)
+        else:
+            btn_xai.setEnabled(False)
         
-        btn_ok = QPushButton('Aceptar')
-        btn_ok.setFixedWidth(100)
-        btn_ok.setDefault(True)
-        btn_ok.clicked.connect(self.close)
+        btn_replicate = QPushButton('Revisar en Replicate')
+        btn_replicate.setFixedWidth(120)
+        btn_replicate.clicked.connect(self.abrir_saldo_replicate)
+
+        if self.parent and hasattr(self.parent, 'api_key') and self.parent.api_key:
+            btn_replicate.setEnabled(True)
+        else:
+            btn_replicate.setEnabled(False)
         
-        btn_reset = QPushButton('Reiniciar costes')
-        btn_reset.setFixedWidth(100)
+        btn_reset = QPushButton('Reiniciar los costes')
+        btn_reset.setFixedWidth(120)
         btn_reset.clicked.connect(self.confirmar_reinicio_costes)
         
-        btn_layout.addStretch()
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(btn_replicate)
         btn_layout.addWidget(btn_reset)
-        btn_layout.addWidget(btn_ok)
-        btn_layout.addStretch()
+        btn_layout.addWidget(btn_xai)
         
         layout.addLayout(btn_layout)
         self.setLayout(layout)
@@ -757,6 +777,14 @@ class BalanceWindow(QWidget):
                 self.close()
             except Exception as e:
                 print(f"Error al reiniciar costos: {str(e)}")
+
+    # Función para ver el saldo de Replicate
+    def abrir_saldo_replicate(self):
+        webbrowser.open("https://replicate.com")
+
+    # Función para ver el saldo de xAI
+    def abrir_saldo_xai(self):
+        webbrowser.open("https://console.x.ai/team/default/usage")
 
 # Clase para la ventana principal de la aplicación
 class PowerpoineatorWidget(QWidget):

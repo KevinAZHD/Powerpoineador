@@ -5,3 +5,4 @@ requests>=2.31.0
 replicate>=0.22.0
 packaging>=23.2
 deep-translator==1.11.4
+pyinstaller==5.13.0
