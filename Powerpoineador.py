@@ -430,7 +430,7 @@ class MainWindow(QMainWindow):
         self.widget = PowerpoineatorWidget()
         self.setCentralWidget(self.widget)
         self.setWindowTitle('Powerpoineador')
-        self.setMinimumSize(833, 400)
+        self.setMinimumSize(860, 400)
         self.setWindowIcon(QIcon(resource_path("iconos/icon.jpg")))
         
         screen = QApplication.primaryScreen().geometry()
@@ -903,8 +903,9 @@ class PowerpoineatorWidget(QWidget):
         
         if hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key and self.parent().validate_grok_api():
             self.texto_combo.addItem(QIcon(resource_path("iconos/grok.png")), 'grok-2-1212 (experimental)')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/grok.png")), 'grok-2-image-1212 (experimental) [$0.07]')
             if not (hasattr(self.parent(), 'api_key') and self.parent().api_key):
-                self.imagen_combo.setEnabled(False)
+                self.imagen_combo.setEnabled(True)
         
         self.load_combo_selection()
         
@@ -953,8 +954,8 @@ class PowerpoineatorWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'Por favor, escriba una descripción para su presentación')
             return
 
-        if modelo_texto == 'grok-2-1212 (experimental)' and not (hasattr(self.parent(), 'api_key') and self.parent().api_key):
-            QMessageBox.warning(self, 'Error', 'Actualmente el modelo de Grok no puede generar imágenes. Por favor, configure una API de Replicate para generar imágenes.')
+        if modelo_imagen == 'grok-2-image (experimental) [$0.07]' and not (hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key and self.parent().validate_grok_api()):
+            QMessageBox.warning(self, 'Error', 'Para usar el modelo de imagen de Grok, debe configurar una API de xAI válida.')
             return
 
         file_path, _ = QFileDialog.getSaveFileName(

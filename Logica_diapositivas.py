@@ -12,6 +12,7 @@ from modelos.IA_imagen3 import generar_imagen as generar_imagen_imagen3
 from modelos.IA_imagen3fast import generar_imagen as generar_imagen_imagen3fast
 from modelos.IA_sana import generar_imagen as generar_imagen_sana
 from modelos.IA_model3_4 import generar_imagen as generar_imagen_model3_4
+from modelos.IA_grok_2_image import generar_imagen as generar_imagen_grok
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -50,7 +51,7 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
             from modelos.IA_haiku import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'grok-2-1212 (experimental)':
-            from modelos.IA_grok import intentar_obtener_respuesta
+            from modelos.IA_grok_2 import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'deepseek-r1 (razonador) [$0.007]':
             from modelos.IA_deepseek import intentar_obtener_respuesta
@@ -98,6 +99,8 @@ def generar_imagen_ia(section, content, descripcion, modelo, image1):
             return generar_imagen_imagen3fast(section, content, descripcion)
         elif modelo == 'model3_4 (muy económico y sin censura) [$0.00098]':
             return generar_imagen_model3_4(section, content, descripcion)
+        elif modelo == 'grok-2-image-1212 (experimental) [$0.07]':
+            return generar_imagen_grok(section, content, descripcion)
         else:
             return generar_imagen_flux(section, content, descripcion, image1)
     except Exception as e:
