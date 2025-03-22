@@ -33,7 +33,7 @@ class LogSignals(QObject):
 
 # Clase worker para ejecutar la generación en un hilo separado
 class GenerationWorker(QThread):
-    def __init__(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals):
+    def __init__(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals, num_diapositivas=5):
         super().__init__()
         # Inicialización de variables necesarias para la generación
         self.modelo_texto = modelo_texto
@@ -43,6 +43,7 @@ class GenerationWorker(QThread):
         self.imagen_personalizada = imagen_personalizada
         self.filename = filename
         self.signals = signals
+        self.num_diapositivas = num_diapositivas
 
     # Función para ejecutar la generación de la presentación
     def run(self):
@@ -56,7 +57,8 @@ class GenerationWorker(QThread):
                 self.auto_open,
                 self.imagen_personalizada,
                 self.filename,
-                self.signals
+                self.signals,
+                self.num_diapositivas
             )
         except Exception as e:
             # Emite señal de error si algo falla
@@ -157,11 +159,11 @@ class LogWindow(QWidget):
         self.close()
 
     # Función para iniciar la generación
-    def start_generation(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename):
+    def start_generation(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, num_diapositivas=5):
         self.worker = GenerationWorker(
             modelo_texto, modelo_imagen, descripcion, 
             auto_open, imagen_personalizada, filename, 
-            self.signals
+            self.signals, num_diapositivas
         )
         self.worker.start()
     

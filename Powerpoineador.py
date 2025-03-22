@@ -843,20 +843,36 @@ class PowerpoineatorWidget(QWidget):
         self.descripcion_text.textChanged.connect(self.actualizar_contador)
         main_layout.addWidget(self.descripcion_text)
 
-        contador_checkbox_layout = QHBoxLayout()
+        # Añadir el selector de número de diapositivas
+        opciones_layout = QHBoxLayout()
         
+        # Control para el número de diapositivas
+        diapositivas_layout = QHBoxLayout()
+        diapositivas_layout.addWidget(QLabel('Número de diapositivas:'))
+        self.diapositivas_combo = QComboBox()
+        for i in range(3, 11):
+            self.diapositivas_combo.addItem(str(i))
+        self.diapositivas_combo.setCurrentIndex(2)  # Por defecto, 5 diapositivas
+        diapositivas_layout.addWidget(self.diapositivas_combo)
+        opciones_layout.addLayout(diapositivas_layout)
+        
+        # Agregar stretch para separar
+        opciones_layout.addStretch()
+        
+        # Checkbox para apertura automática
         self.auto_open_checkbox = QCheckBox('Abrir presentación automáticamente')
         self.auto_open_checkbox.setChecked(False)
         self.auto_open_checkbox.stateChanged.connect(self.save_auto_open_state)
-        contador_checkbox_layout.addWidget(self.auto_open_checkbox)
+        opciones_layout.addWidget(self.auto_open_checkbox)
         
-        contador_checkbox_layout.addStretch()
-        
+        main_layout.addLayout(opciones_layout)
+
+        contador_layout = QHBoxLayout()
+        contador_layout.addStretch()
         self.contador_label = QLabel('0 palabras')
         self.contador_label.setStyleSheet("color: gray;")
-        contador_checkbox_layout.addWidget(self.contador_label)
-        
-        main_layout.addLayout(contador_checkbox_layout)
+        contador_layout.addWidget(self.contador_label)
+        main_layout.addLayout(contador_layout)
 
         self.generar_btn = QPushButton('POWERPOINEAR')
         self.generar_btn.setMinimumWidth(200)
@@ -942,6 +958,7 @@ class PowerpoineatorWidget(QWidget):
         modelo_imagen = self.imagen_combo.currentText()
         descripcion = self.descripcion_text.toPlainText()
         auto_open = self.auto_open_checkbox.isChecked()
+        num_diapositivas = int(self.diapositivas_combo.currentText())
 
         if modelo_imagen in ['photomaker (con caras mejorado) [$0.0069]', 'flux-pulid (con caras) [$0.037]'] and not self.imagen_personalizada:
             QMessageBox.warning(self, 'Error', 'Debe cargar una imagen para usar este modelo')
@@ -974,7 +991,8 @@ class PowerpoineatorWidget(QWidget):
                 descripcion,
                 auto_open,
                 self.imagen_personalizada,
-                file_path
+                file_path,
+                num_diapositivas
             )
 
     # Función para guardar la descripción
