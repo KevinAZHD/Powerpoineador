@@ -497,35 +497,153 @@ class Diapositivas:
         slide_layout = self.presentation.slide_layouts[6]
         slide = self.presentation.slides.add_slide(slide_layout)
 
-        # Añadir una imagen cuadrada a la izquierda
+        # Añadir fondo con gradiente sutil
+        bg = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE, 
+            Inches(0), 
+            Inches(0), 
+            self.presentation.slide_width, 
+            self.presentation.slide_height
+        )
+        bg_fill = bg.fill
+        bg_fill.solid()
+        bg_fill.fore_color.rgb = RGBColor(250, 245, 248)
+        bg.line.fill.background()
+
+        # Añadir elemento decorativo - barra lateral
+        side_bar = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(0),
+            Inches(0),
+            Inches(0.3),
+            self.presentation.slide_height
+        )
+        side_bar_fill = side_bar.fill
+        side_bar_fill.solid()
+        side_bar_fill.fore_color.rgb = RGBColor(175, 0, 80)
+        side_bar.line.fill.background()
+        
+        # Añadir un título con estilo moderno - MODIFICADO para evitar que se sobresalga
+        title_left = Inches(0.7)
+        title_top = Inches(0.3)
+        title_width = self.presentation.slide_width - Inches(1.4)
+        title_height = Inches(1)
+        
+        title_box = slide.shapes.add_textbox(title_left, title_top, title_width, title_height)
+        title_frame = title_box.text_frame
+        title_frame.text = section
+        title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+        run = title_frame.paragraphs[0].runs[0]
+        run.font.size = Pt(36)
+        run.font.bold = True
+        run.font.color.rgb = RGBColor(140, 0, 60)
+        title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        title_frame.word_wrap = True
+        title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+        self.apply_font(title_frame)
+        
+        # Línea decorativa bajo el título
+        title_underline = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            self.presentation.slide_width/2 - Inches(2),
+            Inches(1.6),
+            Inches(4),
+            Inches(0.05)
+        )
+        underline_fill = title_underline.fill
+        underline_fill.solid()
+        underline_fill.fore_color.rgb = RGBColor(175, 0, 80)
+        title_underline.line.fill.background()
+
+        # Añadir una imagen cuadrada a la izquierda - MODIFICADO para usar relleno de forma
         left = Inches(1)
         top = Inches(2)
         side = Inches(4)
-        pic = slide.shapes.add_picture(image_path, left, top, side, side)
+        
+        # Crear la forma redondeada que contendrá la imagen
+        img_container = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            left,
+            top,
+            side,
+            side
+        )
 
-        # Añadir un título por encima de la imagen
-        title_box = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(6), Inches(1))
-        title_frame = title_box.text_frame
-        title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(24)
-        title_frame.paragraphs[0].runs[0].font.bold = True
-        title_frame.paragraphs[0].runs[0].font.underline = True
-        title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-        title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
-        self.apply_font(title_frame)
+        # Configurar el borde de la forma
+        img_container.line.width = Pt(2)
+        img_container.line.color.rgb = RGBColor(175, 0, 80)
+        
+        # Añadir la imagen dentro del contenedor
+        slide.shapes.add_picture(image_path, left, top, side, side)
 
-        # Añadir texto a la derecha de la imagen
-        text_box = slide.shapes.add_textbox(Inches(5.2), Inches(2), Inches(4), Inches(4))
+        # Añadir un espacio entre la imagen y el texto
+        gap = Inches(0.3)
+        text_left_bg = img_container.left + img_container.width + gap
+        text_top_bg = img_container.top
+        text_width_bg = img_container.width
+        text_height_bg = img_container.height 
+
+        # Ajustar la posición y tamaño si se sale de la diapositiva
+        max_right = self.presentation.slide_width - Inches(0.7)
+        if text_left_bg + text_width_bg > max_right:
+            text_width_bg = max_right - text_left_bg
+            if text_width_bg < Inches(1):
+                 text_width_bg = Inches(1)
+
+        text_left_box = text_left_bg + Inches(0.1)
+        text_top_box = text_top_bg + Inches(0.1)
+        text_width_box = text_width_bg - Inches(0.2)
+        text_height_box = text_height_bg - Inches(0.2)
+        
+        # Fondo para el área de texto
+        text_bg = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            text_left_bg,
+            text_top_bg,
+            text_width_bg,
+            text_height_bg
+        )
+        text_bg_fill = text_bg.fill
+        text_bg_fill.solid()
+        text_bg_fill.fore_color.rgb = RGBColor(250, 240, 245)
+        text_bg.line.width = Pt(1)
+        text_bg.line.color.rgb = RGBColor(175, 0, 80)
+        text_bg.shadow.inherit = False
+        
+        # Texto principal
+        text_box = slide.shapes.add_textbox(
+            text_left_box,
+            text_top_box,
+            text_width_box,
+            text_height_box
+        )
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
         p.font.size = Pt(20)
-        text_frame.margin_bottom = Inches(0.08)
+        p.font.color.rgb = RGBColor(80, 20, 40)
+        text_frame.margin_top = Inches(-0.25)
         text_frame.margin_left = Inches(0.25)
+        text_frame.margin_right = Inches(0.25)
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_font(text_frame)
+        
+        # Elemento decorativo en la esquina inferior derecha
+        corner_dec = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            self.presentation.slide_width - Inches(1.2),
+            self.presentation.slide_height - Inches(1.2),
+            Inches(1),
+            Inches(1)
+        )
+        corner_fill = corner_dec.fill
+        corner_fill.solid()
+        corner_fill.fore_color.rgb = RGBColor(175, 0, 80)
+        corner_dec.transparency = 0.7
+        corner_dec.line.fill.background()
+        corner_dec.rotation = 45
 
     # Diseño que muestra una imagen para que ocupe toda la diapositiva y un título y contenido a la derecha
     def design6(self, slide, section, content, image_path):
@@ -576,43 +694,155 @@ class Diapositivas:
         slide_layout = self.presentation.slide_layouts[6]
         slide = self.presentation.slides.add_slide(slide_layout)
 
-        # Añadir una imagen cuadrada a la derecha
-        left = Inches(5)
-        top = Inches(2)
-        side = Inches(4)
-        pic = slide.shapes.add_picture(image_path, left, top, side, side)
+        # Añadir fondo con gradiente sutil
+        bg = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(0),
+            Inches(0),
+            self.presentation.slide_width,
+            self.presentation.slide_height
+        )
+        bg_fill = bg.fill
+        bg_fill.solid()
+        bg_fill.fore_color.rgb = RGBColor(245, 245, 250)
+        bg.line.fill.background()
 
-        # Añadir un título por encima de la imagen
-        title_box = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(6), Inches(1))
+        # Añadir elemento decorativo - barra lateral derecha
+        side_bar_left = self.presentation.slide_width - Inches(0.3)
+        side_bar = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            side_bar_left,
+            Inches(0),
+            Inches(0.3),
+            self.presentation.slide_height
+        )
+        side_bar_fill = side_bar.fill
+        side_bar_fill.solid()
+        side_bar_fill.fore_color.rgb = RGBColor(100, 50, 180)
+        side_bar.line.fill.background()
+
+        # Añadir un título con estilo moderno
+        title_left = Inches(0.7)
+        title_top = Inches(0.3)
+        title_width = self.presentation.slide_width - Inches(1.4)
+        title_height = Inches(1)
+
+        title_box = slide.shapes.add_textbox(title_left, title_top, title_width, title_height)
         title_frame = title_box.text_frame
         title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(30)
-        title_frame.paragraphs[0].runs[0].font.bold = True
-        title_frame.paragraphs[0].runs[0].font.underline = True
         title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+        run = title_frame.paragraphs[0].runs[0]
+        run.font.size = Pt(36)
+        run.font.bold = True
+        run.font.color.rgb = RGBColor(80, 20, 140)
+        title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        title_frame.word_wrap = True
+        title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_font(title_frame)
 
-        # Añadir texto a la izquierda de la imagen
-        text_box = slide.shapes.add_textbox(Inches(0.2), Inches(2), Inches(4.2), Inches(5))
+        # Línea decorativa bajo el título
+        title_underline = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            self.presentation.slide_width/2 - Inches(2),
+            Inches(1.6),
+            Inches(4),
+            Inches(0.05)
+        )
+        underline_fill = title_underline.fill
+        underline_fill.solid()
+        underline_fill.fore_color.rgb = RGBColor(100, 50, 180)
+        title_underline.line.fill.background()
+
+        # Añadir una imagen cuadrada a la derecha
+        side = Inches(4)
+        right_margin = Inches(0.7)
+        img_left = self.presentation.slide_width - side - right_margin
+        img_top = Inches(2)
+
+        # Crear la forma rectangular que contendrá la imagen
+        img_container = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            img_left,
+            img_top,
+            side,
+            side
+        )
+
+        # Configurar el borde de la forma
+        img_container.line.width = Pt(2)
+        img_container.line.color.rgb = RGBColor(100, 50, 180)
+
+        # Añadir la imagen dentro del contenedor
+        slide.shapes.add_picture(image_path, img_left, img_top, side, side)
+
+        # Añadir un espacio entre la imagen y el texto
+        gap = Inches(0.3)
+        
+        # Cálculos de posicionamiento espejo para el texto
+        text_left_bg = Inches(1)
+        text_top_bg = img_top
+        text_width_bg = img_left - text_left_bg - gap
+        text_height_bg = side
+
+        # Ajustar la posición y tamaño si se sale de la diapositiva
+        max_right_text = img_left - gap
+        if text_left_bg + text_width_bg > max_right_text:
+            text_width_bg = max_right_text - text_left_bg
+            if text_width_bg < Inches(1):
+                text_width_bg = Inches(1)
+
+        # Márgenes internos
+        text_left_box = text_left_bg + Inches(0.1)
+        text_top_box = text_top_bg + Inches(0.1)
+        text_width_box = text_width_bg - Inches(0.2)
+        text_height_box = text_height_bg - Inches(0.2)
+
+        # Fondo para el área de texto
+        text_bg = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            text_left_bg,
+            text_top_bg,
+            text_width_bg,
+            text_height_bg
+        )
+        text_bg_fill = text_bg.fill
+        text_bg_fill.solid()
+        text_bg_fill.fore_color.rgb = RGBColor(240, 240, 250)
+        text_bg.line.width = Pt(1)
+        text_bg.line.color.rgb = RGBColor(100, 50, 180)
+        text_bg.shadow.inherit = False
+
+        # Texto principal
+        text_box = slide.shapes.add_textbox(
+            text_left_box,
+            text_top_box,
+            text_width_box,
+            text_height_box
+        )
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
-        p.font.size = Pt(18)
-        self.apply_font(text_frame)
-
-        # Añadir una forma de decoración debajo del texto
-        left = Inches(0.2)
-        top = Inches(5.8)
-        width = Inches(4.3)
-        height = Inches(0.2)
-        shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
-        fill = shape.fill
-        fill.solid()
-        fill.fore_color.rgb = RGBColor(0, 0, 0)
-
-        # Ajusta los márgenes
-        text_frame.margin_bottom = Inches(0.08)
+        p.font.size = Pt(20)
+        p.font.color.rgb = RGBColor(60, 20, 120)
+        text_frame.margin_top = Inches(-0.25)
         text_frame.margin_left = Inches(0.25)
+        text_frame.margin_right = Inches(0.25)
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+        self.apply_font(text_frame)
+
+        # Elemento decorativo en la esquina inferior izquierda
+        corner_dec = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            Inches(0.2),
+            self.presentation.slide_height - Inches(1.2),
+            Inches(1),
+            Inches(1)
+        )
+        corner_fill = corner_dec.fill
+        corner_fill.solid()
+        corner_fill.fore_color.rgb = RGBColor(100, 50, 180)
+        corner_dec.transparency = 0.7
+        corner_dec.line.fill.background()
+        corner_dec.rotation = 45

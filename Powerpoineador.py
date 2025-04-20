@@ -2326,7 +2326,7 @@ class PowerpoineatorWidget(QWidget):
             self.worker = GenerationWorker(
                 modelo_texto,
                 modelo_imagen,
-                nuevo_string + f" hazlo en {instruccion_idioma} y en {num_diapositivas} diapositivas",
+                nuevo_string + f" hazlo en {instruccion_idioma} y en {num_diapositivas} diapositivas. Los títulos tendrán de máximo unas 6 palabras, y el contenido máximo unas 33 palabras",
                 auto_open,
                 self.imagen_personalizada,
                 file_path,
