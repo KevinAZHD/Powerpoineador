@@ -50,26 +50,27 @@ class Diapositivas:
         left = top = Inches(0)
         width = self.presentation.slide_width
         height = self.presentation.slide_height
-        pic = slide.shapes.add_picture(bg_image_path, left, top, width=width, height=height)
 
         # Añadir gradiente usando dos rectángulos con transparencia
         gradient_top = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height/2)
         fill_top = gradient_top.fill
         fill_top.solid()
-        fill_top.fore_color.rgb = RGBColor(20, 50, 90)
-        gradient_top.transparency = 0.7
+        fill_top.fore_color.rgb = RGBColor(242, 101, 34)
+        gradient_top.transparency = 0.6
+        gradient_top.line.fill.background()
 
         gradient_bottom = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, height/2, width, height/2)
         fill_bottom = gradient_bottom.fill
         fill_bottom.solid()
-        fill_bottom.fore_color.rgb = RGBColor(0, 0, 0)
-        gradient_bottom.transparency = 0.6
+        fill_bottom.fore_color.rgb = RGBColor(150, 50, 0)
+        gradient_bottom.transparency = 0.5
+        gradient_bottom.line.fill.background()
 
         # Añadir barra lateral decorativa
-        sidebar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(0.3), height)
+        sidebar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(0.2), height)
         sidebar_fill = sidebar.fill
         sidebar_fill.solid()
-        sidebar_fill.fore_color.rgb = RGBColor(0, 120, 215)
+        sidebar_fill.fore_color.rgb = RGBColor(242, 101, 34)
         sidebar.line.fill.background()
 
         # Añadir imagen visible con borde decorativo
@@ -87,7 +88,7 @@ class Diapositivas:
         )
         border_fill = img_border.fill
         border_fill.solid()
-        border_fill.fore_color.rgb = RGBColor(0, 120, 215)
+        border_fill.fore_color.rgb = RGBColor(252, 180, 65)
         img_border.line.width = Pt(3)
         img_border.line.color.rgb = RGBColor(255, 255, 255)
         
@@ -95,7 +96,7 @@ class Diapositivas:
         visible_pic = slide.shapes.add_picture(image_path, img_left, img_top, width=img_side, height=img_side)
         
         # Añadir título con estilo moderno
-        title_left = Inches(1.2)
+        title_left = Inches(0.7)
         title_top = Inches(0.3)
         title_width = img_left - title_left - Inches(0.5)
         title_height = Inches(2)
@@ -126,12 +127,12 @@ class Diapositivas:
             MSO_SHAPE.RECTANGLE,
             title_left,
             underline_top_fixed,
-            min(Inches(4), title_width),
+            min(Inches(6), title_width),
             Inches(0.05)
         )
         underline_fill = title_underline.fill
         underline_fill.solid()
-        underline_fill.fore_color.rgb = RGBColor(0, 120, 215)
+        underline_fill.fore_color.rgb = RGBColor(255, 126, 0)
         title_underline.line.fill.background()
 
         # Añadir texto de contenido
@@ -169,11 +170,11 @@ class Diapositivas:
         )
         corner_fill = corner_shape.fill
         corner_fill.solid()
-        corner_fill.fore_color.rgb = RGBColor(0, 120, 215)
+        corner_fill.fore_color.rgb = RGBColor(255, 140, 0)
         corner_shape.line.fill.background()
         corner_shape.rotation = 45
 
-        # Pequeño icono de PowerPoint
+        # Pequeño icono decorativo
         icon = slide.shapes.add_shape(
             MSO_SHAPE.ROUNDED_RECTANGLE,
             Inches(0.5),
@@ -183,86 +184,220 @@ class Diapositivas:
         )
         icon_fill = icon.fill
         icon_fill.solid()
-        icon_fill.fore_color.rgb = RGBColor(210, 71, 38)
+        icon_fill.fore_color.rgb = RGBColor(252, 180, 65)
         icon.line.fill.background()
 
-    # Diseño que muestra una imagen a la izquierda y un título y contenido a la derecha 
+    # Diseño que muestra una imagen a la izquierda y un título y contenido a la derecha con estilo moderno
     def design1(self, slide, section, content, image_path):
         slide_layout = self.presentation.slide_layouts[6]
         slide = self.presentation.slides.add_slide(slide_layout)
 
-        # Añadir una imagen vertical a la izquierda
+        # Añadir fondo con color gradiente para aspecto profesional
+        bg = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE, 
+            Inches(0), 
+            Inches(0), 
+            self.presentation.slide_width, 
+            self.presentation.slide_height
+        )
+        bg_fill = bg.fill
+        bg_fill.solid()
+        bg_fill.fore_color.rgb = RGBColor(240, 240, 240)
+
+        # Añadir una imagen vertical a la izquierda con efecto de sombra
         left = Inches(0)
         top = Inches(0)
         width = Inches(5)
         height = Inches(7.55)
         pic = slide.shapes.add_picture(image_path, left, top, width, height)
+        
+        # Agregar barra decorativa vertical en la separación entre imagen y contenido
+        bar = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(5),
+            Inches(0),
+            Inches(0.1),
+            self.presentation.slide_height
+        )
+        bar_fill = bar.fill
+        bar_fill.solid()
+        bar_fill.fore_color.rgb = RGBColor(0, 120, 215)
+        bar.line.fill.background()
+        
+        # Área de contenido con fondo sutilmente destacado
+        content_bg = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(5.1),
+            Inches(0),
+            self.presentation.slide_width - Inches(5.1),
+            self.presentation.slide_height
+        )
+        content_bg_fill = content_bg.fill
+        content_bg_fill.solid()
+        content_bg_fill.fore_color.rgb = RGBColor(250, 250, 250)
+        content_bg.transparency = 0.2
+        content_bg.line.fill.background()
 
-        # Añadir un título a la derecha
-        title_box = slide.shapes.add_textbox(Inches(5), Inches(1), Inches(5), Inches(1))
+        # Añadir un título a la derecha con estilo moderno
+        title_box = slide.shapes.add_textbox(Inches(5.3), Inches(0.2), Inches(3.3), Inches(1.2))
         title_frame = title_box.text_frame
         title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(24)
+        title_frame.paragraphs[0].runs[0].font.size = Pt(32)
         title_frame.paragraphs[0].runs[0].font.bold = True
-        title_frame.paragraphs[0].runs[0].font.underline = True
+        title_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(0, 120, 215)
         title_frame.margin_bottom = Inches(0)
         title_frame.margin_left = Inches(0.25)
         title_frame.vertical_anchor = MSO_ANCHOR.TOP
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_font(title_frame)
+        
+        # Línea decorativa bajo el título
+        title_underline = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(5.3),
+            Inches(2.1),
+            Inches(4),
+            Inches(0.05)
+        )
+        underline_fill = title_underline.fill
+        underline_fill.solid()
+        underline_fill.fore_color.rgb = RGBColor(0, 120, 215)
+        title_underline.line.fill.background()
 
-        # Añadir texto debajo del título
-        text_box = slide.shapes.add_textbox(Inches(5), Inches(2), Inches(5), Inches(4))
+        # Añadir texto debajo del título con estilo mejorado
+        text_box = slide.shapes.add_textbox(Inches(5.3), Inches(2), Inches(4), Inches(4))
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
         p.font.size = Pt(20)
+        p.font.color.rgb = RGBColor(50, 50, 50)
         text_frame.margin_bottom = Inches(0.08)
         text_frame.margin_left = Inches(0.25)
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_font(text_frame)
+        
+        # Elemento decorativo en esquina superior derecha
+        decoration = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            self.presentation.slide_width - Inches(1.2),
+            Inches(0.3),
+            Inches(1),
+            Inches(1)
+        )
+        dec_fill = decoration.fill
+        dec_fill.solid()
+        dec_fill.fore_color.rgb = RGBColor(0, 120, 215)
+        decoration.line.fill.background()
+        decoration.rotation = 45
 
-    # Diseño que muestra una imagen a la derecha y un título y contenido a la izquierda
+    # Diseño que muestra una imagen a la derecha y un título y contenido a la izquierda con estilo moderno
     def design2(self, slide, section, content, image_path):
         slide_layout = self.presentation.slide_layouts[6]
         slide = self.presentation.slides.add_slide(slide_layout)
 
-        # Añadir una imagen vertical a la derecha
+        # Añadir fondo con color gradiente para aspecto profesional
+        bg = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE, 
+            Inches(0), 
+            Inches(0), 
+            self.presentation.slide_width, 
+            self.presentation.slide_height
+        )
+        bg_fill = bg.fill
+        bg_fill.solid()
+        bg_fill.fore_color.rgb = RGBColor(240, 240, 240)
+
+        # Añadir una imagen vertical a la derecha con efecto de sombra
         left = Inches(5)
         top = Inches(0)
         width = Inches(5)
         height = Inches(7.55)
         pic = slide.shapes.add_picture(image_path, left, top, width, height)
+        
+        # Agregar barra decorativa vertical en la separación entre imagen y contenido
+        bar = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(4.9),
+            Inches(0),
+            Inches(0.1),
+            self.presentation.slide_height
+        )
+        bar_fill = bar.fill
+        bar_fill.solid()
+        bar_fill.fore_color.rgb = RGBColor(33, 115, 70)
+        bar.line.fill.background()
+        
+        # Área de contenido con fondo sutilmente destacado
+        content_bg = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(0),
+            Inches(0),
+            Inches(4.9),
+            self.presentation.slide_height
+        )
+        content_bg_fill = content_bg.fill
+        content_bg_fill.solid()
+        content_bg_fill.fore_color.rgb = RGBColor(250, 250, 250)
+        content_bg.transparency = 0.2
+        content_bg.line.fill.background()
 
-        # Añadir un título a la izquierda
-        title_box = slide.shapes.add_textbox(Inches(0), Inches(1), Inches(5), Inches(1))
+        # Añadir un título a la izquierda con estilo moderno
+        title_box = slide.shapes.add_textbox(Inches(1.2), Inches(0.2), Inches(3.3), Inches(1.2))
         title_frame = title_box.text_frame
         title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(24)
+        title_frame.paragraphs[0].runs[0].font.size = Pt(32)
         title_frame.paragraphs[0].runs[0].font.bold = True
-        title_frame.paragraphs[0].runs[0].font.underline = True
+        title_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(33, 115, 70)
         title_frame.margin_bottom = Inches(0)
         title_frame.margin_left = Inches(0.25)
         title_frame.vertical_anchor = MSO_ANCHOR.TOP
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_font(title_frame)
+        
+        # Línea decorativa bajo el título
+        title_underline = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(0.4),
+            Inches(2.1),
+            Inches(4),
+            Inches(0.05)
+        )
+        underline_fill = title_underline.fill
+        underline_fill.solid()
+        underline_fill.fore_color.rgb = RGBColor(33, 115, 70)
+        title_underline.line.fill.background()
 
-        # Añadir texto debajo del título
-        text_box = slide.shapes.add_textbox(Inches(0), Inches(2), Inches(5), Inches(4))
+        # Añadir texto debajo del título con estilo mejorado
+        text_box = slide.shapes.add_textbox(Inches(0.4), Inches(2), Inches(4), Inches(4))
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
         p.font.size = Pt(20)
+        p.font.color.rgb = RGBColor(50, 50, 50)
         text_frame.margin_bottom = Inches(0.08)
         text_frame.margin_left = Inches(0.25)
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_font(text_frame)
+        
+        # Elemento decorativo en esquina superior izquierda
+        decoration = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            Inches(0.2),
+            Inches(0.3),
+            Inches(1),
+            Inches(1)
+        )
+        dec_fill = decoration.fill
+        dec_fill.solid()
+        dec_fill.fore_color.rgb = RGBColor(33, 115, 70)
+        decoration.line.fill.background()
+        decoration.rotation = 45
 
     # Diseño que muestra una imagen oscurecida y un título y contenido a la derecha
     def design3(self, slide, section, content, image_path):
