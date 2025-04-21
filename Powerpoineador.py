@@ -1,6 +1,6 @@
 import sys, os, requests, json, webbrowser
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
-from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase
+from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, Qt, QMovie
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
     QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar)
@@ -819,7 +819,7 @@ class MainWindow(QMainWindow):
             self.widget.ver_imagen_btn.setEnabled(False)
             self.widget.num_diapositivas_spin.setEnabled(False)
             self.widget.num_diapositivas_spin.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            self.widget.num_diapositivas_spin.setValue(7)
+            self.widget.num_diapositivas_spin.setValue(8)
             self.widget.num_diapositivas_spin.setStyleSheet("QSpinBox:disabled { color: transparent; }")
             
             # Deshabilitar selección de fuente
@@ -831,23 +831,25 @@ class MainWindow(QMainWindow):
                 self.widget.font_combo.setAttribute(Qt.WA_TransparentForMouseEvents, True)
                 self.widget.font_combo.setCurrentIndex(-1)  # Nueva línea añadida
             
+            # Deshabilitar selección de tamaño de fuente
+            if hasattr(self.widget, 'title_font_size_label'):
+                self.widget.title_font_size_label.setEnabled(False)
+                self.widget.title_font_size_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+            if hasattr(self.widget, 'title_font_size_spin'):
+                self.widget.title_font_size_spin.setEnabled(False)
+                self.widget.title_font_size_spin.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+                self.widget.title_font_size_spin.setStyleSheet("QSpinBox:disabled { color: transparent; }") # Ocultar valor
+            if hasattr(self.widget, 'content_font_size_label'):
+                self.widget.content_font_size_label.setEnabled(False)
+                self.widget.content_font_size_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+            if hasattr(self.widget, 'content_font_size_spin'):
+                self.widget.content_font_size_spin.setEnabled(False)
+                self.widget.content_font_size_spin.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+                self.widget.content_font_size_spin.setStyleSheet("QSpinBox:disabled { color: transparent; }") # Ocultar valor
+
             # Limpiar la vista previa y resetearla
             if hasattr(self.widget, 'vista_previa') and self.widget.vista_previa:
                 self.widget.vista_previa.reset_completo()
-            
-            # Limpiar el documento PDF y ocultar la información relacionada
-            if hasattr(self.widget, 'pdf_label'):
-                self.widget.pdf_label.setText("")
-            if hasattr(self.widget, 'pdf_cargado'):
-                self.widget.pdf_cargado = None
-            if hasattr(self.widget, 'eliminar_pdf_btn'):
-                self.widget.eliminar_pdf_btn.hide()
-            if hasattr(self.widget, 'revisar_pdf_btn'):
-                self.widget.revisar_pdf_btn.hide()
-            
-            # Guardar la configuración para que la ruta del PDF ya no se use
-            if hasattr(self.widget, 'save_pdf_path'):
-                self.widget.save_pdf_path()
             
             # Deshabilitar botones de PDF
             if hasattr(self.widget, 'cargar_pdf_btn'):
@@ -968,6 +970,20 @@ class MainWindow(QMainWindow):
                 self.widget.font_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
                 self.widget.load_font_selection()  # Modificado: llamar al método del widget
             
+            # Habilitar selección de tamaño de fuente
+            if hasattr(self.widget, 'title_font_size_label'):
+                self.widget.title_font_size_label.setEnabled(True)
+                self.widget.title_font_size_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+            if hasattr(self.widget, 'title_font_size_spin'):
+                self.widget.title_font_size_spin.setEnabled(True)
+                self.widget.title_font_size_spin.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+            if hasattr(self.widget, 'content_font_size_label'):
+                self.widget.content_font_size_label.setEnabled(True)
+                self.widget.content_font_size_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+            if hasattr(self.widget, 'content_font_size_spin'):
+                self.widget.content_font_size_spin.setEnabled(True)
+                self.widget.content_font_size_spin.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+
             self.widget.auto_open_checkbox.setEnabled(True)
             self.widget.diapositivas_label.setEnabled(True)
             self.widget.diapositivas_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
@@ -1544,6 +1560,8 @@ class PowerpoineatorWidget(QWidget):
         self.load_num_diapositivas()
         self.load_pdf_path()
         self.load_font_selection() # Cargar fuente guardada después de setup_ui
+        self.load_content_font_selection() # <--- AÑADIR CARGA FUENTE CONTENIDO
+        self.load_font_sizes() # Cargar tamaños de fuente guardados
 
     def actualizar_traducciones(self, idioma):
         try:
@@ -1555,7 +1573,11 @@ class PowerpoineatorWidget(QWidget):
             self.descripcion_label.setText(obtener_traduccion('descripcion_presentacion', idioma))
             self.texto_label.setText(obtener_traduccion('texto_modelo', idioma))
             self.imagen_label.setText(obtener_traduccion('imagen_modelo', idioma))
-            self.font_label.setText(obtener_traduccion('font_label', idioma)) # Traducir etiqueta de fuente
+            # self.font_label.setText(obtener_traduccion('font_label', idioma)) # Traducir etiqueta de fuente
+            self.title_font_label.setText(obtener_traduccion('title_font_label', idioma)) # <-- Cambiar etiqueta título
+            self.content_font_label.setText(obtener_traduccion('content_font_label', idioma)) # <-- Añadir etiqueta contenido
+            self.title_font_size_label.setText(obtener_traduccion('title_font_size_label', idioma)) # Traducir etiqueta tamaño título
+            self.content_font_size_label.setText(obtener_traduccion('content_font_size_label', idioma)) # Traducir etiqueta tamaño contenido
             
             # Actualizar botones de documentos
             self.cargar_pdf_btn.setText(obtener_traduccion('cargar_pdf', idioma))
@@ -1655,27 +1677,60 @@ class PowerpoineatorWidget(QWidget):
 
         left_layout.addLayout(model_layout)
         
-        # Layout para selección de fuente - Ahora situado debajo de los comboboxes de modelos
-        font_layout = QHBoxLayout()
-        self.font_label = QLabel(obtener_traduccion('font_label', current_language))
-        font_layout.addWidget(self.font_label)
-        
-        # Crear el combobox de fuentes con vista previa
-        self.font_combo = QComboBox()
-        
-        # Hacer que cada elemento del combobox muestre su nombre con su propia fuente
+        # Nuevo layout para fuentes (Título y Contenido)
+        fonts_layout = QHBoxLayout()
+
+        # Fuente Título
+        title_font_layout = QVBoxLayout()
+        self.title_font_label = QLabel(obtener_traduccion('title_font_label', current_language))
+        self.font_combo = QComboBox() # Mantenemos el nombre font_combo para el título
         for font_name in self.system_fonts:
             self.font_combo.addItem(font_name)
             index = self.font_combo.count() - 1
-            font = QFont(font_name, 10)  # Tamaño 10 para la vista previa
+            font = QFont(font_name, 10)
             self.font_combo.setItemData(index, font, Qt.FontRole)
-        
-        font_layout.addWidget(self.font_combo, 1) # Añadido el factor de estiramiento 1
-        left_layout.addLayout(font_layout) # Añadir layout de fuente justo después de los modelos
-        
-        # Conectar señales del combobox de fuentes aquí, una sola vez
-        self.font_combo.currentTextChanged.connect(self.save_font_selection)
-        self.font_combo.currentTextChanged.connect(self.update_font_combo_style)
+        self.font_combo.currentTextChanged.connect(self.save_font_selection) # Guardar fuente TÍTULO
+        self.font_combo.currentTextChanged.connect(lambda text: self.update_font_combo_style(self.font_combo, text)) # Actualizar estilo
+        title_font_layout.addWidget(self.title_font_label)
+        title_font_layout.addWidget(self.font_combo)
+
+        # Tamaño Título (Movido aquí)
+        self.title_font_size_label = QLabel(obtener_traduccion('title_font_size_label', current_language))
+        self.title_font_size_spin = QSpinBox()
+        self.title_font_size_spin.setRange(1, 40)
+        self.title_font_size_spin.setValue(20) # Default title size
+        self.title_font_size_spin.valueChanged.connect(self.save_font_sizes)
+        title_font_layout.addWidget(self.title_font_size_label)
+        title_font_layout.addWidget(self.title_font_size_spin)
+
+        fonts_layout.addLayout(title_font_layout)
+
+        # Fuente Contenido
+        content_font_layout = QVBoxLayout()
+        self.content_font_label = QLabel(obtener_traduccion('content_font_label', current_language))
+        self.content_font_combo = QComboBox()
+        for font_name in self.system_fonts:
+            self.content_font_combo.addItem(font_name)
+            index = self.content_font_combo.count() - 1
+            font = QFont(font_name, 10)
+            self.content_font_combo.setItemData(index, font, Qt.FontRole)
+        self.content_font_combo.currentTextChanged.connect(self.save_content_font_selection) # Guardar fuente CONTENIDO
+        self.content_font_combo.currentTextChanged.connect(lambda text: self.update_font_combo_style(self.content_font_combo, text)) # Actualizar estilo
+        content_font_layout.addWidget(self.content_font_label)
+        content_font_layout.addWidget(self.content_font_combo)
+
+        # Tamaño Contenido (Movido aquí)
+        self.content_font_size_label = QLabel(obtener_traduccion('content_font_size_label', current_language))
+        self.content_font_size_spin = QSpinBox()
+        self.content_font_size_spin.setRange(1, 20)
+        self.content_font_size_spin.setValue(15) # Default content size
+        self.content_font_size_spin.valueChanged.connect(self.save_font_sizes)
+        content_font_layout.addWidget(self.content_font_size_label)
+        content_font_layout.addWidget(self.content_font_size_spin)
+
+        fonts_layout.addLayout(content_font_layout)
+
+        left_layout.addLayout(fonts_layout) # Añadir el layout general de fuentes
 
         self.descripcion_label = QLabel(obtener_traduccion('descripcion_presentacion', current_language))
         left_layout.addWidget(self.descripcion_label)
@@ -1743,13 +1798,12 @@ class PowerpoineatorWidget(QWidget):
         self.diapositivas_label = QLabel(obtener_traduccion('num_diapositivas', current_language))
         diapositivas_layout.addWidget(self.diapositivas_label)
         self.num_diapositivas_spin = QSpinBox()
-        self.num_diapositivas_spin.setRange(3, 20)
-        self.num_diapositivas_spin.setValue(7)
+        self.num_diapositivas_spin.setRange(3, 30)
+        self.num_diapositivas_spin.setValue(8)
         self.num_diapositivas_spin.valueChanged.connect(self.save_num_diapositivas)
         self.num_diapositivas_spin.setReadOnly(False)
         self.num_diapositivas_spin.setButtonSymbols(QSpinBox.UpDownArrows)
         self.num_diapositivas_spin.setKeyboardTracking(False)
-        self.num_diapositivas_spin.lineEdit().setReadOnly(True)
         diapositivas_layout.addWidget(self.num_diapositivas_spin)
         
         self.contador_checkbox_layout.addLayout(diapositivas_layout)
@@ -2113,7 +2167,29 @@ class PowerpoineatorWidget(QWidget):
         self.texto_combo.setEnabled(False)
         self.imagen_combo.setEnabled(False)
         self.font_combo.setEnabled(False)
-        self.font_label.setEnabled(False)
+        self.title_font_label.setEnabled(False)
+        self.title_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, True) # Añadido para consistencia
+        self.content_font_combo.setEnabled(False)
+        self.content_font_label.setEnabled(False)
+        self.content_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, True) # Añadido para consistencia
+
+        # Deshabilitar los labels solicitados
+        self.texto_label.setEnabled(False)
+        self.texto_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self.imagen_label.setEnabled(False)
+        self.imagen_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self.descripcion_label.setEnabled(False)
+        self.descripcion_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+
+        # Deshabilitar spinboxes de tamaño de fuente
+        if hasattr(self, 'title_font_size_label'):
+            self.title_font_size_label.setEnabled(False)
+        if hasattr(self, 'title_font_size_spin'):
+            self.title_font_size_spin.setEnabled(False)
+        if hasattr(self, 'content_font_size_label'):
+            self.content_font_size_label.setEnabled(False)
+        if hasattr(self, 'content_font_size_spin'):
+            self.content_font_size_spin.setEnabled(False)
         
         # Deshabilitar área de descripción
         self.descripcion_text.setEnabled(False)
@@ -2200,8 +2276,31 @@ class PowerpoineatorWidget(QWidget):
         self.texto_combo.setEnabled(True)
         self.imagen_combo.setEnabled(True)
         self.font_combo.setEnabled(True)
-        self.font_label.setEnabled(True)
-        self.load_font_selection() # <- Línea añadida
+        self.title_font_label.setEnabled(True)
+        self.title_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, False) # Añadido para consistencia
+        self.content_font_combo.setEnabled(True)
+        self.content_font_label.setEnabled(True)
+        self.content_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, False) # Añadido para consistencia
+        self.load_font_selection()
+        self.load_content_font_selection()
+
+        # Habilitar los labels solicitados
+        self.texto_label.setEnabled(True)
+        self.texto_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+        self.imagen_label.setEnabled(True)
+        self.imagen_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+        self.descripcion_label.setEnabled(True)
+        self.descripcion_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+
+        # Habilitar spinboxes de tamaño de fuente
+        if hasattr(self, 'title_font_size_label'):
+            self.title_font_size_label.setEnabled(True)
+        if hasattr(self, 'title_font_size_spin'):
+            self.title_font_size_spin.setEnabled(True)
+        if hasattr(self, 'content_font_size_label'):
+            self.content_font_size_label.setEnabled(True)
+        if hasattr(self, 'content_font_size_spin'):
+            self.content_font_size_spin.setEnabled(True)
 
         # Habilitar área de descripción
         self.descripcion_text.setEnabled(True)
@@ -2235,7 +2334,11 @@ class PowerpoineatorWidget(QWidget):
         descripcion = self.descripcion_text.toPlainText()
         auto_open = self.auto_open_checkbox.isChecked()
         num_diapositivas = self.num_diapositivas_spin.value()
-        selected_font = self.font_combo.currentText() # Obtener fuente seleccionada
+        # selected_font = self.font_combo.currentText() # Obtener fuente seleccionada
+        title_font = self.font_combo.currentText() # <-- Fuente Título
+        content_font = self.content_font_combo.currentText() # <-- Fuente Contenido
+        title_font_size = self.title_font_size_spin.value() # Obtener tamaño título
+        content_font_size = self.content_font_size_spin.value() # Obtener tamaño contenido
 
         # Obtener el idioma actual desde el padre (MainWindow) o usar default
         current_language = 'es'
@@ -2326,12 +2429,16 @@ class PowerpoineatorWidget(QWidget):
             self.worker = GenerationWorker(
                 modelo_texto,
                 modelo_imagen,
-                nuevo_string + f" hazlo en {instruccion_idioma} y en {num_diapositivas} diapositivas. Los títulos tendrán de máximo unas 6 palabras, y el contenido máximo unas 33 palabras",
+                nuevo_string + f" hazlo en {instruccion_idioma} y en {num_diapositivas} diapositivas. Los títulos tendrán un máximo de 5 palabras, y el contenido un máximo de 50 palabras",
                 auto_open,
                 self.imagen_personalizada,
                 file_path,
                 self.signals,
-                selected_font # Pasar fuente seleccionada al worker
+                # selected_font, # Pasar fuente seleccionada al worker
+                title_font, # <-- Pasar fuente título
+                content_font, # <-- Pasar fuente contenido
+                title_font_size, # Pasar tamaño de fuente de título
+                content_font_size # Pasar tamaño de fuente de contenido
             )
             self.worker.start()
 
@@ -2857,59 +2964,167 @@ class PowerpoineatorWidget(QWidget):
 
     # Función para guardar la selección de fuente
     def save_font_selection(self, font_name):
-        self.selected_font = font_name
         try:
             config = {}
             if os.path.exists(CONFIG_FILE):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
 
-            config['selected_font'] = self.selected_font
+            config['title_font'] = font_name # <-- Guardar como title_font
 
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                 json.dump(config, f, ensure_ascii=False, indent=4)
         except Exception as e:
-            print(f"Error al guardar la fuente seleccionada: {str(e)}")
+            print(f"Error al guardar la fuente del título: {str(e)}")
+            
+    # Nueva función para guardar la fuente del contenido
+    def save_content_font_selection(self, font_name):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            
+            config['content_font'] = font_name
+            
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar la fuente del contenido: {str(e)}")
 
-    # Función para cargar la selección de fuente
     def load_font_selection(self):
         try:
             if os.path.exists(CONFIG_FILE):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-                    saved_font = config.get('selected_font', 'Calibri') # Default to Calibri
-                    if saved_font in self.system_fonts:
-                        self.selected_font = saved_font
+                    # Cargar fuente de título (anteriormente 'font')
+                    title_font = config.get('title_font', config.get('font', 'Calibri')) 
+                    if title_font in self.system_fonts:
+                        self.font_combo.blockSignals(True)
+                        self.font_combo.setCurrentText(title_font)
+                        self.update_font_combo_style(self.font_combo, title_font) # Aplicar estilo al cargar
+                        self.font_combo.blockSignals(False)
                     else:
-                        self.selected_font = 'Calibri' # Fallback if saved font is not available/valid
-            else:
-                self.selected_font = 'Calibri'
+                        print(f"Fuente de título guardada '{title_font}' no encontrada. Usando Calibri.")
+                        self.font_combo.blockSignals(True)
+                        self.font_combo.setCurrentText('Calibri')
+                        self.update_font_combo_style(self.font_combo, 'Calibri')
+                        self.font_combo.blockSignals(False)
+                        self.save_font_selection('Calibri') # Guardar valor por defecto
+        except Exception as e:
+            print(f"Error al cargar la fuente del título: {str(e)}")
+            self.font_combo.setCurrentText('Calibri') # Fallback
+            self.update_font_combo_style(self.font_combo, 'Calibri')
 
-            # Setear el valor en el combo box
-            if hasattr(self, 'font_combo') and self.font_combo:
-                # Establecer el valor actual sin disparar las señales conectadas
-                self.font_combo.blockSignals(True)
-                self.font_combo.setCurrentText(self.selected_font)
-                # La llamada a update_font_combo_style se hará automáticamente por el cambio de texto,
-                # pero como las señales están bloqueadas, la llamamos manualmente para asegurar el estilo inicial.
-                self.update_font_combo_style(self.selected_font) 
-                self.font_combo.blockSignals(False)
+    # Nueva función para cargar la fuente del contenido
+    def load_content_font_selection(self):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    content_font = config.get('content_font', 'Calibri')
+                    if content_font in self.system_fonts:
+                        self.content_font_combo.blockSignals(True)
+                        self.content_font_combo.setCurrentText(content_font)
+                        self.update_font_combo_style(self.content_font_combo, content_font)
+                        self.content_font_combo.blockSignals(False)
+                    else:
+                        print(f"Fuente de contenido guardada '{content_font}' no encontrada. Usando Calibri.")
+                        self.content_font_combo.blockSignals(True)
+                        self.content_font_combo.setCurrentText('Calibri')
+                        self.update_font_combo_style(self.content_font_combo, 'Calibri')
+                        self.content_font_combo.blockSignals(False)
+                        self.save_content_font_selection('Calibri')
+        except Exception as e:
+            print(f"Error al cargar la fuente del contenido: {str(e)}")
+            self.content_font_combo.setCurrentText('Calibri') # Fallback
+            self.update_font_combo_style(self.content_font_combo, 'Calibri')
+
+    # Modificar para aceptar el combobox como argumento
+    def update_font_combo_style(self, combo_box, font_name):
+        if font_name in self.system_fonts:
+            font = QFont(font_name, 10)
+            combo_box.setFont(font)
+        else:
+            combo_box.setFont(QFont("Calibri", 10)) # Fallback
+
+    def save_font_sizes(self):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            
+            config['title_font_size'] = self.title_font_size_spin.value()
+            config['content_font_size'] = self.content_font_size_spin.value()
+            
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar los tamaños de fuente: {str(e)}")
+
+    def load_font_sizes(self):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    title_font_size = config.get('title_font_size', 24)
+                    content_font_size = config.get('content_font_size', 18)
+                    self.title_font_size_spin.setValue(title_font_size)
+                    self.content_font_size_spin.setValue(content_font_size)
+        except Exception as e:
+            print(f"Error al cargar los tamaños de fuente: {str(e)}")
+
+    # Función para guardar los tamaños de fuente
+    def save_font_sizes(self):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+
+            config['title_font_size'] = self.title_font_size_spin.value()
+            config['content_font_size'] = self.content_font_size_spin.value()
+
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar los tamaños de fuente: {str(e)}")
+
+    # Función para cargar los tamaños de fuente
+    def load_font_sizes(self):
+        try:
+            title_size = 16 # Default
+            content_size = 10 # Default
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    title_size = config.get('title_font_size', 16)
+                    content_size = config.get('content_font_size', 10)
+
+            # Validar rangos
+            if not (1 <= title_size <= 23):
+                title_size = 16
+            if not (1 <= content_size <= 20):
+                content_size = 10
+
+            # Setear valores en los spin boxes
+            if hasattr(self, 'title_font_size_spin') and self.title_font_size_spin:
+                self.title_font_size_spin.blockSignals(True)
+                self.title_font_size_spin.setValue(title_size)
+                self.title_font_size_spin.blockSignals(False)
+            if hasattr(self, 'content_font_size_spin') and self.content_font_size_spin:
+                self.content_font_size_spin.blockSignals(True)
+                self.content_font_size_spin.setValue(content_size)
+                self.content_font_size_spin.blockSignals(False)
 
         except Exception as e:
-            print(f"Error al cargar la fuente seleccionada: {str(e)}")
-            # En caso de error, aplicar fallback y setear el combobox
-            self.selected_font = 'Calibri' # Usar un fallback seguro
-            if hasattr(self, 'font_combo') and self.font_combo:
-                self.font_combo.blockSignals(True)
-                self.font_combo.setCurrentText(self.selected_font)
-                self.update_font_combo_style(self.selected_font) # Aplicar estilo
-                self.font_combo.blockSignals(False)
-
-    # Función para actualizar la fuente mostrada en el combobox
-    def update_font_combo_style(self, font_name):
-        if hasattr(self, 'font_combo') and self.font_combo:
-            current_font = QFont(font_name, 10)
-            self.font_combo.setFont(current_font)
+            print(f"Error al cargar los tamaños de fuente: {str(e)}")
+            # En caso de error, aplicar defaults
+            if hasattr(self, 'title_font_size_spin') and self.title_font_size_spin:
+                self.title_font_size_spin.setValue(16)
+            if hasattr(self, 'content_font_size_spin') and self.content_font_size_spin:
+                self.content_font_size_spin.setValue(10)
 
 # Función principal para iniciar la aplicación
 if __name__ == "__main__":

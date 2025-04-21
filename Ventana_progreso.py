@@ -45,7 +45,7 @@ class LogSignals(QObject):
 
 # Clase worker para ejecutar la generación en un hilo separado
 class GenerationWorker(QThread):
-    def __init__(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals, font_name='Calibri'):
+    def __init__(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10):
         super().__init__()
         # Inicialización de variables necesarias para la generación
         self.modelo_texto = modelo_texto
@@ -55,7 +55,10 @@ class GenerationWorker(QThread):
         self.imagen_personalizada = imagen_personalizada
         self.filename = filename
         self.signals = signals
-        self.font_name = font_name
+        self.title_font_name = title_font_name
+        self.content_font_name = content_font_name
+        self.title_font_size = title_font_size
+        self.content_font_size = content_font_size
         # Bandera para saber si el proceso debe continuar
         self.running = True
 
@@ -72,7 +75,10 @@ class GenerationWorker(QThread):
                 self.imagen_personalizada,
                 self.filename,
                 self.signals,
-                self.font_name
+                self.title_font_name,
+                self.content_font_name,
+                self.title_font_size,
+                self.content_font_size
             )
         except InterruptedError:
             # Obtener idioma para mensaje de cancelación

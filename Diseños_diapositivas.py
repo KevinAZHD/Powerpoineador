@@ -7,15 +7,29 @@ from PIL import Image, ImageEnhance, ImageFilter
 
 # Clase para manejar los diseños de diapositivas
 class Diapositivas:
-    def __init__(self, presentation, font_name='Calibri'):
+    def __init__(self, presentation, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10):
         self.presentation = presentation
-        self.font_name = font_name
+        self.title_font_name = title_font_name
+        self.content_font_name = content_font_name
+        self.title_font_size = title_font_size
+        self.content_font_size = content_font_size
 
     # Función auxiliar para aplicar fuente al texto
     def apply_font(self, text_frame):
         for paragraph in text_frame.paragraphs:
             for run in paragraph.runs:
                 run.font.name = self.font_name
+
+    # Nuevas funciones para aplicar fuentes específicas
+    def apply_title_font(self, text_frame):
+        for paragraph in text_frame.paragraphs:
+            for run in paragraph.runs:
+                run.font.name = self.title_font_name
+
+    def apply_content_font(self, text_frame):
+        for paragraph in text_frame.paragraphs:
+            for run in paragraph.runs:
+                run.font.name = self.content_font_name
 
     # Diseño de introducción - Moderno y profesional
     def design0(self, slide, section, content, image_path):
@@ -114,10 +128,10 @@ class Diapositivas:
         p_title = title_frame.paragraphs[0]
         p_title.alignment = PP_ALIGN.LEFT
         run_title = p_title.runs[0]
-        run_title.font.size = Pt(46)
+        run_title.font.size = Pt(self.title_font_size)
         run_title.font.bold = True
         run_title.font.color.rgb = RGBColor(255, 255, 255)
-        self.apply_font(title_frame)
+        self.apply_title_font(title_frame)
         run_title.font.color.rgb = RGBColor(255, 255, 255)
         run_title.font.bold = True
 
@@ -154,9 +168,9 @@ class Diapositivas:
         p_content.text = content
         p_content.alignment = PP_ALIGN.LEFT
         run_content = p_content.runs[0]
-        run_content.font.size = Pt(20)
+        run_content.font.size = Pt(self.content_font_size)
         run_content.font.color.rgb = RGBColor(240, 240, 240)
-        self.apply_font(text_frame)
+        self.apply_content_font(text_frame)
         run_content.font.color.rgb = RGBColor(240, 240, 240)
 
         # Añadir elementos decorativos
@@ -242,7 +256,7 @@ class Diapositivas:
         title_box = slide.shapes.add_textbox(Inches(5.3), Inches(0.2), Inches(3.3), Inches(1.2))
         title_frame = title_box.text_frame
         title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(32)
+        title_frame.paragraphs[0].runs[0].font.size = Pt(self.title_font_size)
         title_frame.paragraphs[0].runs[0].font.bold = True
         title_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(0, 120, 215)
         title_frame.margin_bottom = Inches(0)
@@ -250,7 +264,7 @@ class Diapositivas:
         title_frame.vertical_anchor = MSO_ANCHOR.TOP
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(title_frame)
+        self.apply_title_font(title_frame)
         
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
@@ -270,14 +284,14 @@ class Diapositivas:
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
-        p.font.size = Pt(20)
+        p.font.size = Pt(self.content_font_size)
         p.font.color.rgb = RGBColor(50, 50, 50)
         text_frame.margin_bottom = Inches(0.08)
         text_frame.margin_left = Inches(0.25)
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(text_frame)
+        self.apply_content_font(text_frame)
         
         # Elemento decorativo en esquina superior derecha
         decoration = slide.shapes.add_shape(
@@ -348,7 +362,7 @@ class Diapositivas:
         title_box = slide.shapes.add_textbox(Inches(1.2), Inches(0.2), Inches(3.3), Inches(1.2))
         title_frame = title_box.text_frame
         title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(32)
+        title_frame.paragraphs[0].runs[0].font.size = Pt(self.title_font_size)
         title_frame.paragraphs[0].runs[0].font.bold = True
         title_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(33, 115, 70)
         title_frame.margin_bottom = Inches(0)
@@ -356,7 +370,7 @@ class Diapositivas:
         title_frame.vertical_anchor = MSO_ANCHOR.TOP
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(title_frame)
+        self.apply_title_font(title_frame)
         
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
@@ -376,14 +390,14 @@ class Diapositivas:
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
-        p.font.size = Pt(20)
+        p.font.size = Pt(self.content_font_size)
         p.font.color.rgb = RGBColor(50, 50, 50)
         text_frame.margin_bottom = Inches(0.08)
         text_frame.margin_left = Inches(0.25)
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(text_frame)
+        self.apply_content_font(text_frame)
         
         # Elemento decorativo en esquina superior izquierda
         decoration = slide.shapes.add_shape(
@@ -424,7 +438,7 @@ class Diapositivas:
         title_box = slide.shapes.add_textbox(self.presentation.slide_width / 2 - Inches(2.5), Inches(0.5), Inches(5), Inches(1))
         title_frame = title_box.text_frame
         title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(24)
+        title_frame.paragraphs[0].runs[0].font.size = Pt(self.title_font_size)
         title_frame.paragraphs[0].runs[0].font.bold = True
         title_frame.paragraphs[0].runs[0].font.underline = True
         title_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(255, 255, 255)
@@ -434,14 +448,14 @@ class Diapositivas:
         title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(title_frame)
+        self.apply_title_font(title_frame)
 
         # Añadir texto centrado con texto blanco
         text_box = slide.shapes.add_textbox(self.presentation.slide_width / 2 - Inches(4), Inches(1.5), Inches(8), Inches(4))
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
-        p.font.size = Pt(20)
+        p.font.size = Pt(self.content_font_size)
         p.font.color.rgb = RGBColor(255, 255, 255)
         p.alignment = PP_ALIGN.CENTER
         text_frame.margin_bottom = Inches(0.08)
@@ -449,7 +463,7 @@ class Diapositivas:
         text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(text_frame)
+        self.apply_content_font(text_frame)
 
     # Diseño que muestra una imagen oscurecida y un título y contenido a la derecha
     def design4(self, slide, section, content, image_path):
@@ -463,34 +477,76 @@ class Diapositivas:
         height = self.presentation.slide_height
         pic = slide.shapes.add_picture(image_path, left, top, width, height)
 
-        # Añadir rectángulo blanco a la izquierda
+        # Añadir una forma de relleno con esquinas redondeadas a la izquierda
         left = Inches(0.5)
-        top = Inches(1.5)
+        top = Inches(1.2)
         width = Inches(5)
-        height = Inches(5)
-        shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
+        height = Inches(5.2)
+        shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
         fill = shape.fill
         fill.solid()
-        fill.fore_color.rgb = RGBColor(255, 255, 255)
+        fill.fore_color.rgb = RGBColor(245, 245, 250)
+        shape.line.width = Pt(1.5)
+        shape.line.color.rgb = RGBColor(0, 130, 114)
+        shape.shadow.inherit = False
 
-        # Añadir título dentro del rectángulo
-        title_box = slide.shapes.add_textbox(Inches(0.6), Inches(1.6), Inches(4.8), Inches(1))
+        # Añadir un título moderno dentro de la forma
+        title_box = slide.shapes.add_textbox(left + Inches(0.3), top + Inches(0), width - Inches(0.6), Inches(1))
         title_frame = title_box.text_frame
         title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(24)
-        title_frame.paragraphs[0].runs[0].font.bold = True
-        title_frame.paragraphs[0].runs[0].font.underline = True
-        self.apply_font(title_frame)
+        title_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
+        run = title_frame.paragraphs[0].runs[0]
+        run.font.size = Pt(self.title_font_size)
+        run.font.bold = True
+        run.font.color.rgb = RGBColor(0, 130, 114)
+        title_frame.vertical_anchor = MSO_ANCHOR.TOP
+        title_frame.word_wrap = True
+        title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+        self.apply_title_font(title_frame)
 
-        # Añadir texto dentro del rectángulo
-        text_box = slide.shapes.add_textbox(Inches(0.6), Inches(2.2), Inches(4.8), Inches(4))
+        # Línea decorativa bajo el título
+        title_underline = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            left + Inches(0.3),
+            top + Inches(1.2),
+            Inches(4),
+            Inches(0.05)
+        )
+        underline_fill = title_underline.fill
+        underline_fill.solid()
+        underline_fill.fore_color.rgb = RGBColor(0, 130, 114)
+        title_underline.line.fill.background()
+
+        # Añadir texto debajo del título con mejor formato
+        text_box = slide.shapes.add_textbox(left + Inches(0.3), top + Inches(1.3), width - Inches(0.6), height - Inches(1.6))
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
-        p.font.size = Pt(20)
+        p.font.size = Pt(self.content_font_size)
+        p.font.color.rgb = RGBColor(40, 70, 65)
+        text_frame.margin_top = Inches(-0.25)
+        text_frame.margin_bottom = Inches(0.08)
+        text_frame.margin_left = Inches(0.10)
+        text_frame.margin_right = Inches(0.25)
+        text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(text_frame)
+        self.apply_content_font(text_frame)
+
+        # Elemento decorativo en la esquina inferior izquierda
+        corner_dec = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            left + width - Inches(1),
+            top + height - Inches(1),
+            Inches(0.8),
+            Inches(0.8)
+        )
+        corner_fill = corner_dec.fill
+        corner_fill.solid()
+        corner_fill.fore_color.rgb = RGBColor(0, 130, 114)
+        corner_dec.transparency = 0.6
+        corner_dec.line.fill.background()
+        corner_dec.rotation = 45
 
     # Diseño que muestra una imagen cuadrada a la izquierda y un título y contenido a la derecha
     def design5(self, slide, section, content, image_path):
@@ -534,13 +590,13 @@ class Diapositivas:
         title_frame.text = section
         title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
         run = title_frame.paragraphs[0].runs[0]
-        run.font.size = Pt(36)
+        run.font.size = Pt(self.title_font_size)
         run.font.bold = True
         run.font.color.rgb = RGBColor(140, 0, 60)
         title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(title_frame)
+        self.apply_title_font(title_frame)
         
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
@@ -620,7 +676,7 @@ class Diapositivas:
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
-        p.font.size = Pt(20)
+        p.font.size = Pt(self.content_font_size)
         p.font.color.rgb = RGBColor(80, 20, 40)
         text_frame.margin_top = Inches(-0.25)
         text_frame.margin_left = Inches(0.25)
@@ -628,7 +684,7 @@ class Diapositivas:
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(text_frame)
+        self.apply_content_font(text_frame)
         
         # Elemento decorativo en la esquina inferior derecha
         corner_dec = slide.shapes.add_shape(
@@ -657,37 +713,76 @@ class Diapositivas:
         height = self.presentation.slide_height
         pic = slide.shapes.add_picture(image_path, left, top, width, height)
 
-        # Añadir una forma de relleno blanco a la derecha
+        # Añadir una forma de relleno con esquinas redondeadas y semitransparente a la derecha
         left = Inches(4.5)
-        top = Inches(1.5)
+        top = Inches(1.2)
         width = Inches(5)
-        height = Inches(5)
-        shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
+        height = Inches(5.2)
+        shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
         fill = shape.fill
         fill.solid()
-        fill.fore_color.rgb = RGBColor(255, 255, 255)
+        fill.fore_color.rgb = RGBColor(245, 245, 250)
+        shape.line.width = Pt(1.5)
+        shape.line.color.rgb = RGBColor(70, 130, 180)
+        shape.shadow.inherit = False
 
-        # Añadir un título dentro de la forma
-        title_box = slide.shapes.add_textbox(Inches(4.6), Inches(1.6), Inches(4.8), Inches(1))
+        # Añadir un título moderno dentro de la forma
+        title_box = slide.shapes.add_textbox(left + Inches(0.3), top + Inches(0), width - Inches(0.6), Inches(1))
         title_frame = title_box.text_frame
         title_frame.text = section
-        title_frame.paragraphs[0].runs[0].font.size = Pt(24)
-        title_frame.paragraphs[0].runs[0].font.bold = True
-        title_frame.paragraphs[0].runs[0].font.underline = True
-        self.apply_font(title_frame)
+        title_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
+        run = title_frame.paragraphs[0].runs[0]
+        run.font.size = Pt(self.title_font_size)
+        run.font.bold = True
+        run.font.color.rgb = RGBColor(50, 80, 120)
+        title_frame.vertical_anchor = MSO_ANCHOR.TOP
+        title_frame.word_wrap = True
+        title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+        self.apply_title_font(title_frame)
 
-        # Añadir texto debajo del título
-        text_box = slide.shapes.add_textbox(Inches(4.6), Inches(1.8), Inches(4.8), Inches(4))
+        # Línea decorativa bajo el título
+        title_underline = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            left + Inches(0.3),
+            top + Inches(1.4),
+            Inches(4),
+            Inches(0.05)
+        )
+        underline_fill = title_underline.fill
+        underline_fill.solid()
+        underline_fill.fore_color.rgb = RGBColor(70, 130, 180)
+        title_underline.line.fill.background()
+
+        # Añadir texto debajo del título con mejor formato
+        text_box = slide.shapes.add_textbox(left + Inches(0.3), top + Inches(1.5), width - Inches(0.6), height - Inches(1.8))
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
-        p.font.size = Pt(20)
+        p.font.size = Pt(self.content_font_size)
+        p.font.color.rgb = RGBColor(50, 50, 70)
+        text_frame.margin_top = Inches(-0.25)
         text_frame.margin_bottom = Inches(0.08)
-        text_frame.margin_left = Inches(0.25)
+        text_frame.margin_left = Inches(0.10)
+        text_frame.margin_right = Inches(0.25)
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(text_frame)
+        self.apply_content_font(text_frame)
+
+        # Elemento decorativo en la esquina inferior derecha
+        corner_dec = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            left + width - Inches(1),
+            top + height - Inches(1),
+            Inches(0.8),
+            Inches(0.8)
+        )
+        corner_fill = corner_dec.fill
+        corner_fill.solid()
+        corner_fill.fore_color.rgb = RGBColor(70, 130, 180)
+        corner_dec.transparency = 0.6
+        corner_dec.line.fill.background()
+        corner_dec.rotation = 45
 
     # Diseño que muestra una imagen cuadrada a la derecha y un título y contenido a la izquierda
     def design7(self, slide, section, content, image_path):
@@ -732,13 +827,13 @@ class Diapositivas:
         title_frame.text = section
         title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
         run = title_frame.paragraphs[0].runs[0]
-        run.font.size = Pt(36)
+        run.font.size = Pt(self.title_font_size)
         run.font.bold = True
         run.font.color.rgb = RGBColor(80, 20, 140)
         title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(title_frame)
+        self.apply_title_font(title_frame)
 
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
@@ -822,7 +917,7 @@ class Diapositivas:
         text_frame = text_box.text_frame
         p = text_frame.add_paragraph()
         p.text = content
-        p.font.size = Pt(20)
+        p.font.size = Pt(self.content_font_size)
         p.font.color.rgb = RGBColor(60, 20, 120)
         text_frame.margin_top = Inches(-0.25)
         text_frame.margin_left = Inches(0.25)
@@ -830,7 +925,7 @@ class Diapositivas:
         text_frame.vertical_anchor = MSO_ANCHOR.TOP
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-        self.apply_font(text_frame)
+        self.apply_content_font(text_frame)
 
         # Elemento decorativo en la esquina inferior izquierda
         corner_dec = slide.shapes.add_shape(

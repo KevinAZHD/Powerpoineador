@@ -131,7 +131,11 @@ traducciones = {
         'error_abrir_pdf': 'Error al abrir el documento: {error}',
         'aviso': 'Aviso',
         'ningun_documento': 'No hay ningún documento cargado',
-        'font_label': 'Fuente de letra:'
+        'font_label': 'Fuente de letra:',
+        'title_font_label': 'Fuente del título:',
+        'content_font_label': 'Fuente del contenido:',
+        'title_font_size_label': 'Tamaño del título:',
+        'content_font_size_label': 'Tamaño del contenido:'
     },
     'en': {
         'auto_open': 'Automatically open presentation',
@@ -264,7 +268,11 @@ traducciones = {
         'error_abrir_pdf': 'Error opening document: {error}',
         'aviso': 'Notice',
         'ningun_documento': 'No document loaded',
-        'font_label': 'Letter font:'
+        'font_label': 'Letter font:',
+        'title_font_label': 'Title font:',
+        'content_font_label': 'Content font:',
+        'title_font_size_label': 'Title size:',
+        'content_font_size_label': 'Content size:'
     }
 }
 
