@@ -157,7 +157,7 @@ def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
         raise RuntimeError(obtener_traduccion('error_generar_imagen', current_language).format(error=str(e)))
 
 # Función para generar una presentación con un modelo de IA
-def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals=None, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10):
+def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals=None, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False):
     # Función interna para manejar logs
     def log_message(msg):
         print(msg)
@@ -177,7 +177,7 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
         # Crear una nueva presentación
         presentation = Presentation()
         # Crear un objeto para aplicar diseños a las diapositivas, pasando la fuente y tamaños
-        slide_designs = Diapositivas(presentation, title_font_name, content_font_name, title_font_size, content_font_size)
+        slide_designs = Diapositivas(presentation, title_font_name, content_font_name, title_font_size, content_font_size, title_bold, title_italic, title_underline, content_bold, content_italic, content_underline)
 
         # Imprimir un mensaje indicando que se está generando texto con el modelo
         log_message(obtener_traduccion('generando_texto', current_language).format(modelo=modelo_texto))

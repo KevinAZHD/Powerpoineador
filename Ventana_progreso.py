@@ -45,7 +45,7 @@ class LogSignals(QObject):
 
 # Clase worker para ejecutar la generación en un hilo separado
 class GenerationWorker(QThread):
-    def __init__(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10):
+    def __init__(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False):
         super().__init__()
         # Inicialización de variables necesarias para la generación
         self.modelo_texto = modelo_texto
@@ -59,8 +59,15 @@ class GenerationWorker(QThread):
         self.content_font_name = content_font_name
         self.title_font_size = title_font_size
         self.content_font_size = content_font_size
+        self.title_bold = title_bold
+        self.title_italic = title_italic
+        self.title_underline = title_underline
         # Bandera para saber si el proceso debe continuar
         self.running = True
+        # Nuevas variables para formato de contenido
+        self.content_bold = content_bold
+        self.content_italic = content_italic
+        self.content_underline = content_underline
 
     # Función para ejecutar la generación de la presentación
     def run(self):
@@ -78,7 +85,13 @@ class GenerationWorker(QThread):
                 self.title_font_name,
                 self.content_font_name,
                 self.title_font_size,
-                self.content_font_size
+                self.content_font_size,
+                self.title_bold,
+                self.title_italic,
+                self.title_underline,
+                self.content_bold,
+                self.content_italic,
+                self.content_underline
             )
         except InterruptedError:
             # Obtener idioma para mensaje de cancelación

@@ -1,6 +1,6 @@
 import sys, os, requests, json, webbrowser
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
-from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, Qt, QMovie
+from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, Qt
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
     QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar)
@@ -706,6 +706,10 @@ class MainWindow(QMainWindow):
                             config = json.load(f)
                         if 'costos_totales' in config:
                             del config['costos_totales']
+                        if 'num_diapositivas' in config:
+                            del config['num_diapositivas']
+                        if 'pdf_path' in config: # <--- Añadir esta línea
+                            del config['pdf_path'] # <--- Añadir esta línea
                         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                             json.dump(config, f, ensure_ascii=False, indent=4)
                 except Exception as e:
@@ -789,6 +793,8 @@ class MainWindow(QMainWindow):
                         del config['costos_totales']
                     if 'num_diapositivas' in config:
                         del config['num_diapositivas']
+                    if 'pdf_path' in config: # <--- Añadir esta línea
+                        del config['pdf_path'] # <--- Añadir esta línea
                     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                         json.dump(config, f, ensure_ascii=False, indent=4)
             except Exception as e:
@@ -823,9 +829,9 @@ class MainWindow(QMainWindow):
             self.widget.num_diapositivas_spin.setStyleSheet("QSpinBox:disabled { color: transparent; }")
             
             # Deshabilitar selección de fuente
-            if hasattr(self.widget, 'font_label'):
-                self.widget.font_label.setEnabled(False)
-                self.widget.font_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+            if hasattr(self.widget, 'title_font_label'):
+                self.widget.title_font_label.setEnabled(False)
+                self.widget.title_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
             if hasattr(self.widget, 'font_combo'):
                 self.widget.font_combo.setEnabled(False)
                 self.widget.font_combo.setAttribute(Qt.WA_TransparentForMouseEvents, True)
@@ -847,6 +853,37 @@ class MainWindow(QMainWindow):
                 self.widget.content_font_size_spin.setAttribute(Qt.WA_TransparentForMouseEvents, True)
                 self.widget.content_font_size_spin.setStyleSheet("QSpinBox:disabled { color: transparent; }") # Ocultar valor
 
+            # Deshabilitar selección de fuente de contenido
+            if hasattr(self.widget, 'content_font_label'):
+                self.widget.content_font_label.setEnabled(False)
+                self.widget.content_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+            if hasattr(self.widget, 'content_font_combo'):
+                self.widget.content_font_combo.setEnabled(False)
+                self.widget.content_font_combo.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+                self.widget.content_font_combo.setCurrentIndex(-1)
+
+            # Deshabilitar checkboxes de formato de título
+            if hasattr(self.widget, 'title_bold_checkbox'):
+                 self.widget.title_bold_checkbox.setEnabled(False)
+                 self.widget.title_bold_checkbox.setChecked(False)
+            if hasattr(self.widget, 'title_italic_checkbox'):
+                 self.widget.title_italic_checkbox.setEnabled(False)
+                 self.widget.title_italic_checkbox.setChecked(False)
+            if hasattr(self.widget, 'title_underline_checkbox'):
+                 self.widget.title_underline_checkbox.setEnabled(False)
+                 self.widget.title_underline_checkbox.setChecked(False)
+
+            # >>> AÑADIR Deshabilitar checkboxes de formato de contenido <<<
+            if hasattr(self.widget, 'content_bold_checkbox'):
+                 self.widget.content_bold_checkbox.setEnabled(False)
+                 self.widget.content_bold_checkbox.setChecked(False)
+            if hasattr(self.widget, 'content_italic_checkbox'):
+                 self.widget.content_italic_checkbox.setEnabled(False)
+                 self.widget.content_italic_checkbox.setChecked(False)
+            if hasattr(self.widget, 'content_underline_checkbox'):
+                 self.widget.content_underline_checkbox.setEnabled(False)
+                 self.widget.content_underline_checkbox.setChecked(False)
+
             # Limpiar la vista previa y resetearla
             if hasattr(self.widget, 'vista_previa') and self.widget.vista_previa:
                 self.widget.vista_previa.reset_completo()
@@ -856,8 +893,14 @@ class MainWindow(QMainWindow):
                 self.widget.cargar_pdf_btn.setEnabled(False)
             if hasattr(self.widget, 'eliminar_pdf_btn'):
                 self.widget.eliminar_pdf_btn.setEnabled(False)
+                self.widget.eliminar_pdf_btn.hide() # <--- Añadir esta línea
             if hasattr(self.widget, 'revisar_pdf_btn'):
                 self.widget.revisar_pdf_btn.setEnabled(False)
+                self.widget.revisar_pdf_btn.hide() # <--- Añadir esta línea
+            if hasattr(self.widget, 'pdf_label'): # <--- Añadir bloque
+                self.widget.pdf_label.setText("") # <--- Añadir esta línea
+            if hasattr(self.widget, 'pdf_cargado'): # <--- Añadir bloque
+                self.widget.pdf_cargado = None # <--- Añadir esta línea
             
             # Deshabilitar el botón de ocultar/mostrar log
             if hasattr(self.widget, 'log_toggle_btn'):
@@ -1020,6 +1063,34 @@ class MainWindow(QMainWindow):
             self.delete_action.setEnabled(bool(self.api_key))
             self.grok_delete_action.setEnabled(bool(self.grok_api_key))
             self.google_delete_action.setEnabled(bool(self.google_api_key))
+
+            # Habilitar selección de fuente de contenido
+            if hasattr(self.widget, 'content_font_label'):
+                self.widget.content_font_label.setEnabled(True)
+                self.widget.content_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+            if hasattr(self.widget, 'content_font_combo'):
+                self.widget.content_font_combo.setEnabled(True)
+                self.widget.content_font_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+                self.widget.load_content_font_selection() # Recargar selección
+
+            # Habilitar checkboxes de formato de título
+            if hasattr(self.widget, 'title_bold_checkbox'):
+                 self.widget.title_bold_checkbox.setEnabled(True)
+            if hasattr(self.widget, 'title_italic_checkbox'):
+                 self.widget.title_italic_checkbox.setEnabled(True)
+            if hasattr(self.widget, 'title_underline_checkbox'):
+                 self.widget.title_underline_checkbox.setEnabled(True)
+            # Recargar estado guardado de formato
+            if hasattr(self.widget, 'load_format_settings'):
+                 self.widget.load_format_settings()
+
+            # >>> AÑADIR Habilitar checkboxes de formato de contenido <<<
+            if hasattr(self.widget, 'content_bold_checkbox'):
+                 self.widget.content_bold_checkbox.setEnabled(True)
+            if hasattr(self.widget, 'content_italic_checkbox'):
+                 self.widget.content_italic_checkbox.setEnabled(True)
+            if hasattr(self.widget, 'content_underline_checkbox'):
+                 self.widget.content_underline_checkbox.setEnabled(True)
 
     # Función para manejar el evento de cierre de la ventana
     def closeEvent(self, event):
@@ -1579,10 +1650,17 @@ class PowerpoineatorWidget(QWidget):
             self.title_font_size_label.setText(obtener_traduccion('title_font_size_label', idioma)) # Traducir etiqueta tamaño título
             self.content_font_size_label.setText(obtener_traduccion('content_font_size_label', idioma)) # Traducir etiqueta tamaño contenido
             
+            # Actualizar checkboxes de formato
+            self.title_bold_checkbox.setText(obtener_traduccion('title_bold', idioma))
+            self.title_italic_checkbox.setText(obtener_traduccion('title_italic', idioma))
+            self.title_underline_checkbox.setText(obtener_traduccion('title_underline', idioma))
+            # >>> Añadir actualizaciones para los checkboxes de contenido <<<
+            self.content_bold_checkbox.setText(obtener_traduccion('content_bold', idioma))
+            self.content_italic_checkbox.setText(obtener_traduccion('content_italic', idioma))
+            self.content_underline_checkbox.setText(obtener_traduccion('content_underline', idioma))
+            
             # Actualizar botones de documentos
             self.cargar_pdf_btn.setText(obtener_traduccion('cargar_pdf', idioma))
-            self.eliminar_pdf_btn.setText(obtener_traduccion('eliminar_pdf', idioma))
-            self.revisar_pdf_btn.setText(obtener_traduccion('revisar_pdf', idioma))  # <- Asegurar esta línea
             
             # Actualizar mensajes de estado del PDF
             if self.pdf_cargado and os.path.exists(self.pdf_cargado):
@@ -1592,6 +1670,9 @@ class PowerpoineatorWidget(QWidget):
             self.cargar_pdf_btn.setText(obtener_traduccion('cargar_pdf', idioma))
             if hasattr(self, 'eliminar_pdf_btn') and self.eliminar_pdf_btn.isVisible():
                 self.eliminar_pdf_btn.setText(obtener_traduccion('eliminar_pdf', idioma))
+            # >>> Añadir la traducción para el botón revisar_pdf_btn <<<
+            if hasattr(self, 'revisar_pdf_btn') and self.revisar_pdf_btn.isVisible():
+                self.revisar_pdf_btn.setText(obtener_traduccion('revisar_pdf', idioma))
             
             # Actualizar el texto del label de PDF cargado
             if self.pdf_cargado and os.path.exists(self.pdf_cargado):
@@ -1676,6 +1757,16 @@ class PowerpoineatorWidget(QWidget):
         model_layout.addLayout(imagen_layout)
 
         left_layout.addLayout(model_layout)
+
+        self.descripcion_label = QLabel(obtener_traduccion('descripcion_presentacion', current_language))
+        left_layout.addWidget(self.descripcion_label)
+        self.descripcion_text = QTextEdit()
+        font = self.descripcion_text.font()
+        font.setPointSize(15)
+        self.descripcion_text.setFont(font)
+        self.descripcion_text.textChanged.connect(self.on_text_changed)
+        self.descripcion_text.textChanged.connect(self.actualizar_contador)
+        left_layout.addWidget(self.descripcion_text)
         
         # Nuevo layout para fuentes (Título y Contenido)
         fonts_layout = QHBoxLayout()
@@ -1703,7 +1794,25 @@ class PowerpoineatorWidget(QWidget):
         title_font_layout.addWidget(self.title_font_size_label)
         title_font_layout.addWidget(self.title_font_size_spin)
 
-        fonts_layout.addLayout(title_font_layout)
+        # Checkboxes para formateo de título
+        self.title_format_layout = QHBoxLayout()
+        self.title_bold_checkbox = QCheckBox(obtener_traduccion('title_bold', current_language))
+        self.title_italic_checkbox = QCheckBox(obtener_traduccion('title_italic', current_language))
+        self.title_underline_checkbox = QCheckBox(obtener_traduccion('title_underline', current_language))
+        
+        self.title_bold_checkbox.stateChanged.connect(self.save_format_settings)
+        self.title_italic_checkbox.stateChanged.connect(self.save_format_settings)
+        self.title_underline_checkbox.stateChanged.connect(self.save_format_settings)
+        
+        self.title_format_layout.addWidget(self.title_bold_checkbox)
+        self.title_format_layout.addStretch(1) # Añadir espacio flexible entre Negrita y Cursiva
+        self.title_format_layout.addWidget(self.title_italic_checkbox)
+        self.title_format_layout.addStretch(1) # Añadir espacio flexible entre Cursiva y Subrayado
+        self.title_format_layout.addWidget(self.title_underline_checkbox)
+        
+        title_font_layout.addLayout(self.title_format_layout)
+
+        fonts_layout.addLayout(title_font_layout, 1) # Añadir factor de estiramiento 1
 
         # Fuente Contenido
         content_font_layout = QVBoxLayout()
@@ -1728,19 +1837,27 @@ class PowerpoineatorWidget(QWidget):
         content_font_layout.addWidget(self.content_font_size_label)
         content_font_layout.addWidget(self.content_font_size_spin)
 
-        fonts_layout.addLayout(content_font_layout)
+        # Checkboxes para formateo de contenido
+        self.content_format_layout = QHBoxLayout()
+        self.content_bold_checkbox = QCheckBox(obtener_traduccion('content_bold', current_language))
+        self.content_italic_checkbox = QCheckBox(obtener_traduccion('content_italic', current_language))
+        self.content_underline_checkbox = QCheckBox(obtener_traduccion('content_underline', current_language))
+
+        self.content_bold_checkbox.stateChanged.connect(self.save_format_settings)
+        self.content_italic_checkbox.stateChanged.connect(self.save_format_settings)
+        self.content_underline_checkbox.stateChanged.connect(self.save_format_settings)
+
+        self.content_format_layout.addWidget(self.content_bold_checkbox)
+        self.content_format_layout.addStretch(1)
+        self.content_format_layout.addWidget(self.content_italic_checkbox)
+        self.content_format_layout.addStretch(1)
+        self.content_format_layout.addWidget(self.content_underline_checkbox)
+
+        content_font_layout.addLayout(self.content_format_layout) # Añadir layout de formato de contenido
+
+        fonts_layout.addLayout(content_font_layout, 1) # Añadir factor de estiramiento 1
 
         left_layout.addLayout(fonts_layout) # Añadir el layout general de fuentes
-
-        self.descripcion_label = QLabel(obtener_traduccion('descripcion_presentacion', current_language))
-        left_layout.addWidget(self.descripcion_label)
-        self.descripcion_text = QTextEdit()
-        font = self.descripcion_text.font()
-        font.setPointSize(15)
-        self.descripcion_text.setFont(font)
-        self.descripcion_text.textChanged.connect(self.on_text_changed)
-        self.descripcion_text.textChanged.connect(self.actualizar_contador)
-        left_layout.addWidget(self.descripcion_text)
         
         # Layout para los botones de PDF
         pdf_layout = QHBoxLayout()
@@ -1951,6 +2068,17 @@ class PowerpoineatorWidget(QWidget):
                 self.imagen_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
         
         self.load_combo_selection()
+        self.load_font_selection()
+        self.load_content_font_selection()
+        self.load_font_sizes()
+        self.load_description()
+        self.load_auto_open_state()
+        self.load_num_diapositivas()
+        self.load_format_settings()  # Cargar configuraciones de formato
+        self.load_pdf_path()
+        self.load_log_visibility_state()
+        # Actualizar contador
+        self.actualizar_contador()
         
         self.texto_combo.setMaxVisibleItems(self.texto_combo.count())
         self.imagen_combo.setMaxVisibleItems(self.imagen_combo.count())
@@ -2166,6 +2294,7 @@ class PowerpoineatorWidget(QWidget):
         # Deshabilitar selección de modelos
         self.texto_combo.setEnabled(False)
         self.imagen_combo.setEnabled(False)
+
         self.font_combo.setEnabled(False)
         self.title_font_label.setEnabled(False)
         self.title_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, True) # Añadido para consistencia
@@ -2190,28 +2319,38 @@ class PowerpoineatorWidget(QWidget):
             self.content_font_size_label.setEnabled(False)
         if hasattr(self, 'content_font_size_spin'):
             self.content_font_size_spin.setEnabled(False)
-        
+
+        # Deshabilitar checkboxes de formato de título
+        self.title_bold_checkbox.setEnabled(False)
+        self.title_italic_checkbox.setEnabled(False)
+        self.title_underline_checkbox.setEnabled(False)
+
+        # >>> AÑADIR Deshabilitar checkboxes de formato de contenido <<<
+        self.content_bold_checkbox.setEnabled(False)
+        self.content_italic_checkbox.setEnabled(False)
+        self.content_underline_checkbox.setEnabled(False)
+
         # Deshabilitar área de descripción
         self.descripcion_text.setEnabled(False)
-        
+
         # Deshabilitar controles auxiliares
         self.auto_open_checkbox.setEnabled(False)
         self.num_diapositivas_spin.setEnabled(False)
         self.diapositivas_label.setEnabled(False)
-        
+
         # Deshabilitar botones de PDF
         self.cargar_pdf_btn.setEnabled(False)
         if self.eliminar_pdf_btn.isVisible():
             self.eliminar_pdf_btn.setEnabled(False)
         if self.revisar_pdf_btn.isVisible():
             self.revisar_pdf_btn.setEnabled(False)
-        
+
         # Deshabilitar botones adicionales
         if hasattr(self, 'cargar_imagen_btn') and self.cargar_imagen_btn.isVisible():
             self.cargar_imagen_btn.setEnabled(False)
         if hasattr(self, 'ver_imagen_btn') and self.ver_imagen_btn.isVisible():
             self.ver_imagen_btn.setEnabled(False)
-            
+
         # Cambiar el estilo del botón de generar a modo "cancelar"
         self.generar_btn.setText(obtener_traduccion('cancel_generation', self.current_language))
         self.generar_btn.setStyleSheet("""
@@ -2236,11 +2375,11 @@ class PowerpoineatorWidget(QWidget):
             pass
         self.generar_btn.clicked.connect(self.confirm_cancel_generation)
         self.generar_btn.setEnabled(True)
-        
+
         # Asegurarse de que los botones de navegación de la vista previa estén habilitados según corresponda
         if self.vista_previa:
             self.vista_previa.actualizar_botones_navegacion()
-        
+
         # Deshabilitar elementos del menú si la ventana principal está disponible
         if self.parent() and hasattr(self.parent(), 'disable_menu_during_generation'):
             self.parent().disable_menu_during_generation()
@@ -2271,10 +2410,11 @@ class PowerpoineatorWidget(QWidget):
             pass
         self.generar_btn.clicked.connect(self.generar_presentacion_event)
         self.generar_btn.setEnabled(True)
-
+        
         # Habilitar selección de modelos
         self.texto_combo.setEnabled(True)
         self.imagen_combo.setEnabled(True)
+        
         self.font_combo.setEnabled(True)
         self.title_font_label.setEnabled(True)
         self.title_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, False) # Añadido para consistencia
@@ -2301,7 +2441,17 @@ class PowerpoineatorWidget(QWidget):
             self.content_font_size_label.setEnabled(True)
         if hasattr(self, 'content_font_size_spin'):
             self.content_font_size_spin.setEnabled(True)
+            
+        # Habilitar checkboxes de formato de título
+        self.title_bold_checkbox.setEnabled(True)
+        self.title_italic_checkbox.setEnabled(True)
+        self.title_underline_checkbox.setEnabled(True)
 
+        # Habilitar checkboxes de formato de contenido
+        self.content_bold_checkbox.setEnabled(True)
+        self.content_italic_checkbox.setEnabled(True)
+        self.content_underline_checkbox.setEnabled(True)
+        
         # Habilitar área de descripción
         self.descripcion_text.setEnabled(True)
         
@@ -2339,6 +2489,16 @@ class PowerpoineatorWidget(QWidget):
         content_font = self.content_font_combo.currentText() # <-- Fuente Contenido
         title_font_size = self.title_font_size_spin.value() # Obtener tamaño título
         content_font_size = self.content_font_size_spin.value() # Obtener tamaño contenido
+        
+        # Obtener opciones de formato de título
+        title_bold = self.title_bold_checkbox.isChecked()
+        title_italic = self.title_italic_checkbox.isChecked()
+        title_underline = self.title_underline_checkbox.isChecked()
+
+        # Obtener opciones de formato de contenido
+        content_bold = self.content_bold_checkbox.isChecked()
+        content_italic = self.content_italic_checkbox.isChecked()
+        content_underline = self.content_underline_checkbox.isChecked()
 
         # Obtener el idioma actual desde el padre (MainWindow) o usar default
         current_language = 'es'
@@ -2438,7 +2598,13 @@ class PowerpoineatorWidget(QWidget):
                 title_font, # <-- Pasar fuente título
                 content_font, # <-- Pasar fuente contenido
                 title_font_size, # Pasar tamaño de fuente de título
-                content_font_size # Pasar tamaño de fuente de contenido
+                content_font_size, # Pasar tamaño de fuente de contenido
+                title_bold, # Pasar opción de negrita para título
+                title_italic, # Pasar opción de cursiva para título
+                title_underline, # Pasar opción de subrayado para título
+                content_bold, # Pasar opción de negrita para contenido
+                content_italic, # Pasar opción de cursiva para contenido
+                content_underline # Pasar opción de subrayado para contenido
             )
             self.worker.start()
 
@@ -3125,6 +3291,42 @@ class PowerpoineatorWidget(QWidget):
                 self.title_font_size_spin.setValue(16)
             if hasattr(self, 'content_font_size_spin') and self.content_font_size_spin:
                 self.content_font_size_spin.setValue(10)
+
+    # Función para guardar el formato de título
+    def save_format_settings(self):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+
+            config['title_bold'] = self.title_bold_checkbox.isChecked()
+            config['title_italic'] = self.title_italic_checkbox.isChecked()
+            config['title_underline'] = self.title_underline_checkbox.isChecked()
+            # Guardar formato de contenido
+            config['content_bold'] = self.content_bold_checkbox.isChecked()
+            config['content_italic'] = self.content_italic_checkbox.isChecked()
+            config['content_underline'] = self.content_underline_checkbox.isChecked()
+
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar el formato de título: {str(e)}")
+
+    def load_format_settings(self):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    self.title_bold_checkbox.setChecked(config.get('title_bold', False))
+                    self.title_italic_checkbox.setChecked(config.get('title_italic', False))
+                    self.title_underline_checkbox.setChecked(config.get('title_underline', False))
+                    # Cargar formato de contenido
+                    self.content_bold_checkbox.setChecked(config.get('content_bold', False))
+                    self.content_italic_checkbox.setChecked(config.get('content_italic', False))
+                    self.content_underline_checkbox.setChecked(config.get('content_underline', False))
+        except Exception as e:
+            print(f"Error al cargar las configuraciones de formato: {str(e)}")
 
 # Función principal para iniciar la aplicación
 if __name__ == "__main__":

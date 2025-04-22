@@ -135,7 +135,13 @@ traducciones = {
         'title_font_label': 'Fuente del título:',
         'content_font_label': 'Fuente del contenido:',
         'title_font_size_label': 'Tamaño del título:',
-        'content_font_size_label': 'Tamaño del contenido:'
+        'content_font_size_label': 'Tamaño del contenido:',
+        'title_bold': 'Negrita',
+        'title_italic': 'Cursiva',
+        'title_underline': 'Subrayado',
+        'content_bold': 'Negrita',
+        'content_italic': 'Cursiva',
+        'content_underline': 'Subrayado'
     },
     'en': {
         'auto_open': 'Automatically open presentation',
@@ -272,7 +278,13 @@ traducciones = {
         'title_font_label': 'Title font:',
         'content_font_label': 'Content font:',
         'title_font_size_label': 'Title size:',
-        'content_font_size_label': 'Content size:'
+        'content_font_size_label': 'Content size:',
+        'title_bold': 'Bold',
+        'title_italic': 'Italic',
+        'title_underline': 'Underline',
+        'content_bold': 'Bold',
+        'content_italic': 'Italic',
+        'content_underline': 'Underline'
     }
 }
 

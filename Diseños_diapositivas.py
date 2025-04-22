@@ -7,18 +7,24 @@ from PIL import Image, ImageEnhance, ImageFilter
 
 # Clase para manejar los diseños de diapositivas
 class Diapositivas:
-    def __init__(self, presentation, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10):
+    def __init__(self, presentation, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False):
         self.presentation = presentation
         self.title_font_name = title_font_name
         self.content_font_name = content_font_name
         self.title_font_size = title_font_size
         self.content_font_size = content_font_size
+        self.title_bold = title_bold
+        self.title_italic = title_italic
+        self.title_underline = title_underline
+        self.content_bold = content_bold
+        self.content_italic = content_italic
+        self.content_underline = content_underline
 
     # Función auxiliar para aplicar fuente al texto
     def apply_font(self, text_frame):
         for paragraph in text_frame.paragraphs:
             for run in paragraph.runs:
-                run.font.name = self.font_name
+                run.font.name = self.title_font_name
 
     # Nuevas funciones para aplicar fuentes específicas
     def apply_title_font(self, text_frame):
@@ -30,6 +36,13 @@ class Diapositivas:
         for paragraph in text_frame.paragraphs:
             for run in paragraph.runs:
                 run.font.name = self.content_font_name
+                # Aplicar formato de contenido
+                if self.content_bold: run.font.bold = True
+                else: run.font.bold = False # Asegurar que no se quede activo si no está marcado
+                if self.content_italic: run.font.italic = True
+                else: run.font.italic = False
+                if self.content_underline: run.font.underline = True
+                else: run.font.underline = False
 
     # Diseño de introducción - Moderno y profesional
     def design0(self, slide, section, content, image_path):
@@ -117,7 +130,6 @@ class Diapositivas:
         title_box = slide.shapes.add_textbox(title_left, title_top, title_width, title_height)
         title_frame = title_box.text_frame
         
-        title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         title_frame.vertical_anchor = MSO_ANCHOR.TOP
         title_frame.margin_bottom = Inches(0.1)
@@ -129,11 +141,11 @@ class Diapositivas:
         p_title.alignment = PP_ALIGN.LEFT
         run_title = p_title.runs[0]
         run_title.font.size = Pt(self.title_font_size)
-        run_title.font.bold = True
-        run_title.font.color.rgb = RGBColor(255, 255, 255)
         self.apply_title_font(title_frame)
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
         run_title.font.color.rgb = RGBColor(255, 255, 255)
-        run_title.font.bold = True
 
         # Añadir línea decorativa bajo el título
         underline_top_fixed = Inches(3.4)
@@ -171,7 +183,6 @@ class Diapositivas:
         run_content.font.size = Pt(self.content_font_size)
         run_content.font.color.rgb = RGBColor(240, 240, 240)
         self.apply_content_font(text_frame)
-        run_content.font.color.rgb = RGBColor(240, 240, 240)
 
         # Añadir elementos decorativos
         # Forma en esquina inferior derecha
@@ -257,7 +268,6 @@ class Diapositivas:
         title_frame = title_box.text_frame
         title_frame.text = section
         title_frame.paragraphs[0].runs[0].font.size = Pt(self.title_font_size)
-        title_frame.paragraphs[0].runs[0].font.bold = True
         title_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(0, 120, 215)
         title_frame.margin_bottom = Inches(0)
         title_frame.margin_left = Inches(0.25)
@@ -265,6 +275,11 @@ class Diapositivas:
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_title_font(title_frame)
+        run_title = title_frame.paragraphs[0].runs[0]
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
+        run_title.font.color.rgb = RGBColor(0, 120, 215)
         
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
@@ -363,7 +378,6 @@ class Diapositivas:
         title_frame = title_box.text_frame
         title_frame.text = section
         title_frame.paragraphs[0].runs[0].font.size = Pt(self.title_font_size)
-        title_frame.paragraphs[0].runs[0].font.bold = True
         title_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(33, 115, 70)
         title_frame.margin_bottom = Inches(0)
         title_frame.margin_left = Inches(0.25)
@@ -371,6 +385,11 @@ class Diapositivas:
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_title_font(title_frame)
+        run_title = title_frame.paragraphs[0].runs[0]
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
+        run_title.font.color.rgb = RGBColor(33, 115, 70)
         
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
@@ -439,8 +458,6 @@ class Diapositivas:
         title_frame = title_box.text_frame
         title_frame.text = section
         title_frame.paragraphs[0].runs[0].font.size = Pt(self.title_font_size)
-        title_frame.paragraphs[0].runs[0].font.bold = True
-        title_frame.paragraphs[0].runs[0].font.underline = True
         title_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(255, 255, 255)
         title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
         title_frame.margin_bottom = Inches(0)
@@ -449,6 +466,11 @@ class Diapositivas:
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_title_font(title_frame)
+        run_title = title_frame.paragraphs[0].runs[0]
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
+        run_title.font.color.rgb = RGBColor(255, 255, 255)
 
         # Añadir texto centrado con texto blanco
         text_box = slide.shapes.add_textbox(self.presentation.slide_width / 2 - Inches(4), Inches(1.5), Inches(8), Inches(4))
@@ -497,13 +519,17 @@ class Diapositivas:
         title_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
         run = title_frame.paragraphs[0].runs[0]
         run.font.size = Pt(self.title_font_size)
-        run.font.bold = True
         run.font.color.rgb = RGBColor(0, 130, 114)
         title_frame.vertical_anchor = MSO_ANCHOR.TOP
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_title_font(title_frame)
-
+        run_title = title_frame.paragraphs[0].runs[0]
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
+        run_title.font.color.rgb = RGBColor(0, 130, 114)
+        
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE,
@@ -591,12 +617,16 @@ class Diapositivas:
         title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
         run = title_frame.paragraphs[0].runs[0]
         run.font.size = Pt(self.title_font_size)
-        run.font.bold = True
         run.font.color.rgb = RGBColor(140, 0, 60)
         title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_title_font(title_frame)
+        run_title = title_frame.paragraphs[0].runs[0]
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
+        run_title.font.color.rgb = RGBColor(140, 0, 60)
         
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
@@ -733,13 +763,17 @@ class Diapositivas:
         title_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
         run = title_frame.paragraphs[0].runs[0]
         run.font.size = Pt(self.title_font_size)
-        run.font.bold = True
         run.font.color.rgb = RGBColor(50, 80, 120)
         title_frame.vertical_anchor = MSO_ANCHOR.TOP
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_title_font(title_frame)
-
+        run_title = title_frame.paragraphs[0].runs[0]
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
+        run_title.font.color.rgb = RGBColor(50, 80, 120)
+        
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE,
@@ -828,13 +862,17 @@ class Diapositivas:
         title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
         run = title_frame.paragraphs[0].runs[0]
         run.font.size = Pt(self.title_font_size)
-        run.font.bold = True
         run.font.color.rgb = RGBColor(80, 20, 140)
         title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         title_frame.word_wrap = True
         title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_title_font(title_frame)
-
+        run_title = title_frame.paragraphs[0].runs[0]
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
+        run_title.font.color.rgb = RGBColor(80, 20, 140)
+        
         # Línea decorativa bajo el título
         title_underline = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE,
