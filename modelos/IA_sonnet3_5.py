@@ -23,9 +23,9 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
     prompt = (
         "(Basandote en esta tupla de python, genera una con la misma estructura que genere información para un powerpoint sobre "
         + nuevo_string +
-        " SOLO GENERA EL INTERIOR DE LA TUPLA, ES DECIR EMPIEZA POR { SOLO QUIERO QUE GENERES LA ESTRUCTURA DE LA TUPLA"
-        "{\"Title1\":\"Content1\",\"Title2\":\"Content2\",\"Title3\":\"Content3\"} TITLES CANT BE JUST NUMBERS AND SHOULD BE "
-        "BETWEEN QUOTES DONT GENERATE AN INTRODUCTION EITHER sections =, DONT  sections = { "
+        " SOLO GENERA EL INTERIOR DE LA TUPLA, ES DECIR EMPIEZA POR { SOLO QUIERO QUE GENERES LA ESTRUCTURA DE LA TUPLA, NO MENCIONES EN LOS TITULOS QUE DIAPOSITIVA ES, SOLO DI EL TITULO REAL DE LA DIAPOSITIVA"
+        "{\"Real Title 1\":\"Real Content 1\",\"Real Title 2\":\"Real Content 2\",\"Real Title 3\":\"Real Content 3\"} TITLES CANT BE JUST NUMBERS AND SHOULD BE "
+        "BETWEEN QUOTES, DONT GENERATE AN INTRODUCTION EITHER sections =, DONT  sections = { "
         "\"Introduction\": \"Artificial Intelligence (AI) has revolutionized the way we live and work, transforming industries and improving lives.\", "
         "\"History of AI\": \"From Alan Turing's 1950s vision to modern-day advancements, AI has come a long way, with significant breakthroughs in "
         "machine learning, natural language processing, and computer vision.\", "

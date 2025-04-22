@@ -1,9 +1,11 @@
 import sys, os, requests, json, webbrowser
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
-from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, Qt
+from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QActionGroup
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
-    QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar)
+    QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar,
+    QMenu # <<< Añadir QMenu y QActionGroup
+    )
 from Version_checker import obtener_url_descarga, obtener_ultima_version, obtener_version_actual
 from apis.Replicate import ReplicateAPIKeyWindow
 from apis.xAI import GrokAPIKeyWindow
@@ -307,56 +309,59 @@ class MainWindow(QMainWindow):
         
         left_menubar = QMenuBar(menubar)
         
-        google_menu = left_menubar.addMenu('Google')
+        # Guardar referencia al menú Google como atributo de instancia
+        self.google_menu = left_menubar.addMenu('Google')
         self.get_google_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_google_api', self.current_language), self)
         self.get_google_api_action.setObjectName('get_google_api_action')
         self.get_google_api_action.triggered.connect(lambda: webbrowser.open('https://aistudio.google.com/app/apikey'))
         self.get_google_api_action.setEnabled(not bool(self.google_api_key))
-        google_menu.addAction(self.get_google_api_action)
+        self.google_menu.addAction(self.get_google_api_action)
         
         google_config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_google_api', self.current_language), self)
         google_config_action.setObjectName('google_config_action')
         google_config_action.triggered.connect(self.show_google_api_dialog)
-        google_menu.addAction(google_config_action)
+        self.google_menu.addAction(google_config_action)
         
         self.google_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_google_api', self.current_language), self)
         self.google_delete_action.setObjectName('google_delete_action')
         self.google_delete_action.triggered.connect(self.delete_google_api_key)
-        google_menu.addAction(self.google_delete_action)
+        self.google_menu.addAction(self.google_delete_action)
         
-        api_menu = left_menubar.addMenu('Replicate')
+        # Guardar referencia al menú Replicate como atributo de instancia
+        self.replicate_menu = left_menubar.addMenu('Replicate') 
         self.get_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_replicate_api', self.current_language), self)
         self.get_api_action.setObjectName('get_replicate_api_action')
         self.get_api_action.triggered.connect(lambda: webbrowser.open('https://replicate.com/account/api-tokens'))
         self.get_api_action.setEnabled(not bool(self.api_key))
-        api_menu.addAction(self.get_api_action)
+        self.replicate_menu.addAction(self.get_api_action)
         
         config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_replicate_api', self.current_language), self)
         config_action.setObjectName('replicate_config_action')
         config_action.triggered.connect(self.show_api_dialog)
-        api_menu.addAction(config_action)
+        self.replicate_menu.addAction(config_action)
         
         self.delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_replicate_api', self.current_language), self)
         self.delete_action.setObjectName('replicate_delete_action')
         self.delete_action.triggered.connect(self.delete_api_key)
-        api_menu.addAction(self.delete_action)
+        self.replicate_menu.addAction(self.delete_action)
 
-        grok_menu = left_menubar.addMenu('xAI')
+        # Guardar referencia al menú xAI como atributo de instancia
+        self.grok_menu = left_menubar.addMenu('xAI')
         self.get_grok_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_xai_api', self.current_language), self)
         self.get_grok_api_action.setObjectName('get_xai_api_action')
         self.get_grok_api_action.triggered.connect(lambda: webbrowser.open('https://console.x.ai/team/default/api-keys'))
         self.get_grok_api_action.setEnabled(not bool(self.grok_api_key))
-        grok_menu.addAction(self.get_grok_api_action)
+        self.grok_menu.addAction(self.get_grok_api_action)
         
         grok_config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_xai_api', self.current_language), self)
         grok_config_action.setObjectName('xai_config_action')
         grok_config_action.triggered.connect(self.show_grok_api_dialog)
-        grok_menu.addAction(grok_config_action)
+        self.grok_menu.addAction(grok_config_action)
         
         self.grok_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_xai_api', self.current_language), self)
         self.grok_delete_action.setObjectName('xai_delete_action')
         self.grok_delete_action.triggered.connect(self.delete_grok_api_key)
-        grok_menu.addAction(self.grok_delete_action)
+        self.grok_menu.addAction(self.grok_delete_action)
 
         menubar.setCornerWidget(left_menubar, Qt.TopLeftCorner)
 
@@ -381,20 +386,65 @@ class MainWindow(QMainWindow):
         right_menubar.addAction(github_action)
         self.github_action = github_action
 
-        initial_icon = "en.png" if self.current_language == 'es' else "es.png"
-        language_action = QAction(QIcon(resource_path(f"iconos/{initial_icon}")), '', self)
-        language_action.setStatusTip('Cambiar idioma / Change language')
-        language_action.triggered.connect(self.toggle_language)
-        right_menubar.addAction(language_action)
-        self.language_action = language_action
-        self.update_language_button_text() 
+        # Crear menú de idioma
+        self.language_menu = QMenu(self)
+        # El texto se establecerá en update_language_menu_state
+        self.language_menu_action = QAction(QIcon(resource_path("iconos/languages.png")), '', self)
+        self.language_menu_action.setMenu(self.language_menu)
 
-        # Guardar referencias a los menús
-        self.google_menu = google_menu
-        self.replicate_menu = api_menu
-        self.grok_menu = grok_menu
+        # Crear grupo de acciones para exclusividad
+        self.language_group = QActionGroup(self)
+        self.language_group.setExclusive(True)
+
+        # Acción para Español - Usar traducción
+        self.es_action = QAction(QIcon(resource_path("iconos/es.png")), obtener_traduccion('language_option_es', self.current_language), self)
+        self.es_action.setCheckable(True)
+        self.es_action.triggered.connect(lambda: self.change_language('es'))
+        self.language_menu.addAction(self.es_action)
+        self.language_group.addAction(self.es_action)
+
+        # Acción para Inglés - Usar traducción
+        self.en_action = QAction(QIcon(resource_path("iconos/en.png")), obtener_traduccion('language_option_en', self.current_language), self)
+        self.en_action.setCheckable(True)
+        self.en_action.triggered.connect(lambda: self.change_language('en'))
+        self.language_menu.addAction(self.en_action)
+        self.language_group.addAction(self.en_action)
+
+        # >>> AÑADIR Acción para Francés <<<
+        self.fr_action = QAction(QIcon(resource_path("iconos/fr.png")), obtener_traduccion('language_option_fr', self.current_language), self)
+        self.fr_action.setCheckable(True)
+        self.fr_action.triggered.connect(lambda: self.change_language('fr'))
+        self.language_menu.addAction(self.fr_action)
+        self.language_group.addAction(self.fr_action)
+
+        # >>> AÑADIR Acción para Portugués <<<
+        self.pt_action = QAction(QIcon(resource_path("iconos/pt.png")), obtener_traduccion('language_option_pt', self.current_language), self)
+        self.pt_action.setCheckable(True)
+        self.pt_action.triggered.connect(lambda: self.change_language('pt'))
+        self.language_menu.addAction(self.pt_action)
+        self.language_group.addAction(self.pt_action)
+
+        # >>> AÑADIR Acción para Italiano <<<
+        self.it_action = QAction(QIcon(resource_path("iconos/it.png")), obtener_traduccion('language_option_it', self.current_language), self)
+        self.it_action.setCheckable(True)
+        self.it_action.triggered.connect(lambda: self.change_language('it'))
+        self.language_menu.addAction(self.it_action)
+        self.language_group.addAction(self.it_action)
+
+        # >>> AÑADIR Acción para Alemán <<<
+        self.de_action = QAction(QIcon(resource_path("iconos/de.png")), obtener_traduccion('language_option_de', self.current_language), self)
+        self.de_action.setCheckable(True)
+        self.de_action.triggered.connect(lambda: self.change_language('de'))
+        self.language_menu.addAction(self.de_action)
+        self.language_group.addAction(self.de_action)
+
+        # Añadir el menú a la barra derecha
+        right_menubar.addAction(self.language_menu_action)
 
         menubar.setCornerWidget(right_menubar, Qt.TopRightCorner)
+
+        # >>> LLAMAR después de configurar las acciones <<<
+        self.update_language_menu_state()
 
     # Función para establecer la clave API de Replicate
     def set_api_key(self, api_key):
@@ -747,7 +797,7 @@ class MainWindow(QMainWindow):
             # Deshabilitar acciones específicas
             self.balance_action.setEnabled(False)
             self.github_action.setEnabled(False)
-            self.language_action.setEnabled(False)
+            self.language_menu_action.setEnabled(False) # <-- Deshabilitar el nuevo menú
             self.paypal_action.setEnabled(False)
         except Exception as e:
             print(f"Error al deshabilitar menús: {str(e)}")
@@ -763,7 +813,7 @@ class MainWindow(QMainWindow):
             # Habilitar acciones específicas
             self.balance_action.setEnabled(bool(self.api_key or self.grok_api_key))
             self.github_action.setEnabled(True)
-            self.language_action.setEnabled(True)
+            self.language_menu_action.setEnabled(True) # <-- Habilitar el nuevo menú
             self.paypal_action.setEnabled(True)
         except Exception as e:
             print(f"Error al habilitar menús: {str(e)}")
@@ -1305,25 +1355,32 @@ class MainWindow(QMainWindow):
             if os.path.exists(CONFIG_FILE):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-            
+
             config['language'] = language_code
-            
+
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                 json.dump(config, f, ensure_ascii=False, indent=4)
-                
-            # Actualizar el check en el menú
-            for action in self.findChildren(QAction):
-                if action.text() == 'Español':
-                    action.setChecked(language_code == 'es')
-                elif action.text() == 'English':
-                    action.setChecked(language_code == 'en')
-            
+
+            # >>> Actualizar texto de las opciones del menú <<<
+            self.es_action.setText(obtener_traduccion('language_option_es', language_code))
+            self.en_action.setText(obtener_traduccion('language_option_en', language_code))
+            # >>> AÑADIR texto para Francés <<<
+            self.fr_action.setText(obtener_traduccion('language_option_fr', language_code))
+            # >>> AÑADIR texto para Portugués <<<
+            self.pt_action.setText(obtener_traduccion('language_option_pt', language_code))
+            # >>> AÑADIR texto para Italiano <<<
+            self.it_action.setText(obtener_traduccion('language_option_it', language_code))
+            # >>> AÑADIR texto para Alemán <<<
+            self.de_action.setText(obtener_traduccion('language_option_de', language_code))
+            # >>> Actualizar estado y etiqueta principal del menú <<<
+            self.update_language_menu_state()
+
             self.setWindowTitle(obtener_traduccion('app_title', language_code))
-            
+
             # Actualizar el widget principal
             if hasattr(self, 'widget') and self.widget and not self.widget.isHidden():
                 self.widget.actualizar_traducciones(language_code)
-            
+
             # Actualizar directamente la vista previa principal (para los botones y textos)
             try:
                 if hasattr(self, 'widget') and self.widget and hasattr(self.widget, 'vista_previa') and self.widget.vista_previa:
@@ -1332,8 +1389,8 @@ class MainWindow(QMainWindow):
                     self.widget.vista_previa.actualizar_idioma(language_code)
             except Exception as e:
                 print(f"Error al actualizar vista previa: {str(e)}")
-            
-            # Actualizar menús
+
+            # Actualizar menús (traducciones de otras acciones)
             try:
                 for action in self.findChildren(QAction):
                     if hasattr(action, 'objectName'):
@@ -1357,11 +1414,9 @@ class MainWindow(QMainWindow):
                             action.setText(obtener_traduccion('borrar_xai_api', language_code))
             except Exception as e:
                 print(f"Error al actualizar menús: {str(e)}")
-                
+
         except Exception as e:
             print(f"Error al guardar el idioma: {str(e)}")
-        
-        self.update_language_button_text()
 
     def load_language(self):
         try:
@@ -1369,25 +1424,15 @@ class MainWindow(QMainWindow):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
                     self.current_language = config.get('language', 'es')
+            # >>> Actualizar estado del menú después de cargar <<<
+            if hasattr(self, 'language_menu_action'): # Asegurarse de que el menú existe
+                 self.update_language_menu_state()
         except Exception as e:
             print(f"Error al cargar el idioma: {str(e)}")
             self.current_language = 'es'
-
-    # Función para alternar el idioma
-    def toggle_language(self):
-        new_language = 'en' if self.current_language == 'es' else 'es'
-        self.change_language(new_language)
-        self.update_language_button_text()
-
-    # Función para actualizar el texto del botón de idioma
-    def update_language_button_text(self):
-        next_language = 'en' if self.current_language == 'es' else 'es'
-        language_name = 'English' if next_language == 'en' else 'Español'
-        
-        icon_file = "en.png" if self.current_language == 'es' else "es.png"
-        self.language_action.setIcon(QIcon(resource_path(f"iconos/{icon_file}")))
-        
-        self.language_action.setText(language_name)
+            # >>> Actualizar estado del menú incluso en error <<<
+            if hasattr(self, 'language_menu_action'):
+                 self.update_language_menu_state()
 
     # Agregar el evento keyPressEvent para detectar la tecla Escape
     def keyPressEvent(self, event):
@@ -1450,6 +1495,32 @@ class MainWindow(QMainWindow):
                     self.worker.terminate()
                     # No esperar más después de terminate
                 self.worker = None
+
+    # >>> AÑADIR NUEVA FUNCIÓN <<<
+    def update_language_menu_state(self):
+        """Actualiza el texto del botón del menú de idioma y marca la opción correcta."""
+        if self.current_language == 'es':
+            self.language_menu_action.setText(obtener_traduccion('language_option_es', self.current_language))
+            self.es_action.setChecked(True)
+        elif self.current_language == 'en': # Corregir 'else' por 'elif' y la condición
+            self.language_menu_action.setText(obtener_traduccion('language_option_en', self.current_language))
+            self.en_action.setChecked(True)
+        elif self.current_language == 'fr': # Mantener elif para francés
+            self.language_menu_action.setText(obtener_traduccion('language_option_fr', self.current_language))
+            self.fr_action.setChecked(True)
+        elif self.current_language == 'pt': # >>> AÑADIR caso para Portugués <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_pt', self.current_language))
+            self.pt_action.setChecked(True)
+        elif self.current_language == 'it': # >>> AÑADIR caso para Italiano <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_it', self.current_language))
+            self.it_action.setChecked(True)
+        elif self.current_language == 'de': # >>> AÑADIR caso para Alemán <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_de', self.current_language))
+            self.de_action.setChecked(True)
+        else: # Añadir un caso por defecto para volver a español si el idioma es desconocido
+            self.current_language = 'es' # Asegurar que el idioma actual sea válido
+            self.language_menu_action.setText(obtener_traduccion('language_option_es', self.current_language))
+            self.es_action.setChecked(True)
 
 # Clase para la ventana de saldo total
 class BalanceWindow(QWidget):
@@ -2042,7 +2113,7 @@ class PowerpoineatorWidget(QWidget):
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-haiku [$0.0035]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-maverick-instruct [$0.00067]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct [$0.0067]')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.0086]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.042]')
             
             self.imagen_combo.setEnabled(True)
             self.imagen_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
@@ -2153,24 +2224,35 @@ class PowerpoineatorWidget(QWidget):
         )
         
         # Detectar cuando comienza la generación de imágenes y obtener el total
-        current_language = 'es'
-        if self.parent() and hasattr(self.parent(), 'current_language'):
-            current_language = self.parent().current_language
+        current_language = self.current_language # Usar el idioma actual del widget
             
-        generando_es = obtener_traduccion('generando_imagen', 'es').format(numero=1, total='').strip()
-        generando_en = obtener_traduccion('generando_imagen', 'en').format(numero=1, total='').strip()
+        # Obtener la traducción del mensaje clave en el idioma actual
+        generando_key = 'generando_imagen'
+        generando_base_text = obtener_traduccion(generando_key, current_language)
+        # Formatear para eliminar placeholders y espacios
+        generando_check_text = generando_base_text.format(numero=1, total='').strip()
         
-        if generando_es in text or generando_en in text:
+        # Comprobar si el texto formateado está en el log recibido
+        if generando_check_text and generando_check_text in text:
             self.loading_timer.stop()
             self.progress_bar.setRange(0, 100)
             self.progress_bar.setValue(0)
             # Extraer el número total de imágenes
             try:
-                total_images = int(text.split('/')[-1].split()[0])
-                self.total_images = total_images
-            except:
-                self.total_images = 1
-                
+                # Intenta extraer el total asumiendo el formato "... X/Y ..."
+                parts = text.split('/')
+                if len(parts) > 1:
+                    total_str = parts[-1].split()[0]
+                    self.total_images = int(total_str)
+                else: # Si no hay '/', asumir 1 imagen (fallback)
+                     self.total_images = 1
+            except ValueError:
+                print(f"Advertencia: No se pudo extraer el número total de imágenes del texto: {text}")
+                self.total_images = 1 # Fallback si la extracción falla
+            except Exception as e:
+                 print(f"Error inesperado extrayendo total de imágenes: {e}")
+                 self.total_images = 1 # Fallback general
+        
     def update_progress(self, current, total):
         # Detener la animación de carga inicial
         if hasattr(self, 'loading_timer') and self.loading_timer.isActive():
@@ -2590,12 +2672,11 @@ class PowerpoineatorWidget(QWidget):
             self.worker = GenerationWorker(
                 modelo_texto,
                 modelo_imagen,
-                nuevo_string + f" hazlo en {instruccion_idioma} y en {num_diapositivas} diapositivas. Los títulos tendrán un máximo de 5 palabras, y el contenido un máximo de 50 palabras",
+                nuevo_string + f" hazlo en {instruccion_idioma} y en {num_diapositivas} diapositivas tal que los títulos de la tupla no superen 5 palabras y del contenido no superen 50 palabras",
                 auto_open,
                 self.imagen_personalizada,
                 file_path,
                 self.signals,
-                # selected_font, # Pasar fuente seleccionada al worker
                 title_font, # <-- Pasar fuente título
                 content_font, # <-- Pasar fuente contenido
                 title_font_size, # Pasar tamaño de fuente de título

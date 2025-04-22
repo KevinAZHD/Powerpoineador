@@ -23,12 +23,14 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
     prompt = (
         "(Basandote en esta tupla de python, genera una con la misma estructura que genere información para un powerpoint sobre "
         + nuevo_string +
-        " SOLO GENERA EL INTERIOR DE LA TUPLA, ES DECIR EMPIEZA POR { SOLO QUIERO QUE GENERES LA ESTRUCTURA DE LA TUPLA. "
-        "Ejemplo de estructura correcta: "
-        "{\"Historia de Hitler\":\"Adolf Hitler nació el 20 de abril de 1889 en Braunau am Inn, Austria. Fue un líder político y militar alemán, conocido por ser el fundador del Partido Nazi y el principal responsable del Holocausto.\", "
-        "\"Ideología Nazi\":\"El nazismo fue una ideología política totalitaria basada en la supremacía de la raza aria. Hitler consideraba que los alemanes eran superiores a todas las demás razas.\", "
-        "\"Segunda Guerra Mundial\":\"Hitler inició la Segunda Guerra Mundial en 1939 con la invasión de Polonia, desencadenando el conflicto más devastador de la historia.\"} "
-        "TITLES CANT BE JUST NUMBERS AND SHOULD BE BETWEEN QUOTES DONT GENERATE AN INTRODUCTION EITHER)"
+        " SOLO GENERA EL INTERIOR DE LA TUPLA, ES DECIR EMPIEZA POR { SOLO QUIERO QUE GENERES LA ESTRUCTURA DE LA TUPLA, NO MENCIONES EN LOS TITULOS QUE DIAPOSITIVA ES, SOLO DI EL TITULO REAL DE LA DIAPOSITIVA"
+        "{\"Real Title 1\":\"Real Content 1\",\"Real Title 2\":\"Real Content 2\",\"Real Title 3\":\"Real Content 3\"} TITLES CANT BE JUST NUMBERS AND SHOULD BE "
+        "BETWEEN QUOTES, DONT GENERATE AN INTRODUCTION EITHER sections =, DONT  sections = { "
+        "\"Introduction\": \"Artificial Intelligence (AI) has revolutionized the way we live and work, transforming industries and improving lives.\", "
+        "\"History of AI\": \"From Alan Turing's 1950s vision to modern-day advancements, AI has come a long way, with significant breakthroughs in "
+        "machine learning, natural language processing, and computer vision.\", "
+        "\"Applications of AI\": \"AI is being used in healthcare for disease diagnosis, in finance for fraud detection, in transportation for autonomous "
+        "vehicles, and in education for personalized learning.\" })"
     )
     
     # Inicializar la respuesta como una cadena vacía

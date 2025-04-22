@@ -2,7 +2,7 @@
 
 Powerpoineador es un programa de escritorio que genera automáticamente presentaciones de PowerPoint utilizando diferentes modelos de Inteligencia Artificial, tanto para la generación de texto como para las imágenes.
 
-![Interfaz principal del programa](imágenes/programa.png)
+![Interfaz principal del programa](interfaz/programa.png)
 
 ## Descripción
 
@@ -20,10 +20,19 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - Guardado automático de configuraciones.
 - Contador de palabras integrado.
 - Opción de apertura automática de presentaciones.
-- Soporte multiidioma (Español/Inglés).
+- Soporte multiidioma.
 - Verificación automática de actualizaciones.
 - Vista previa de diapositivas durante la generación.
-- Control de límite de palabras (máximo 200) para las descripciones.
+- Control de límite de 200 palabras para las descripciones.
+- Personalización de fuentes para títulos y contenido.
+- Opciones de formato para texto (negrita, cursiva, subrayado).
+- Carga y procesamiento de archivos PDF y TXT como referencia.
+- Vista previa y revisión de documentos cargados.
+- Registro detallado del proceso de generación.
+- Seguimiento y gestión de costos por API.
+- Posibilidad de cancelar generación en curso.
+- Visualización del progreso en tiempo real durante la generación.
+- Opción para ocultar/mostrar el progreso durante la generación.
 
 ## Modelos Disponibles
 
@@ -35,8 +44,11 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **claude-3.7-sonnet** - Nuevo modelo de Anthropic, el más inteligente y con mejor capacidad de razonamiento.
 - **claude-3.5-sonnet** - Modelo equilibrado de Anthropic con buena capacidad de comprensión.
 - **claude-3.5-haiku** - Versión económica de Claude, excelente relación calidad-precio.
+- **meta-llama-4-maverick-instruct** - Última versión del modelo de Meta con mejor rendimiento.
 - **meta-llama-3.1-405b-instruct** - Modelo de Meta con controles de contenido.
 - **dolphin-2.9-llama3-70b-gguf** - Modelo sin censura para contenido más flexible.
+- **grok-3-mini-beta** - Versión ligera del nuevo modelo de xAI.
+- **grok-3-beta** - Nuevo modelo completo y mejorado de xAI.
 - **grok-2-1212** - Modelo de xAI.
 
 ### Modelos de Imagen:
@@ -48,7 +60,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **sana** - Modelo de NVIDIA equilibrado entre calidad y velocidad.
 - **sana-sprint-1.6b** - Modelo de NVIDIA mucho más rápido y económico.
 - **photomaker** - Modelo especializado en caras (requiere imagen de referencia).
-- **fluxpulid** - Modelo también especializado en caras equilibrado entre calidad y velocidad (requiere imagen de referencia).
+- **flux-pulid** - Modelo también especializado en caras equilibrado entre calidad y velocidad (requiere imagen de referencia).
 - **hyper-flux-8step** - Modelo muy rápido y económico.
 - **hyper-flux-16step** - Modelo rápido y económico con mejor calidad.
 - **sdxl-lightning-4step** - Modelo rápido y económico sin censura.
@@ -77,7 +89,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 2. Clona el repositorio:
 
 ```bash
-git clone https://github.com/tu_nombre_de_usuario/Powerpoineador.git
+git clone https://github.com/KevinAZHD/Powerpoineador.git
 ```
 
 3. Instala las dependencias:
