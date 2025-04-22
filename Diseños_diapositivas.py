@@ -130,7 +130,8 @@ class Diapositivas:
         title_box = slide.shapes.add_textbox(title_left, title_top, title_width, title_height)
         title_frame = title_box.text_frame
         
-        title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+        title_frame.auto_size = MSO_AUTO_SIZE.NONE
+        title_frame.word_wrap = True
         title_frame.vertical_anchor = MSO_ANCHOR.TOP
         title_frame.margin_bottom = Inches(0.1)
         title_frame.margin_left = Inches(0.1)

@@ -1005,9 +1005,10 @@ class MainWindow(QMainWindow):
             self.widget.texto_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
             
             # Habilitar selección de fuente
-            if hasattr(self.widget, 'font_label'):
-                self.widget.font_label.setEnabled(True)
-                self.widget.font_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+            if hasattr(self.widget, 'title_font_label'):
+                self.widget.title_font_label.setEnabled(True)
+                self.widget.title_font_label.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+                self.widget.load_font_selection()
             if hasattr(self.widget, 'font_combo'):
                 self.widget.font_combo.setEnabled(True)
                 self.widget.font_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
@@ -3269,9 +3270,9 @@ class PowerpoineatorWidget(QWidget):
                     content_size = config.get('content_font_size', 10)
 
             # Validar rangos
-            if not (1 <= title_size <= 23):
+            if not (1 <= title_size <= 72): # Ajustado el límite superior a 72
                 title_size = 16
-            if not (1 <= content_size <= 20):
+            if not (1 <= content_size <= 72): # Ajustado el límite superior a 72 (opcional, pero consistente)
                 content_size = 10
 
             # Setear valores en los spin boxes
