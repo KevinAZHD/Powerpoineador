@@ -4,7 +4,7 @@ from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QAction
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
     QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar,
-    QMenu # <<< Añadir QMenu y QActionGroup
+    QMenu
     )
 from Version_checker import obtener_url_descarga, obtener_ultima_version, obtener_version_actual
 from apis.Replicate import ReplicateAPIKeyWindow
@@ -437,6 +437,41 @@ class MainWindow(QMainWindow):
         self.de_action.triggered.connect(lambda: self.change_language('de'))
         self.language_menu.addAction(self.de_action)
         self.language_group.addAction(self.de_action)
+
+        # >>> AÑADIR Acción para Árabe <<<
+        self.ar_action = QAction(QIcon(resource_path("iconos/ar.png")), obtener_traduccion('language_option_ar', self.current_language), self)
+        self.ar_action.setCheckable(True)
+        self.ar_action.triggered.connect(lambda: self.change_language('ar'))
+        self.language_menu.addAction(self.ar_action)
+        self.language_group.addAction(self.ar_action)
+
+        # >>> AÑADIR Acción para Ruso <<<
+        self.ru_action = QAction(QIcon(resource_path("iconos/ru.png")), obtener_traduccion('language_option_ru', self.current_language), self)
+        self.ru_action.setCheckable(True)
+        self.ru_action.triggered.connect(lambda: self.change_language('ru'))
+        self.language_menu.addAction(self.ru_action)
+        self.language_group.addAction(self.ru_action)
+
+        # >>> AÑADIR Acción para Chino <<<
+        self.cn_action = QAction(QIcon(resource_path("iconos/cn.png")), obtener_traduccion('language_option_cn', self.current_language), self)
+        self.cn_action.setCheckable(True)
+        self.cn_action.triggered.connect(lambda: self.change_language('cn'))
+        self.language_menu.addAction(self.cn_action)
+        self.language_group.addAction(self.cn_action)
+
+        # >>> AÑADIR Acción para Japonés <<<
+        self.jp_action = QAction(QIcon(resource_path("iconos/jp.png")), obtener_traduccion('language_option_jp', self.current_language), self)
+        self.jp_action.setCheckable(True)
+        self.jp_action.triggered.connect(lambda: self.change_language('jp'))
+        self.language_menu.addAction(self.jp_action)
+        self.language_group.addAction(self.jp_action)
+
+        # >>> AÑADIR Acción para Coreano <<<
+        self.kr_action = QAction(QIcon(resource_path("iconos/kr.png")), obtener_traduccion('language_option_kr', self.current_language), self)
+        self.kr_action.setCheckable(True)
+        self.kr_action.triggered.connect(lambda: self.change_language('kr'))
+        self.language_menu.addAction(self.kr_action)
+        self.language_group.addAction(self.kr_action)
 
         # Añadir el menú a la barra derecha
         right_menubar.addAction(self.language_menu_action)
@@ -1372,6 +1407,16 @@ class MainWindow(QMainWindow):
             self.it_action.setText(obtener_traduccion('language_option_it', language_code))
             # >>> AÑADIR texto para Alemán <<<
             self.de_action.setText(obtener_traduccion('language_option_de', language_code))
+            # >>> AÑADIR texto para Ruso <<<
+            self.ru_action.setText(obtener_traduccion('language_option_ru', language_code))
+            # >>> AÑADIR texto para Chino <<<
+            self.cn_action.setText(obtener_traduccion('language_option_cn', language_code))
+            # >>> AÑADIR texto para Japonés <<<
+            self.jp_action.setText(obtener_traduccion('language_option_jp', language_code))
+            # >>> AÑADIR texto para Coreano <<<
+            self.kr_action.setText(obtener_traduccion('language_option_kr', language_code))
+            # >>> AÑADIR texto para Árabe <<<
+            self.ar_action.setText(obtener_traduccion('language_option_ar', language_code))
             # >>> Actualizar estado y etiqueta principal del menú <<<
             self.update_language_menu_state()
 
@@ -1517,6 +1562,21 @@ class MainWindow(QMainWindow):
         elif self.current_language == 'de': # >>> AÑADIR caso para Alemán <<<
             self.language_menu_action.setText(obtener_traduccion('language_option_de', self.current_language))
             self.de_action.setChecked(True)
+        elif self.current_language == 'ru': # >>> AÑADIR caso para Ruso <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_ru', self.current_language))
+            self.ru_action.setChecked(True)
+        elif self.current_language == 'cn': # >>> AÑADIR caso para Chino <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_cn', self.current_language))
+            self.cn_action.setChecked(True)
+        elif self.current_language == 'jp': # >>> AÑADIR caso para Japonés <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_jp', self.current_language))
+            self.jp_action.setChecked(True)
+        elif self.current_language == 'kr': # >>> AÑADIR caso para Coreano <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_kr', self.current_language))
+            self.kr_action.setChecked(True)
+        elif self.current_language == 'ar': # >>> AÑADIR caso para Árabe <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_ar', self.current_language))
+            self.ar_action.setChecked(True)
         else: # Añadir un caso por defecto para volver a español si el idioma es desconocido
             self.current_language = 'es' # Asegurar que el idioma actual sea válido
             self.language_menu_action.setText(obtener_traduccion('language_option_es', self.current_language))
