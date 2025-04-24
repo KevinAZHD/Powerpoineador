@@ -4,7 +4,7 @@ from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QAction
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
     QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar,
-    QMenu
+    QMenu, QSizePolicy
     )
 from Version_checker import obtener_url_descarga, obtener_ultima_version, obtener_version_actual
 from apis.Replicate import ReplicateAPIKeyWindow
@@ -13,6 +13,7 @@ from apis.Google import GoogleAPIKeyWindow
 from Cifrado import GestorCifrado
 from Traducciones import obtener_traduccion
 from PyPDF2 import PdfReader
+from Vista_previa import VentanaVistaPrevia, PPTX_AVAILABLE # Importar PPTX_AVAILABLE
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -1765,6 +1766,8 @@ class PowerpoineatorWidget(QWidget):
         self.load_font_selection() # Cargar fuente guardada después de setup_ui
         self.load_content_font_selection() # <--- AÑADIR CARGA FUENTE CONTENIDO
         self.load_font_sizes() # Cargar tamaños de fuente guardados
+        self.current_language = 'es'
+        self.generated_pptx_path = None # Ruta del último PPTX generado
 
     def actualizar_traducciones(self, idioma):
         try:
@@ -1832,6 +1835,12 @@ class PowerpoineatorWidget(QWidget):
                     self.vista_previa.actualizar_idioma(idioma)
                 except Exception as e:
                     print(f"Error al actualizar vista previa: {str(e)}")
+            
+            # Diseños aleatorios checkbox
+            self.disenos_aleatorios_checkbox.setText(obtener_traduccion('disenos_aleatorios', idioma))
+            
+            # Auto open checkbox
+            self.auto_open_checkbox.setText(obtener_traduccion('auto_open', idioma))
         except Exception as e:
             print(f"Error general al actualizar traducciones: {str(e)}")
 
@@ -2024,6 +2033,12 @@ class PowerpoineatorWidget(QWidget):
         self.auto_open_checkbox.stateChanged.connect(self.save_auto_open_state)
         self.contador_checkbox_layout.addWidget(self.auto_open_checkbox)
         
+        # Añadir checkbox para diseños aleatorios o lineales
+        self.disenos_aleatorios_checkbox = QCheckBox(obtener_traduccion('disenos_aleatorios', current_language))
+        self.disenos_aleatorios_checkbox.setChecked(True)
+        self.disenos_aleatorios_checkbox.stateChanged.connect(self.save_disenos_aleatorios_state)
+        self.contador_checkbox_layout.addWidget(self.disenos_aleatorios_checkbox)
+        
         left_stretch = 1
         left_spacing = 0
         right_stretch = 1
@@ -2077,15 +2092,31 @@ class PowerpoineatorWidget(QWidget):
         self.right_panel = right_panel
         right_layout = QVBoxLayout(right_panel)
         
-        # Vista previa (ahora primero)
-        from Vista_previa import VentanaVistaPrevia
-        self.vista_previa = VentanaVistaPrevia(self)
-        
-        # Asegurarnos de que la vista previa tenga el idioma correcto y se actualice completamente
-        self.vista_previa.current_language = current_language
-        self.vista_previa.actualizar_idioma(current_language)
-        
-        right_layout.addWidget(self.vista_previa, 3)  # Dar más espacio a la vista previa
+        # Crear la vista previa como el primer elemento del panel derecho
+        try:
+            from Vista_previa import VentanaVistaPrevia
+            # --- MODIFICACIÓN: Pasar parámetros de formato al crear VentanaVistaPrevia ---
+            self.vista_previa = VentanaVistaPrevia(
+                parent=self,
+                title_font_name=self.font_combo.currentText(), # CORREGIDO
+                content_font_name=self.content_font_combo.currentText(), # CORREGIDO
+                title_font_size=self.title_font_size_spin.value(),
+                content_font_size=self.content_font_size_spin.value(),
+                title_bold=self.title_bold_checkbox.isChecked(),
+                title_italic=self.title_italic_checkbox.isChecked(),
+                title_underline=self.title_underline_checkbox.isChecked(),
+                content_bold=self.content_bold_checkbox.isChecked(),
+                content_italic=self.content_italic_checkbox.isChecked(),
+                content_underline=self.content_underline_checkbox.isChecked()
+            )
+            # -------------------------------------------------------------------------
+            self.vista_previa.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            # Añadir al layout derecho con un factor de estiramiento mayor
+            right_layout.addWidget(self.vista_previa, 3) # Darle más peso vertical
+        except ImportError:
+            print("Error al importar VentanaVistaPrevia")
+            self.vista_previa = QLabel("Error al cargar la vista previa.")
+            right_layout.addWidget(self.vista_previa)
         
         # Contenedor para centrar el botón
         log_btn_container = QHBoxLayout()
@@ -2147,6 +2178,16 @@ class PowerpoineatorWidget(QWidget):
         self.loading_timer = QTimer(self)
         self.loading_timer.timeout.connect(self.update_loading_animation)
 
+        # Asegurarse que la instancia de VentanaVistaPrevia se guarda
+        # self.preview_window = VentanaVistaPrevia(self.parent()) # O self si no tiene padre específico <---- Eliminada esta línea
+
+        # Mostrar advertencia si python-pptx no está disponible
+        if not PPTX_AVAILABLE:
+            # Usar QTimer para mostrar el mensaje después de que la ventana principal sea visible
+            QTimer.singleShot(100, lambda: QMessageBox.warning(self, 
+                                                        "Advertencia", 
+                                                        "La biblioteca 'python-pptx' no está instalada.\nLa función de editar diapositivas directamente en el archivo PPTX estará deshabilitada.\nInstálala con: pip install python-pptx"))
+
     # Función para poblar los campos de selección de modelos
     def populate_fields(self):
         # Resto del código sin cambios...
@@ -2207,6 +2248,7 @@ class PowerpoineatorWidget(QWidget):
         self.load_auto_open_state()
         self.load_num_diapositivas()
         self.load_format_settings()  # Cargar configuraciones de formato
+        self.load_disenos_aleatorios_state()  # Cargar configuración de diseños aleatorios
         self.load_pdf_path()
         self.load_log_visibility_state()
         # Actualizar contador
@@ -2354,7 +2396,7 @@ class PowerpoineatorWidget(QWidget):
             filename = None
             auto_open = False
             if self.worker:
-                filename = self.worker.filename
+                filename = self.worker.filename # <- Esta es la ruta del archivo generado
                 auto_open = self.worker.auto_open
                 
                 # Limpieza del worker de manera segura
@@ -2368,17 +2410,38 @@ class PowerpoineatorWidget(QWidget):
             # Registrar los costos
             self.registrar_costos_finales()
             
-            # Habilitar la interfaz después de la generación
+            # Habilitar la interfaz ANTES de intentar abrir/mostrar mensaje
             self.enable_ui_after_generation()
             
             if filename:
+                # --- Guardar y pasar la ruta a la ventana de vista previa --- 
+                self.generated_pptx_path = os.path.abspath(filename) # Guardar ruta absoluta
+                if hasattr(self, 'vista_previa') and self.vista_previa: # <--- Cambiado de preview_window a vista_previa
+                    self.vista_previa.set_pptx_path(self.generated_pptx_path)
+                    # Forzar la actualización de la vista previa para habilitar el botón
+                    if self.vista_previa.current_slide_index >= 0: # <--- Añadida comprobación
+                        self.vista_previa.mostrar_diapositiva_actual() # <--- Añadida llamada
+                # ------------------------------------------------------------
+                
                 if auto_open:
                     # Abrir el archivo automáticamente
-                    os.startfile(filename)
+                    # Usar QDesktopServices para una mejor compatibilidad multiplataforma
+                    try:
+                        from PySide6.QtGui import QDesktopServices
+                        from PySide6.QtCore import QUrl
+                        QDesktopServices.openUrl(QUrl.fromLocalFile(self.generated_pptx_path))
+                    except Exception as open_err:
+                        print(f"Error al abrir archivo automáticamente: {open_err}")
+                        # Fallback a os.startfile si existe (Windows)
+                        try:
+                           os.startfile(self.generated_pptx_path)
+                        except AttributeError:
+                           pass # No disponible en otras plataformas
+                           
                 else:
                     # Mostrar mensaje de éxito
-                    nombre_archivo = filename.split('/')[-1] if '/' in filename else filename.split('\\')[-1]
-                    ruta_completa = os.path.abspath(filename)
+                    nombre_archivo = os.path.basename(self.generated_pptx_path)
+                    ruta_completa = self.generated_pptx_path # Ya es absoluta
                     
                     msg = QMessageBox(self)
                     msg.setWindowTitle(obtener_traduccion('presentation_ready', current_language))
@@ -2392,10 +2455,20 @@ class PowerpoineatorWidget(QWidget):
                     msg.move(msg_pos)
                     
                     msg.exec()
+            else:
+                 # Si no hay 'filename', asegurarse que la ruta PPTX está limpia
+                 self.generated_pptx_path = None
+                 if hasattr(self, 'vista_previa') and self.vista_previa: # <--- Cambiado de preview_window a vista_previa
+                      self.vista_previa.set_pptx_path(None)
+                      
         except Exception as e:
             print(f"Error en on_generation_finished: {str(e)}")
             # Asegurar que la interfaz se habilite incluso en caso de error
             self.enable_ui_after_generation()
+            # Limpiar la ruta PPTX en caso de error también
+            self.generated_pptx_path = None
+            if hasattr(self, 'vista_previa') and self.vista_previa:
+                 self.vista_previa.set_pptx_path(None)
 
     def show_error(self, error_msg):
         try:
@@ -2472,6 +2545,9 @@ class PowerpoineatorWidget(QWidget):
         self.content_bold_checkbox.setEnabled(False)
         self.content_italic_checkbox.setEnabled(False)
         self.content_underline_checkbox.setEnabled(False)
+        
+        # Deshabilitar checkbox de diseños aleatorios
+        self.disenos_aleatorios_checkbox.setEnabled(False)
 
         # Deshabilitar área de descripción
         self.descripcion_text.setEnabled(False)
@@ -2595,6 +2671,9 @@ class PowerpoineatorWidget(QWidget):
         self.content_italic_checkbox.setEnabled(True)
         self.content_underline_checkbox.setEnabled(True)
         
+        # Habilitar checkbox de diseños aleatorios
+        self.disenos_aleatorios_checkbox.setEnabled(True)
+        
         # Habilitar área de descripción
         self.descripcion_text.setEnabled(True)
         
@@ -2622,6 +2701,14 @@ class PowerpoineatorWidget(QWidget):
 
     # Modificación del método de generación de presentación para usar la lógica integrada
     def generar_presentacion_event(self):
+        # --- Resetear ruta PPTX y estado de edición antes de generar --- 
+        self.generated_pptx_path = None
+        if hasattr(self, 'preview_window') and self.preview_window:
+            # Resetear la vista previa (esto también limpia su pptx_path y deshabilita el botón)
+            self.preview_window.reset_completo()
+            # Alternativamente, solo limpiar la ruta: self.preview_window.set_pptx_path(None)
+        # --------------------------------------------------------------
+        
         modelo_texto = self.texto_combo.currentText()
         modelo_imagen = self.imagen_combo.currentText()
         descripcion = self.descripcion_text.toPlainText()
@@ -2746,7 +2833,8 @@ class PowerpoineatorWidget(QWidget):
                 title_underline, # Pasar opción de subrayado para título
                 content_bold, # Pasar opción de negrita para contenido
                 content_italic, # Pasar opción de cursiva para contenido
-                content_underline # Pasar opción de subrayado para contenido
+                content_underline, # Pasar opción de subrayado para contenido
+                self.disenos_aleatorios_checkbox.isChecked() # Pasar opción de diseños aleatorios
             )
             self.worker.start()
 
@@ -3285,7 +3373,25 @@ class PowerpoineatorWidget(QWidget):
         except Exception as e:
             print(f"Error al guardar la fuente del título: {str(e)}")
             
-    # Nueva función para guardar la fuente del contenido
+        # --- NUEVO: Actualizar vista previa ---
+        if hasattr(self, 'vista_previa') and self.vista_previa:
+            self.vista_previa.update_format_settings(
+                title_font_name=self.font_combo.currentText(), # CORREGIDO
+                content_font_name=self.content_font_combo.currentText(), # CORREGIDO
+                title_font_size=self.title_font_size_spin.value(),
+                content_font_size=self.content_font_size_spin.value(),
+                title_bold=self.title_bold_checkbox.isChecked(),
+                title_italic=self.title_italic_checkbox.isChecked(),
+                title_underline=self.title_underline_checkbox.isChecked(),
+                content_bold=self.content_bold_checkbox.isChecked(),
+                content_italic=self.content_italic_checkbox.isChecked(),
+                content_underline=self.content_underline_checkbox.isChecked()
+            )
+        # ---------------------------------------
+        # ... (código existente de manejo de errores)
+    # --- Fin Función para guardar selección de fuente ---
+
+    # --- Nueva función para guardar la fuente del contenido ---
     def save_content_font_selection(self, font_name):
         try:
             config = {}
@@ -3299,6 +3405,23 @@ class PowerpoineatorWidget(QWidget):
                 json.dump(config, f, ensure_ascii=False, indent=4)
         except Exception as e:
             print(f"Error al guardar la fuente del contenido: {str(e)}")
+        # --- NUEVO: Actualizar vista previa ---
+        if hasattr(self, 'vista_previa') and self.vista_previa:
+            self.vista_previa.update_format_settings(
+                title_font_name=self.font_combo.currentText(), # CORREGIDO
+                content_font_name=self.content_font_combo.currentText(), # CORREGIDO
+                title_font_size=self.title_font_size_spin.value(),
+                content_font_size=self.content_font_size_spin.value(),
+                title_bold=self.title_bold_checkbox.isChecked(),
+                title_italic=self.title_italic_checkbox.isChecked(),
+                title_underline=self.title_underline_checkbox.isChecked(),
+                content_bold=self.content_bold_checkbox.isChecked(),
+                content_italic=self.content_italic_checkbox.isChecked(),
+                content_underline=self.content_underline_checkbox.isChecked()
+            )
+        # ---------------------------------------
+        # ... (código existente de manejo de errores)
+    # --- Fin Función para guardar selección de fuente de CONTENIDO ---
 
     def load_font_selection(self):
         try:
@@ -3368,8 +3491,24 @@ class PowerpoineatorWidget(QWidget):
             
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                 json.dump(config, f, ensure_ascii=False, indent=4)
+            
+            # --- NUEVO: Actualizar vista previa ---
+            if hasattr(self, 'vista_previa') and self.vista_previa:
+                self.vista_previa.update_format_settings(
+                    title_font_name=self.font_combo.currentText(), # CORREGIDO
+                    content_font_name=self.content_font_combo.currentText(), # CORREGIDO
+                    title_font_size=self.title_font_size_spin.value(),
+                    content_font_size=self.content_font_size_spin.value(),
+                    title_bold=self.title_bold_checkbox.isChecked(),
+                    title_italic=self.title_italic_checkbox.isChecked(),
+                    title_underline=self.title_underline_checkbox.isChecked(),
+                    content_bold=self.content_bold_checkbox.isChecked(),
+                    content_italic=self.content_italic_checkbox.isChecked(),
+                    content_underline=self.content_underline_checkbox.isChecked()
+                )
+            # ---------------------------------------
         except Exception as e:
-            print(f"Error al guardar los tamaños de fuente: {str(e)}")
+            print(f"Error al guardar tamaños de fuente: {str(e)}")
 
     def load_font_sizes(self):
         try:
@@ -3396,6 +3535,22 @@ class PowerpoineatorWidget(QWidget):
 
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                 json.dump(config, f, ensure_ascii=False, indent=4)
+            
+            # --- NUEVO: Actualizar vista previa ---
+            if hasattr(self, 'vista_previa') and self.vista_previa:
+                self.vista_previa.update_format_settings(
+                    title_font_name=self.font_combo.currentText(), # CORREGIDO
+                    content_font_name=self.content_font_combo.currentText(), # CORREGIDO
+                    title_font_size=self.title_font_size_spin.value(),
+                    content_font_size=self.content_font_size_spin.value(),
+                    title_bold=self.title_bold_checkbox.isChecked(),
+                    title_italic=self.title_italic_checkbox.isChecked(),
+                    title_underline=self.title_underline_checkbox.isChecked(),
+                    content_bold=self.content_bold_checkbox.isChecked(),
+                    content_italic=self.content_italic_checkbox.isChecked(),
+                    content_underline=self.content_underline_checkbox.isChecked()
+                )
+            # ---------------------------------------
         except Exception as e:
             print(f"Error al guardar los tamaños de fuente: {str(e)}")
 
@@ -3441,19 +3596,34 @@ class PowerpoineatorWidget(QWidget):
             if os.path.exists(CONFIG_FILE):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-
+            
             config['title_bold'] = self.title_bold_checkbox.isChecked()
             config['title_italic'] = self.title_italic_checkbox.isChecked()
             config['title_underline'] = self.title_underline_checkbox.isChecked()
-            # Guardar formato de contenido
             config['content_bold'] = self.content_bold_checkbox.isChecked()
             config['content_italic'] = self.content_italic_checkbox.isChecked()
             config['content_underline'] = self.content_underline_checkbox.isChecked()
-
+            
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                 json.dump(config, f, ensure_ascii=False, indent=4)
+            
+            # --- NUEVO: Actualizar vista previa ---
+            if hasattr(self, 'vista_previa') and self.vista_previa:
+                self.vista_previa.update_format_settings(
+                    title_font_name=self.font_combo.currentText(), # CORREGIDO
+                    content_font_name=self.content_font_combo.currentText(), # CORREGIDO
+                    title_font_size=self.title_font_size_spin.value(),
+                    content_font_size=self.content_font_size_spin.value(),
+                    title_bold=self.title_bold_checkbox.isChecked(),
+                    title_italic=self.title_italic_checkbox.isChecked(),
+                    title_underline=self.title_underline_checkbox.isChecked(),
+                    content_bold=self.content_bold_checkbox.isChecked(),
+                    content_italic=self.content_italic_checkbox.isChecked(),
+                    content_underline=self.content_underline_checkbox.isChecked()
+                )
+            # ---------------------------------------
         except Exception as e:
-            print(f"Error al guardar el formato de título: {str(e)}")
+            print(f"Error al guardar configuración de formato: {str(e)}")
 
     def load_format_settings(self):
         try:
@@ -3469,6 +3639,29 @@ class PowerpoineatorWidget(QWidget):
                     self.content_underline_checkbox.setChecked(config.get('content_underline', False))
         except Exception as e:
             print(f"Error al cargar las configuraciones de formato: {str(e)}")
+
+    def save_disenos_aleatorios_state(self):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            
+            config['disenos_aleatorios'] = self.disenos_aleatorios_checkbox.isChecked()
+            
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar el estado de diseños aleatorios: {str(e)}")
+
+    def load_disenos_aleatorios_state(self):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    self.disenos_aleatorios_checkbox.setChecked(config.get('disenos_aleatorios', True))
+        except Exception as e:
+            print(f"Error al cargar el estado de diseños aleatorios: {str(e)}")
 
 # Función principal para iniciar la aplicación
 if __name__ == "__main__":

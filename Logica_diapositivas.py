@@ -157,7 +157,7 @@ def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
         raise RuntimeError(obtener_traduccion('error_generar_imagen', current_language).format(error=str(e)))
 
 # Función para generar una presentación con un modelo de IA
-def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals=None, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False):
+def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals=None, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False, disenos_aleatorios=True):
     # Función interna para manejar logs
     def log_message(msg):
         print(msg)
@@ -241,8 +241,9 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
         log_message(obtener_traduccion('aplicando_disenos', current_language))
         # Crear una lista con los diseños disponibles
         designs = list(range(1, 8))
-        # Mezclar los diseños disponibles
-        random.shuffle(designs)
+        # Mezclar los diseños disponibles solo si se ha seleccionado diseños aleatorios
+        if disenos_aleatorios:
+            random.shuffle(designs)
         # Iterar sobre las secciones del contenido
         for i, (section, content) in enumerate(sections.items()):
             try:
