@@ -1899,8 +1899,18 @@ class PowerpoineatorWidget(QWidget):
 
         left_layout.addLayout(model_layout)
 
+        # Crear layout para descripción y contador
+        descripcion_y_contador_layout = QHBoxLayout()
         self.descripcion_label = QLabel(obtener_traduccion('descripcion_presentacion', current_language))
-        left_layout.addWidget(self.descripcion_label)
+        descripcion_y_contador_layout.addWidget(self.descripcion_label)
+        descripcion_y_contador_layout.addStretch(1) # Empujar contador a la derecha
+        self.contador_label = QLabel(obtener_traduccion('contador_label', current_language)) # Crear contador aquí
+        self.contador_label.setStyleSheet("color: gray;") # Aplicar estilo aquí
+        descripcion_y_contador_layout.addWidget(self.contador_label)
+
+        # Añadir el layout combinado
+        left_layout.addLayout(descripcion_y_contador_layout)
+
         self.descripcion_text = QTextEdit()
         font = self.descripcion_text.font()
         font.setPointSize(15)
@@ -2050,10 +2060,6 @@ class PowerpoineatorWidget(QWidget):
         
         self.contador_checkbox_layout.addStretch(left_stretch)
         self.contador_checkbox_layout.addSpacing(left_spacing)
-        
-        self.contador_label = QLabel(obtener_traduccion('contador_label', current_language))
-        self.contador_label.setStyleSheet("color: gray;")
-        self.contador_checkbox_layout.addWidget(self.contador_label, alignment=Qt.AlignCenter)
         
         self.contador_checkbox_layout.addStretch(right_stretch)
         self.contador_checkbox_layout.addSpacing(right_spacing)
