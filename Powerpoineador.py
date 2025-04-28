@@ -2220,7 +2220,7 @@ class PowerpoineatorWidget(QWidget):
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-haiku [$0.0035]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-maverick-instruct [$0.00067]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct [$0.0067]')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.042]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.018]')
             
             self.imagen_combo.setEnabled(True)
             self.imagen_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
@@ -2825,7 +2825,7 @@ class PowerpoineatorWidget(QWidget):
             self.worker = GenerationWorker(
                 modelo_texto,
                 modelo_imagen,
-                nuevo_string + f" hazlo en {instruccion_idioma} y en {num_diapositivas} diapositivas tal que los títulos de la tupla no superen 5 palabras y del contenido no superen 50 palabras",
+                nuevo_string + f" hazlo OBLIGATORIAMENTE en {num_diapositivas} claves-valores (diapositivas) y en {instruccion_idioma}, tal que los títulos de la tupla NO superen 5 palabras y del contenido NO superen 50 palabras",
                 auto_open,
                 self.imagen_personalizada,
                 file_path,

@@ -54,7 +54,13 @@ class EditSlideDialog(QDialog):
         # Contenido
         content_label = QLabel(obtener_traduccion('edit_content_label', self.current_language))
         layout.addWidget(content_label)
-        self.content_edit = QTextEdit(current_data.get('contenido', ''))
+        # --- MODIFICADO: Crear vacío y usar setPlainText --- 
+        self.content_edit = QTextEdit() # Crear vacío
+        self.content_edit.setPlainText(current_data.get('contenido', '')) # Establecer como texto plano
+        # ---------------------------------------------------
+        # --- NUEVO: Desactivar rich text para mostrar texto plano ---
+        self.content_edit.setAcceptRichText(False) # Mantener esto para evitar pegado de rich text
+        # ----------------------------------------------------------
         self.content_edit.setMinimumHeight(100)
         layout.addWidget(self.content_edit)
 
@@ -460,11 +466,19 @@ class VentanaVistaPrevia(QWidget):
             titulo_label = QLabel(datos['titulo'])
             titulo_label.setAlignment(Qt.AlignCenter)
             titulo_label.setWordWrap(True)
-            # Calcular tamaño de fuente responsivo para el título
-            available_width = self.scroll.width() - 50 # Ajustar espacio para botón
-            font_size = max(10, min(14, int(available_width / 55)))
-            font = QFont("Arial", font_size, QFont.Bold)
-            titulo_label.setFont(font)
+            # --- MODIFICADO: Usar config + cálculo dinámico responsivo ---
+            # Calcular tamaño dinámico basado en ancho disponible
+            available_width_title = self.scroll.width() - 80 # Ancho disponible (menos botón y márgenes)
+            dynamic_title_size = max(10, int(available_width_title / 50)) # Tamaño basado en ancho, mínimo 10
+            # Usar el menor entre el tamaño configurado y el dinámico calculado
+            final_title_size = min(self.title_font_size, dynamic_title_size)
+            
+            title_font = QFont(self.title_font_name, final_title_size) # Usar tamaño final
+            title_font.setBold(self.title_bold)
+            title_font.setItalic(self.title_italic)
+            title_font.setUnderline(self.title_underline)
+            titulo_label.setFont(title_font)
+            # ----------------------------------------------------------
             
             # Crear Botón Editar
             self.edit_button = QPushButton()
@@ -527,16 +541,28 @@ class VentanaVistaPrevia(QWidget):
             slide_layout.addWidget(imagen_label, 3)
             
             # Agregar contenido con menos espacio
-            contenido_label = QLabel(datos['contenido'])
+            contenido_label = QLabel()
+            # --- NUEVO: Forzar texto plano para evitar interpretación HTML ---
+            contenido_label.setTextFormat(Qt.PlainText) 
+            # -------------------------------------------------------------
+            contenido_label.setText(datos['contenido']) # Establecer el texto DESPUÉS de fijar el formato
             contenido_label.setAlignment(Qt.AlignLeft)
             contenido_label.setWordWrap(True)
             contenido_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
             
-            # Calcular tamaño de fuente responsivo para el contenido (más pequeño)
-            content_font_size = max(8, min(11, int(available_width / 75)))
-            content_font = QFont("Arial", content_font_size)
+            # --- MODIFICADO: Usar config + cálculo dinámico responsivo ---
+             # Calcular tamaño dinámico basado en ancho disponible
+            available_width_content = self.scroll.width() - 40 # Ancho disponible (menos márgenes)
+            dynamic_content_size = max(8, int(available_width_content / 70)) # Tamaño basado en ancho, mínimo 8
+            # Usar el menor entre el tamaño configurado y el dinámico calculado
+            final_content_size = min(self.content_font_size, dynamic_content_size)
+
+            content_font = QFont(self.content_font_name, final_content_size) # Usar tamaño final
+            content_font.setBold(self.content_bold)
+            content_font.setItalic(self.content_italic)
+            content_font.setUnderline(self.content_underline)
             contenido_label.setFont(content_font)
-            contenido_label.setStyleSheet(f"padding: {int(available_width/120)}px;")
+            # ---------------------------------------------------------------
             contenido_label.setMaximumHeight(int(available_height * 0.25))  # Limitar altura máxima
             
             slide_layout.addWidget(contenido_label)
