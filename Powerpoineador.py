@@ -1,6 +1,6 @@
 import sys, os, requests, json, webbrowser
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
-from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QActionGroup
+from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QActionGroup, QTextCursor
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
     QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar,
@@ -13,7 +13,7 @@ from apis.Google import GoogleAPIKeyWindow
 from Cifrado import GestorCifrado
 from Traducciones import obtener_traduccion
 from PyPDF2 import PdfReader
-from Vista_previa import VentanaVistaPrevia, PPTX_AVAILABLE # Importar PPTX_AVAILABLE
+from Vista_previa import PPTX_AVAILABLE
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -439,6 +439,13 @@ class MainWindow(QMainWindow):
         self.language_menu.addAction(self.de_action)
         self.language_group.addAction(self.de_action)
 
+        # >>> AÑADIR Acción para Filipino <<<
+        self.tl_action = QAction(QIcon(resource_path("iconos/tl.png")), obtener_traduccion('language_option_tl', self.current_language), self)
+        self.tl_action.setCheckable(True)
+        self.tl_action.triggered.connect(lambda: self.change_language('tl'))
+        self.language_menu.addAction(self.tl_action)
+        self.language_group.addAction(self.tl_action)
+
         # >>> AÑADIR Acción para Árabe <<<
         self.ar_action = QAction(QIcon(resource_path("iconos/ar.png")), obtener_traduccion('language_option_ar', self.current_language), self)
         self.ar_action.setCheckable(True)
@@ -856,7 +863,9 @@ class MainWindow(QMainWindow):
 
     # Función para configurar la ventana principal
     def setup_main_widget(self):
-        self.widget = PowerpoineatorWidget()
+        # --- MODIFICADO: Pasar idioma al crear el widget ---
+        self.widget = PowerpoineatorWidget(self.current_language)
+        # -------------------------------------------------
         self.setCentralWidget(self.widget)
         self.setWindowTitle(obtener_traduccion('app_title', self.current_language))
         self.setMinimumSize(1485, 700)
@@ -866,6 +875,11 @@ class MainWindow(QMainWindow):
         x = (screen.width() - self.width()) // 2
         y = (screen.height() - self.height()) // 2
         self.move(x, y)
+        # --- AÑADIDO: Llamar a actualizar_traducciones DESPUÉS de setCentralWidget y configurar ventana ---
+        # Esto asegura que la jerarquía de padres esté establecida y que PowerpoineatorWidget
+        # pueda actualizar sus propios elementos y propagar la actualización a VistaPrevia si es necesario.
+        self.widget.actualizar_traducciones(self.current_language)
+        # --------------------------------------------------------------------------------------------
 
     # Función para deshabilitar la funcionalidad de la aplicación
     def disable_functionality(self):
@@ -1418,6 +1432,8 @@ class MainWindow(QMainWindow):
             self.kr_action.setText(obtener_traduccion('language_option_kr', language_code))
             # >>> AÑADIR texto para Árabe <<<
             self.ar_action.setText(obtener_traduccion('language_option_ar', language_code))
+            # >>> AÑADIR texto para Filipino <<<
+            self.tl_action.setText(obtener_traduccion('language_option_tl', language_code))
             # >>> Actualizar estado y etiqueta principal del menú <<<
             self.update_language_menu_state()
 
@@ -1578,6 +1594,9 @@ class MainWindow(QMainWindow):
         elif self.current_language == 'ar': # >>> AÑADIR caso para Árabe <<<
             self.language_menu_action.setText(obtener_traduccion('language_option_ar', self.current_language))
             self.ar_action.setChecked(True)
+        elif self.current_language == 'tl': # >>> AÑADIR caso para Filipino <<<
+            self.language_menu_action.setText(obtener_traduccion('language_option_tl', self.current_language))
+            self.tl_action.setChecked(True)
         else: # Añadir un caso por defecto para volver a español si el idioma es desconocido
             self.current_language = 'es' # Asegurar que el idioma actual sea válido
             self.language_menu_action.setText(obtener_traduccion('language_option_es', self.current_language))
@@ -1730,7 +1749,9 @@ class BalanceWindow(QWidget):
 
 # Clase para la ventana principal de la aplicación
 class PowerpoineatorWidget(QWidget):
-    def __init__(self):
+    # --- MODIFICADO: Aceptar idioma inicial ---
+    def __init__(self, initial_language='es'):
+    # ----------------------------------------
         super().__init__()
         # Señales para la lógica de generación de presentación
         self.signals = None
@@ -1739,10 +1760,13 @@ class PowerpoineatorWidget(QWidget):
         self.total_images = 0
         self.current_image = 0
         self.generation_completed = False
+        # --- MODIFICADO: Usar idioma inicial ---
         # Establecer el idioma por defecto
-        self.current_language = 'es'
-        if self.parent() and hasattr(self.parent(), 'current_language'):
-            self.current_language = self.parent().current_language
+        self.current_language = initial_language
+        # Ya no es necesario buscar en el padre aquí
+        # if self.parent() and hasattr(self.parent(), 'current_language'):
+        #     self.current_language = self.parent().current_language
+        # -------------------------------------
         
         # Obtener fuentes del sistema
         # font_db = QFontDatabase()
@@ -1766,7 +1790,9 @@ class PowerpoineatorWidget(QWidget):
         self.load_font_selection() # Cargar fuente guardada después de setup_ui
         self.load_content_font_selection() # <--- AÑADIR CARGA FUENTE CONTENIDO
         self.load_font_sizes() # Cargar tamaños de fuente guardados
-        self.current_language = 'es'
+        # --- MODIFICADO: Eliminar esta línea, ya se estableció con initial_language ---
+        # self.current_language = 'es'
+        # ----------------------------------------------------------------------------
         self.generated_pptx_path = None # Ruta del último PPTX generado
 
     def actualizar_traducciones(self, idioma):
@@ -1939,7 +1965,7 @@ class PowerpoineatorWidget(QWidget):
         # Tamaño Título (Movido aquí)
         self.title_font_size_label = QLabel(obtener_traduccion('title_font_size_label', current_language))
         self.title_font_size_spin = QSpinBox()
-        self.title_font_size_spin.setRange(1, 40)
+        self.title_font_size_spin.setRange(1, 30)
         self.title_font_size_spin.setValue(20) # Default title size
         self.title_font_size_spin.valueChanged.connect(self.save_font_sizes)
         title_font_layout.addWidget(self.title_font_size_label)
@@ -2192,7 +2218,7 @@ class PowerpoineatorWidget(QWidget):
             # Usar QTimer para mostrar el mensaje después de que la ventana principal sea visible
             QTimer.singleShot(100, lambda: QMessageBox.warning(self, 
                                                         "Advertencia", 
-                                                        "La biblioteca 'python-pptx' no está instalada.\nLa función de editar diapositivas directamente en el archivo PPTX estará deshabilitada.\nInstálala con: pip install python-pptx"))
+                                                        "La biblioteca 'python-pptx' no está instalada.\\nLa función de editar diapositivas directamente en el archivo PPTX estará deshabilitada.\\nInstálala con: pip install python-pptx"))
 
     # Función para poblar los campos de selección de modelos
     def populate_fields(self):
@@ -2216,8 +2242,9 @@ class PowerpoineatorWidget(QWidget):
         if hasattr(self.parent(), 'api_key') and self.parent().api_key:
             self.texto_combo.addItem(QIcon(resource_path("iconos/deepseek.png")), 'deepseek-r1 [$0.007]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.7-sonnet [$0.0105]')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-sonnet [$0.0131]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-sonnet [$0.01312]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-haiku [$0.0035]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-scout-instruct [$0.00046]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-maverick-instruct [$0.00067]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct [$0.0067]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.018]')
@@ -2227,12 +2254,12 @@ class PowerpoineatorWidget(QWidget):
             self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell [$0.003]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 [$0.05]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast [$0.025]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.0023]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.0021]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana-sprint-1.6b [$0.0015]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker [$0.0011]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid [$0.027]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step [$0.0055]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step [$0.026]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker [$0.0069]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid [$0.029]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step [$0.025]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step [$0.048]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step [$0.0014]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/lightweight.png")), 'model3_4 [$0.00098]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/dgmtnzflux.png")), 'dgmtnzflux [$0.03]')
@@ -2326,21 +2353,30 @@ class PowerpoineatorWidget(QWidget):
             self.progress_bar.setValue(0)
             
     def update_log(self, text):
-        self.log_text.append(text)
+        # --- MODIFICACIÓN: Usar insertPlainText ---
+        # Mover cursor al final antes de insertar
+        cursor = self.log_text.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        self.log_text.setTextCursor(cursor)
+        # Insertar el texto como plano, añadiendo un salto de línea
+        self.log_text.insertPlainText(text + "\n")
+        # -----------------------------------------
+        # Asegurar que la barra de scroll baja (esto ya estaba y es correcto)
         self.log_text.verticalScrollBar().setValue(
             self.log_text.verticalScrollBar().maximum()
         )
-        
+
         # Detectar cuando comienza la generación de imágenes y obtener el total
         current_language = self.current_language # Usar el idioma actual del widget
-            
+
         # Obtener la traducción del mensaje clave en el idioma actual
         generando_key = 'generando_imagen'
         generando_base_text = obtener_traduccion(generando_key, current_language)
         # Formatear para eliminar placeholders y espacios
         generando_check_text = generando_base_text.format(numero=1, total='').strip()
-        
+
         # Comprobar si el texto formateado está en el log recibido
+        # Asegurarse que generango_check_text no está vacío antes de la comprobación
         if generando_check_text and generando_check_text in text:
             self.loading_timer.stop()
             self.progress_bar.setRange(0, 100)
@@ -2350,13 +2386,20 @@ class PowerpoineatorWidget(QWidget):
                 # Intenta extraer el total asumiendo el formato "... X/Y ..."
                 parts = text.split('/')
                 if len(parts) > 1:
-                    total_str = parts[-1].split()[0]
-                    self.total_images = int(total_str)
+                    # Intentar obtener el número después de la barra, limpiando espacios/caracteres no numéricos
+                    total_str_part = parts[-1].strip().split()[0]
+                    # Filtrar solo dígitos
+                    total_str = ''.join(filter(str.isdigit, total_str_part))
+                    if total_str: # Asegurarse que hay dígitos
+                        self.total_images = int(total_str)
+                    else: # Si no se encontraron dígitos después de la limpieza
+                        print(f"Advertencia: No se pudieron extraer dígitos del total de imágenes de: {parts[-1]}")
+                        self.total_images = 1 # Fallback
                 else: # Si no hay '/', asumir 1 imagen (fallback)
                      self.total_images = 1
             except ValueError:
-                print(f"Advertencia: No se pudo extraer el número total de imágenes del texto: {text}")
-                self.total_images = 1 # Fallback si la extracción falla
+                print(f"Advertencia: No se pudo convertir a entero el número total de imágenes del texto: {text}")
+                self.total_images = 1 # Fallback si la conversión falla
             except Exception as e:
                  print(f"Error inesperado extrayendo total de imágenes: {e}")
                  self.total_images = 1 # Fallback general
@@ -2759,7 +2802,7 @@ class PowerpoineatorWidget(QWidget):
                                obtener_traduccion('empty_description', current_language))
             return
         
-        if modelo_imagen in ['photomaker [$0.0011]', 'flux-pulid [$0.027]']:
+        if modelo_imagen in ['photomaker [$0.0069]', 'flux-pulid [$0.029]']:
             if not self.imagen_personalizada or not os.path.exists(self.imagen_personalizada):
                 QMessageBox.warning(self, obtener_traduccion('error', current_language), 
                                    obtener_traduccion('image_required', current_language))
@@ -2825,7 +2868,7 @@ class PowerpoineatorWidget(QWidget):
             self.worker = GenerationWorker(
                 modelo_texto,
                 modelo_imagen,
-                nuevo_string + f" hazlo OBLIGATORIAMENTE en {num_diapositivas} claves-valores (diapositivas) y en {instruccion_idioma}, tal que los títulos de la tupla NO superen 5 palabras y del contenido NO superen 50 palabras",
+                nuevo_string + f" hazlo OBLIGATORIAMENTE en {num_diapositivas} claves-valores (diapositivas) y en {instruccion_idioma}, tal que los títulos de la tupla NO superen 4 palabras y del contenido NO superen 69 palabras",
                 auto_open,
                 self.imagen_personalizada,
                 file_path,
@@ -2938,7 +2981,7 @@ class PowerpoineatorWidget(QWidget):
 
     # Función para manejar el cambio en la selección de modelos de imagen
     def on_imagen_combo_changed(self, texto):
-        if texto in ['flux-pulid [$0.027]', 'photomaker [$0.0011]']:
+        if texto in ['flux-pulid [$0.029]', 'photomaker [$0.0069]']:
             self.cargar_imagen_btn.show()
             self.ver_imagen_btn.show()
             self.cargar_imagen_btn.setEnabled(True)
@@ -3033,7 +3076,7 @@ class PowerpoineatorWidget(QWidget):
                         index = self.imagen_combo.findText(imagen_modelo)
                         if index >= 0:
                             self.imagen_combo.setCurrentIndex(index)
-                            if imagen_modelo in ['flux-pulid [$0.027]', 'photomaker [$0.0011]']:
+                            if imagen_modelo in ['flux-pulid [$0.029]', 'photomaker [$0.0069]']:
                                 self.cargar_imagen_btn.show()
                                 self.ver_imagen_btn.show()
                                 self.cargar_imagen_btn.setEnabled(True)

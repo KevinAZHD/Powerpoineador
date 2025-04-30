@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QPushButton, QSizePolicy, QApplication, QDialog, QLineEdit, QTextEdit, QFileDialog, QDialogButtonBox, QSpacerItem, QMessageBox
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QPushButton, QSizePolicy, QApplication, QDialog, QLineEdit, QTextEdit, QFileDialog, QDialogButtonBox, QSpacerItem, QMessageBox, QProgressDialog, QProgressBar
+from PySide6.QtCore import Qt, QSize, QThread, Signal, QObject, QTimer
 from PySide6.QtGui import QPixmap, QFont, QResizeEvent, QIcon
-import os, sys
+import os, sys, subprocess, time
 from Traducciones import obtener_traduccion
 
 # Intentar importar python-pptx y manejar el error si no está instalado
@@ -36,6 +36,8 @@ class EditSlideDialog(QDialog):
         self.current_language = language
         self.initial_data = current_data
         self.new_image_path = current_data.get('imagen_path') # Inicializar con la ruta actual
+        self.parent_widget = parent  # Guardar referencia al widget padre
+        self.temp_preview_updated = False  # Flag para controlar si la vista previa temporal ha sido actualizada
 
         self.setWindowTitle(obtener_traduccion('edit_slide_dialog_title', self.current_language))
         self.setMinimumWidth(500)
@@ -47,6 +49,8 @@ class EditSlideDialog(QDialog):
         title_layout = QHBoxLayout()
         title_label = QLabel(obtener_traduccion('edit_title_label', self.current_language))
         self.title_edit = QLineEdit(current_data.get('titulo', ''))
+        # Conectar cambios de texto para actualización en tiempo real
+        self.title_edit.textChanged.connect(self.on_text_changed)
         title_layout.addWidget(title_label)
         title_layout.addWidget(self.title_edit)
         layout.addLayout(title_layout)
@@ -60,10 +64,16 @@ class EditSlideDialog(QDialog):
         # ---------------------------------------------------
         # --- NUEVO: Desactivar rich text para mostrar texto plano ---
         self.content_edit.setAcceptRichText(False) # Mantener esto para evitar pegado de rich text
+        # Conectar cambios de texto para actualización en tiempo real
+        self.content_edit.textChanged.connect(self.on_text_changed)
         # ----------------------------------------------------------
         self.content_edit.setMinimumHeight(100)
         layout.addWidget(self.content_edit)
-
+        
+        # Agregar un pequeño retraso para evitar actualizaciones demasiado frecuentes
+        self.text_change_timer = QObject()
+        self.text_change_timer.timer = None
+        
         # Imagen
         image_layout = QHBoxLayout()
         image_label_text = obtener_traduccion('edit_image_label', self.current_language)
@@ -72,9 +82,20 @@ class EditSlideDialog(QDialog):
         self.current_image_label.setWordWrap(True)
         browse_button = QPushButton(obtener_traduccion('edit_browse_button', self.current_language))
         browse_button.clicked.connect(self.browse_new_image)
+        
+        # Nuevo botón para generar imagen con IA
+        self.generate_ai_button = QPushButton(QIcon(resource_path("iconos/editar_foto.png")), "") 
+        # --- NUEVO: Ajustar tamaño de icono y botón ---
+        self.generate_ai_button.setIconSize(QSize(24, 24)) # Tamaño del icono
+        self.generate_ai_button.setFixedSize(QSize(32, 32)) # Tamaño fijo del botón
+        # ----------------------------------------------
+        self.generate_ai_button.setToolTip(obtener_traduccion('generate_ai_image', self.current_language))
+        self.generate_ai_button.clicked.connect(self.generate_new_ai_image)
+        
         image_layout.addWidget(image_label)
         image_layout.addWidget(self.current_image_label, 1) # Darle más espacio
         image_layout.addWidget(browse_button)
+        image_layout.addWidget(self.generate_ai_button)
         layout.addLayout(image_layout)
 
         # --- Botones OK/Cancel ---
@@ -89,6 +110,21 @@ class EditSlideDialog(QDialog):
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         layout.addWidget(button_box)
+        
+        # Conexión para restaurar la vista previa original al cerrar el diálogo sin guardar
+        self.finished.connect(self.on_dialog_finished)
+
+    def on_text_changed(self):
+        """Manejar cambios en el texto con un pequeño retraso para no actualizar constantemente"""
+        # Cancelar timer anterior si existe
+        if hasattr(self.text_change_timer, 'timer') and self.text_change_timer.timer:
+            self.text_change_timer.timer.stop()
+        
+        # Crear un nuevo timer
+        self.text_change_timer.timer = QTimer()
+        self.text_change_timer.timer.setSingleShot(True)
+        self.text_change_timer.timer.timeout.connect(self.update_preview_temporarily)
+        self.text_change_timer.timer.start(0)
 
     def browse_new_image(self):
         image_filter_key = 'edit_image_filter'
@@ -114,6 +150,260 @@ class EditSlideDialog(QDialog):
         if file_path and os.path.exists(file_path):
             self.new_image_path = file_path
             self.current_image_label.setText(os.path.basename(file_path))
+            # Actualizar vista previa en tiempo real
+            self.update_preview_temporarily()
+            
+    def generate_new_ai_image(self):
+        """Generar una nueva imagen usando el modelo de IA seleccionado en el combobox"""
+        if not self.parent_widget or not hasattr(self.parent_widget, 'parent'):
+            QMessageBox.warning(self, "Error", "No se puede acceder a la ventana principal")
+            return
+            
+        # Buscar el widget principal para obtener el modelo de imagen seleccionado
+        main_widget = self.parent_widget.parent()
+        while main_widget and not hasattr(main_widget, 'imagen_combo'):
+            if hasattr(main_widget, 'parent'):
+                main_widget = main_widget.parent()
+            else:
+                main_widget = None
+                
+        if not main_widget:
+            QMessageBox.warning(self,
+                                obtener_traduccion('ai_image_access_error_title', self.current_language),
+                                obtener_traduccion('ai_image_access_main_window_message', self.current_language))
+            return
+        if not hasattr(main_widget, 'imagen_combo'):
+            QMessageBox.warning(self,
+                                obtener_traduccion('ai_image_access_error_title', self.current_language),
+                                obtener_traduccion('ai_image_access_model_message', self.current_language))
+            return
+            
+        # Obtener modelo de imagen y otros datos necesarios
+        modelo_imagen = main_widget.imagen_combo.currentText()
+        titulo = self.title_edit.text()
+        contenido = self.content_edit.toPlainText()
+        
+        if not titulo or not contenido:
+            QMessageBox.warning(self,
+                                obtener_traduccion('ai_image_missing_data_title', self.current_language),
+                                obtener_traduccion('ai_image_missing_data_message', self.current_language))
+            return
+            
+        # Verificar si necesitamos imagen personalizada para el modelo
+        imagen_personalizada = None
+        if modelo_imagen in ['flux-pulid [$0.029]', 'photomaker [$0.0069]']:
+            if hasattr(main_widget, 'imagen_personalizada') and main_widget.imagen_personalizada:
+                imagen_personalizada = main_widget.imagen_personalizada
+            else:
+                QMessageBox.warning(self,
+                                    obtener_traduccion('ai_image_missing_custom_image_title', self.current_language),
+                                    obtener_traduccion('ai_image_missing_custom_image_message', self.current_language))
+                return
+                
+        # Crear un diálogo de progreso
+        class GenerateImageSignals(QObject):
+            success = Signal(str)
+            error = Signal(str)
+            finished = Signal()
+        
+        class GenerateImageWorker(QThread):
+            def __init__(self, modelo_imagen, titulo, contenido, imagen_personalizada):
+                super().__init__()
+                self.modelo_imagen = modelo_imagen
+                self.titulo = titulo
+                self.contenido = contenido
+                self.imagen_personalizada = imagen_personalizada
+                self.signals = GenerateImageSignals()
+                self.temp_imagen_path = None
+                # --- NUEVO: Flag para interrupción ---
+                self._is_interrupted = False
+                
+            def run(self):
+                try:
+                    # Importar funciones necesarias
+                    from Logica_diapositivas import generar_imagen_ia, generar_imagen_flux, generar_imagen_photomaker
+                    import sys, os
+                    
+                    # --- NUEVO: Comprobar interrupción temprana ---
+                    if self.isInterruptionRequested():
+                        print("Generación de imagen cancelada antes de empezar.")
+                        return
+                        
+                    # Definir directorios para imágenes temporales
+                    if sys.platform == 'win32':
+                        APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
+                    elif sys.platform == 'darwin':
+                        APP_DATA_DIR = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', 'Powerpoineador')
+                    else:
+                        APP_DATA_DIR = os.path.join(os.path.expanduser('~'), '.Powerpoineador')
+                        
+                    IMAGES_DIR = os.path.join(APP_DATA_DIR, 'images')
+                    os.makedirs(IMAGES_DIR, exist_ok=True)
+                    
+                    # Generar una imagen temporal con nombre único basado en timestamp
+                    import time
+                    timestamp = int(time.time())
+                    self.temp_imagen_path = os.path.join(IMAGES_DIR, f'temp_edit_slide_{timestamp}.jpg')
+                    
+                    # --- NUEVO: Comprobar interrupción antes de la llamada costosa ---
+                    if self.isInterruptionRequested():
+                        print("Generación de imagen cancelada antes de la llamada a la IA.")
+                        return
+                        
+                    # Generar la imagen según el modelo
+                    if self.modelo_imagen in ['flux-pulid [$0.029]', 'photomaker [$0.0069]']:
+                        if self.modelo_imagen == 'flux-pulid [$0.029]':
+                            img = generar_imagen_flux(self.titulo, self.contenido, "", self.imagen_personalizada, None, False)
+                        else:  # photomaker
+                            img = generar_imagen_photomaker(self.titulo, self.contenido, "", self.imagen_personalizada, None, False)
+                    else:
+                        img = generar_imagen_ia(self.titulo, self.contenido, "", self.modelo_imagen, None)
+                        
+                    # Guardar la imagen generada
+                    img.save(self.temp_imagen_path)
+                    
+                    # --- NUEVO: Comprobar interrupción antes de emitir señal ---
+                    if self.isInterruptionRequested():
+                        print("Generación de imagen cancelada después de generar pero antes de emitir señal.")
+                        # Opcional: Eliminar imagen temporal si se cancela aquí
+                        if os.path.exists(self.temp_imagen_path):
+                             try:
+                                 os.remove(self.temp_imagen_path)
+                                 print(f"Imagen temporal eliminada: {self.temp_imagen_path}")
+                             except OSError as e:
+                                 print(f"Error eliminando imagen temporal: {e}")
+                        return
+                        
+                    # Emitir señal de éxito con la ruta de la imagen
+                    self.signals.success.emit(self.temp_imagen_path)
+                    
+                except Exception as e:
+                    # Emitir señal de error
+                    self.signals.error.emit(str(e))
+                finally:
+                    # Emitir señal de finalización
+                    self.signals.finished.emit()
+        
+        # Crear y configurar el diálogo de progreso - MOSTRAR PRIMERO
+        progress_dialog = QProgressDialog(
+            obtener_traduccion('generate_ai_image_label', self.current_language), # Usar traducción para etiqueta
+            obtener_traduccion('edit_cancel', self.current_language), # Usar traducción para botón cancelar
+            0, 0, self
+        )
+        progress_dialog.setWindowTitle(obtener_traduccion('generate_ai_image_title', self.current_language)) # Usar traducción para título
+        progress_dialog.setWindowModality(Qt.WindowModal)
+        progress_dialog.setMinimumDuration(0) # Mostrar inmediatamente
+        progress_dialog.setMinimumWidth(450) # Aumentar ancho mínimo
+        progress_dialog.setAutoClose(False) # Evitar que se cierre automáticamente
+        progress_dialog.setAutoReset(False) # Evitar que se reinicie automáticamente
+        
+        # --- MODIFICADO: Encontrar QProgressBar y aplicar estilo ---
+        # Buscar el QProgressBar dentro del diálogo
+        progress_bar_widget = progress_dialog.findChild(QProgressBar) # Buscar QProgressBar directamente
+
+        if progress_bar_widget:
+            # Hacer que la barra de progreso ocupe más espacio horizontalmente
+            # Establecer un tamaño mínimo más grande relativo al diálogo
+            progress_bar_widget.setMinimumWidth(400)
+            progress_bar_widget.setMaximumWidth(420) # Limitar para que no sea *exactamente* el ancho del diálogo
+            progress_bar_widget.setAlignment(Qt.AlignCenter) # Centrar texto si lo hubiera (aunque en modo indeterminado no suele haber)
+
+            # --- MODIFICADO: Eliminar hoja de estilos para usar el estilo del sistema ---
+            # Al no establecer una hoja de estilos, QProgressBar usará la apariencia nativa.
+            # progress_bar_widget.setStyleSheet(""" ... """) # <- Eliminado
+            # --- FIN MODIFICACIÓN ESTILO ---
+
+        else:
+            print("Advertencia: No se pudo encontrar QProgressBar en QProgressDialog para aplicar estilo.")
+        # --- FIN MODIFICACIÓN ---
+
+        # NUEVO: Centrar el diálogo en la pantalla usando QStyle
+        from PySide6.QtWidgets import QStyle
+        from PySide6.QtCore import QRect
+        desktop = QApplication.primaryScreen().availableGeometry()
+        dialog_rect = QStyle.alignedRect(
+            Qt.LeftToRight,
+            Qt.AlignCenter,
+            progress_dialog.size(),
+            desktop
+        )
+        progress_dialog.setGeometry(dialog_rect)
+        
+        # Mostrar el diálogo ANTES de iniciar el procesamiento
+        progress_dialog.show()
+        QApplication.processEvents() # Procesar eventos para que se muestre
+        
+        # Crear e iniciar el worker DESPUÉS de mostrar el diálogo
+        self.worker = GenerateImageWorker(modelo_imagen, titulo, contenido, imagen_personalizada)
+        
+        # Conectar señales
+        self.worker.signals.success.connect(
+            lambda path: self.handle_image_success(path, progress_dialog))
+        self.worker.signals.error.connect(
+            lambda error: self.handle_image_error(error, progress_dialog))
+        self.worker.signals.finished.connect(
+            lambda: self.worker.deleteLater())  # Limpiar el worker después
+        # --- NUEVO: Conectar señal de cancelación --- 
+        progress_dialog.canceled.connect(self.cancel_image_generation)
+        
+        # Iniciar el worker
+        self.worker.start()
+    
+    def handle_image_success(self, image_path, progress_dialog):
+        """Manejar el éxito de la generación de la imagen"""
+        progress_dialog.close()
+        
+        # Actualizar la ruta de la imagen y la etiqueta
+        self.new_image_path = image_path
+        self.current_image_label.setText(os.path.basename(image_path))
+        
+        # Actualizar la vista previa temporalmente
+        self.update_preview_temporarily()
+        
+        # Mostrar mensaje de éxito
+        QMessageBox.information(self,
+                                obtener_traduccion('ai_image_success_title', self.current_language),
+                                obtener_traduccion('ai_image_success_message', self.current_language))
+    
+    def handle_image_error(self, error, progress_dialog):
+        """Manejar el error de la generación de la imagen"""
+        progress_dialog.close()
+        error_message = obtener_traduccion('ai_image_error_message', self.current_language).format(error=error)
+        QMessageBox.critical(self, obtener_traduccion('error', self.current_language), error_message)
+        
+    def update_preview_temporarily(self):
+        """Actualizar la vista previa temporalmente sin guardar los cambios"""
+        if not self.parent_widget or not isinstance(self.parent_widget, VentanaVistaPrevia):
+            return
+            
+        # Marcar que se ha actualizado la vista previa temporalmente
+        self.temp_preview_updated = True
+        
+        # Guardar los datos originales para restaurarlos si se cancela
+        self.original_image_path = self.parent_widget.all_slides_data[self.parent_widget.current_slide_index].get('imagen_path')
+        
+        # Crear datos temporales para la vista previa
+        temp_data = {
+            'imagen_path': self.new_image_path,
+            'titulo': self.title_edit.text(),
+            'contenido': self.content_edit.toPlainText()
+        }
+        
+        # Guardar temporalmente los nuevos datos
+        self.parent_widget.all_slides_data[self.parent_widget.current_slide_index] = temp_data
+        
+        # Actualizar la vista previa
+        self.parent_widget.mostrar_diapositiva_actual()
+        
+    def on_dialog_finished(self, result):
+        """Manejar el cierre del diálogo, restaurando vista previa si es necesario"""
+        if result == QDialog.Rejected and self.temp_preview_updated:
+            # Si se canceló y se había actualizado la vista previa, restaurar los datos originales
+            if self.parent_widget and isinstance(self.parent_widget, VentanaVistaPrevia):
+                # Restaurar imagen original
+                original_data = dict(self.initial_data)  # Crear una copia
+                self.parent_widget.all_slides_data[self.parent_widget.current_slide_index] = original_data
+                self.parent_widget.mostrar_diapositiva_actual()
 
     def get_edited_data(self):
         return {
@@ -121,18 +411,39 @@ class EditSlideDialog(QDialog):
             'contenido': self.content_edit.toPlainText(),
             'imagen_path': self.new_image_path
         }
+
+    # --- NUEVA FUNCIÓN para manejar la cancelación ---
+    def cancel_image_generation(self):
+        print("Señal de cancelación recibida en EditSlideDialog.")
+        if hasattr(self, 'worker') and self.worker and self.worker.isRunning():
+            print("Solicitando interrupción del worker desde EditSlideDialog...")
+            self.worker.requestInterruption()
+        else:
+            print("Worker no encontrado o no está corriendo en EditSlideDialog.")
+        # El diálogo de progreso se cierra automáticamente al cancelar (no es necesario cerrarlo aquí)
 # --- Fin Clase EditSlideDialog ---
 
 # Clase para la ventana de vista previa de diapositivas
 class VentanaVistaPrevia(QWidget):
-    # --- MODIFICADO: Añadir parámetros de formato y valores predeterminados ---
-    def __init__(self, parent=None, 
+    # --- MODIFICADO: Añadir parámetro initial_language y eliminar la lógica de búsqueda en padre/abuelo ---
+    def __init__(self, parent=None, initial_language='es', # Añadir parámetro
                  title_font_name='Calibri', content_font_name='Calibri', 
                  title_font_size=16, content_font_size=10, 
                  title_bold=False, title_italic=False, title_underline=False, 
                  content_bold=False, content_italic=False, content_underline=False):
         super().__init__(parent)
-        self.current_language = 'es'
+        # --- MODIFICADO: Usar initial_language directamente ---
+        self.current_language = initial_language
+        # --- ELIMINADO: Lógica de búsqueda en padre/abuelo ---
+        # self.current_language = 'es' # Default inicial
+        # # Obtener el idioma del padre si está disponible
+        # if parent and hasattr(parent, 'current_language'):
+        #     self.current_language = parent.current_language
+        # elif parent and hasattr(parent, 'parent') and parent.parent and hasattr(parent.parent, 'current_language'):
+        #      # Intentar obtener del "abuelo" si el padre directo no lo tiene (caso común en anidamiento)
+        #     self.current_language = parent.parent.current_language
+        # -------------------------------------------------------
+
         self.pptx_path = None # Ruta al archivo PPTX generado
         
         # --- NUEVO: Almacenar configuración de formato global ---
@@ -147,12 +458,6 @@ class VentanaVistaPrevia(QWidget):
         self.content_italic = content_italic
         self.content_underline = content_underline
         # -------------------------------------------------------
-        
-        # Obtener el idioma del padre si está disponible
-        if parent and hasattr(parent, 'current_language'):
-            self.current_language = parent.current_language
-        elif parent and hasattr(parent, 'parent') and parent.parent and hasattr(parent.parent, 'current_language'):
-            self.current_language = parent.parent.current_language
         
         self.setMinimumSize(600, 350)  # Reducir altura mínima
         
@@ -188,6 +493,10 @@ class VentanaVistaPrevia(QWidget):
         self.mensaje_vacio.setAlignment(Qt.AlignCenter)
         self.mensaje_vacio.setFont(QFont("Arial", 12))  # Reducir tamaño de fuente
         self.mensaje_vacio.setStyleSheet("color: #888; padding: 50px;")  # Reducir padding
+        # --- MODIFICADO: Establecer texto inicial usando el idioma determinado ---
+        mensaje_inicial = obtener_traduccion('vista_previa_empty_message', self.current_language)
+        self.mensaje_vacio.setText(mensaje_inicial if mensaje_inicial != 'vista_previa_empty_message' else "Aquí aparecerán las diapositivas generadas")
+        # ---------------------------------------------------------------------
         self.mensaje_vacio.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         # Añadir imagen de previsualización
@@ -221,8 +530,11 @@ class VentanaVistaPrevia(QWidget):
         nav_layout.setContentsMargins(5, 0, 5, 0)  # Reducir márgenes
         nav_layout.setSpacing(10)  # Reducir espacio
         
-        # Inicializar los botones con texto temporal, se actualizará en actualizar_idioma
-        self.prev_button = QPushButton("< Anterior")
+        # Inicializar los botones con texto traducido
+        # --- MODIFICADO: Usar self.current_language determinado al inicio ---
+        texto_anterior = obtener_traduccion('slide_previous', self.current_language)
+        self.prev_button = QPushButton(f"< {texto_anterior}")
+        # ------------------------------------------------------------------
         self.prev_button.setEnabled(False)
         self.prev_button.clicked.connect(self.mostrar_diapositiva_anterior)
         self.prev_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
@@ -232,7 +544,10 @@ class VentanaVistaPrevia(QWidget):
         self.slide_counter_label.setAlignment(Qt.AlignCenter)
         self.slide_counter_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         
-        self.next_button = QPushButton("Siguiente >")
+        # --- MODIFICADO: Usar self.current_language determinado al inicio ---
+        texto_siguiente = obtener_traduccion('slide_next', self.current_language)
+        self.next_button = QPushButton(f"{texto_siguiente} >")
+        # ------------------------------------------------------------------
         self.next_button.setEnabled(False)
         self.next_button.clicked.connect(self.mostrar_diapositiva_siguiente)
         self.next_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
@@ -254,13 +569,18 @@ class VentanaVistaPrevia(QWidget):
         self.resized = False
         
         # Aplicar traducciones al iniciar - asegurarnos de que se actualicen todos los textos
+        # --- MODIFICADO: Llamar a actualizar_idioma al final para asegurar la consistencia ---
+        # Esta llamada ahora reforzará los textos ya establecidos con el idioma correcto
         self.actualizar_idioma(self.current_language)
+        # ------------------------------------------------------------------------------------
         
         # Habilitar eventos de rueda del mouse para navegación entre diapositivas
         self.setMouseTracking(True)
         
         # Variable para almacenar el botón de edición (se crea/destruye dinámicamente)
         self.edit_button = None
+        # Variable para almacenar el botón de abrir (se crea/destruye dinámicamente)
+        self.open_button = None
     
     # --- NUEVO: Método para actualizar la configuración de formato ---
     def update_format_settings(self, title_font_name, content_font_name, 
@@ -334,6 +654,15 @@ class VentanaVistaPrevia(QWidget):
             except Exception as e:
                 print(f"Error al actualizar botones: {str(e)}")
             
+            # Si no hay diapositivas, actualizar el mensaje vacío
+            try:
+                mensaje = obtener_traduccion('vista_previa_empty_message', self.current_language)
+                if mensaje:
+                    if hasattr(self, 'mensaje_vacio') and self.mensaje_vacio:
+                        self.mensaje_vacio.setText(mensaje)
+            except Exception as e:
+                print(f"Error al actualizar mensaje vacío: {str(e)}")
+            
             # Si no hay diapositivas, forzar una reconstrucción completa de la vista
             if not self.all_slides_data or self.current_slide_index < 0:
                 try:
@@ -351,6 +680,9 @@ class VentanaVistaPrevia(QWidget):
                     # Actualizar texto del botón editar si existe
                     if self.edit_button:
                          self.edit_button.setToolTip(obtener_traduccion('edit_slide', self.current_language))
+                    # Actualizar texto del botón abrir si existe
+                    if self.open_button:
+                         self.open_button.setToolTip(obtener_traduccion('open_slide', self.current_language))
                 except Exception as e:
                     print(f"Error al actualizar diapositiva actual: {str(e)}")
         except Exception as e:
@@ -399,6 +731,7 @@ class VentanaVistaPrevia(QWidget):
             # Limpiar el contenedor de diapositivas
             self.limpiar_contenedor()
             self.edit_button = None # Resetear referencia al botón
+            self.open_button = None # Resetear referencia al botón abrir
             
             # Verificar que hay diapositivas y que el índice es válido
             if not self.all_slides_data or self.current_slide_index < 0:
@@ -452,16 +785,30 @@ class VentanaVistaPrevia(QWidget):
             slide_layout.setSpacing(8)
             slide_layout.setContentsMargins(8, 8, 8, 8)
             
-            # --- Layout Superior (Título y Botón Editar) ---
+            # --- Layout Superior (Título y Botones) ---
             top_layout = QHBoxLayout()
             top_layout.setContentsMargins(0,0,0,0)
             top_layout.setSpacing(5)
             
-            # --- Añadir espaciador izquierdo para compensar botón --- 
-            button_width = 47 # Ancho del botón de edición
-            left_spacer = QSpacerItem(button_width, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
-            top_layout.addSpacerItem(left_spacer)
-            # -----------------------------------------------------
+            # --- Crear Botón Abrir ---
+            self.open_button = QPushButton()
+            icon_path_open = resource_path("iconos/open.png")
+            if os.path.exists(icon_path_open):
+                self.open_button.setIcon(QIcon(icon_path_open))
+                self.open_button.setIconSize(QSize(24, 24))
+                self.open_button.setFixedSize(QSize(32, 32))
+            else:
+                self.open_button.setText("O") # Texto fallback si no hay icono
+                self.open_button.setFixedSize(QSize(32, 32))
+                
+            # Usar el idioma actual para el tooltip
+            open_tooltip = obtener_traduccion('open_slide', self.current_language)
+            self.open_button.setToolTip(open_tooltip if open_tooltip != 'open_slide' else "Abrir diapositiva")
+            self.open_button.setStyleSheet("QPushButton { border: none; background-color: transparent; padding: 2px; }")
+            self.open_button.setCursor(Qt.PointingHandCursor)
+            self.open_button.clicked.connect(self.abrir_presentacion)
+            # Deshabilitar si no hay ruta PPTX
+            self.open_button.setEnabled(self.pptx_path is not None)
             
             titulo_label = QLabel(datos['titulo'])
             titulo_label.setAlignment(Qt.AlignCenter)
@@ -491,13 +838,17 @@ class VentanaVistaPrevia(QWidget):
                 self.edit_button.setText("E") # Texto fallback si no hay icono
                 self.edit_button.setFixedSize(QSize(32, 32))
                 
-            self.edit_button.setToolTip(obtener_traduccion('edit_slide', self.current_language))
+            # Usar el idioma actual para el tooltip
+            edit_tooltip = obtener_traduccion('edit_slide', self.current_language)
+            self.edit_button.setToolTip(edit_tooltip if edit_tooltip != 'edit_slide' else "Editar diapositiva")
             self.edit_button.setStyleSheet("QPushButton { border: none; background-color: transparent; padding: 2px; }")
             self.edit_button.setCursor(Qt.PointingHandCursor)
             self.edit_button.clicked.connect(self.editar_diapositiva_actual)
             # Deshabilitar si python-pptx no está disponible o no hay ruta PPTX
             self.edit_button.setEnabled(PPTX_AVAILABLE and self.pptx_path is not None) 
             
+            # Añadir botones y título al layout superior
+            top_layout.addWidget(self.open_button, 0, Qt.AlignLeft | Qt.AlignTop)
             top_layout.addWidget(titulo_label, 1) # Título toma el espacio extra
             top_layout.addWidget(self.edit_button, 0, Qt.AlignRight | Qt.AlignTop)
             
@@ -635,6 +986,8 @@ class VentanaVistaPrevia(QWidget):
             self.modo_navegacion = False
             # Resetear botón editar
             self.edit_button = None 
+            # Resetear botón abrir
+            self.open_button = None
             
             # Limpiar el contenedor y mostrar mensaje vacío
             self.limpiar_contenedor()
@@ -699,47 +1052,66 @@ class VentanaVistaPrevia(QWidget):
         except Exception as e:
             print(f"Error en reset_completo: {str(e)}")
 
-    # Función para actualizar el mensaje cuando no hay diapositivas
-    def actualizar_mensaje_vacio(self):
+    # --- NUEVA FUNCIÓN: Abrir presentación en el programa predeterminado del sistema ---
+    def abrir_presentacion(self):
+        if not self.pptx_path or not os.path.exists(self.pptx_path):
+            QMessageBox.warning(self,
+                                obtener_traduccion('open_pptx_error_title', self.current_language),
+                                obtener_traduccion('open_pptx_not_found_message', self.current_language))
+            return
+            
         try:
-            mensaje = obtener_traduccion('vista_previa_empty_message', self.current_language)
-            if not mensaje:
-                mensaje = "Aquí aparecerán las diapositivas generadas"
-            
-            # Actualizar SOLO el objeto mensaje_vacio principal
-            if hasattr(self, 'mensaje_vacio') and self.mensaje_vacio is not None:
-                try:
-                    self.mensaje_vacio.setText(mensaje)
-                except RuntimeError:
-                    # Ignorar si el objeto ya ha sido eliminado
-                    pass
+            # En Windows usar 'start', en otros sistemas puede variar
+            if sys.platform == 'win32':
+                os.startfile(self.pptx_path)
+            elif sys.platform == 'darwin':  # macOS
+                subprocess.call(['open', self.pptx_path])
+            else:  # Linux y otros
+                subprocess.call(['xdg-open', self.pptx_path])
                 
-            # No intentar buscar en la jerarquía de widgets para evitar
-            # acceder a widgets que puedan haber sido eliminados
+            print(f"Presentación abierta: {self.pptx_path}")
         except Exception as e:
-            print(f"Error en actualizar_mensaje_vacio: {str(e)}")
+            print(f"Error al abrir la presentación: {e}")
+            QMessageBox.critical(self, 
+                                obtener_traduccion('open_pptx_error_title', self.current_language),
+                                obtener_traduccion('open_pptx_error_message', self.current_language).format(error=e)) 
 
-    # Función para agregar una nueva diapositiva a la vista previa  
-    def agregar_diapositiva(self, imagen_path, titulo, contenido):
-        # Guardar datos de la diapositiva
-        if os.path.exists(imagen_path):
-            self.all_slides_data.append({
-                'imagen_path': imagen_path,
-                'titulo': titulo,
-                'contenido': contenido
-            })
+    # --- NUEVA FUNCIÓN para manejar la cancelación ---
+    def cancel_image_generation(self):
+        print("Señal de cancelación recibida.")
+        if hasattr(self, 'worker') and self.worker and self.worker.isRunning():
+            print("Solicitando interrupción del worker...")
+            self.worker.requestInterruption()
+            # Opcional: podrías esperar un poco aquí, pero `deleteLater` ya está conectado a finished
+            # self.worker.quit()
+            # self.worker.wait(1000) # Esperar máx 1 seg
+        else:
+            print("Worker no encontrado o no está corriendo.")
+        # El diálogo de progreso se cierra automáticamente al cancelar
+        
+    def update_preview_temporarily(self):
+        """Actualizar la vista previa temporalmente sin guardar los cambios"""
+        if not self.parent_widget or not isinstance(self.parent_widget, VentanaVistaPrevia):
+            return
             
-            # Solo actualizar a la última si no estamos en modo navegación
-            if not self.modo_navegacion:
-                self.current_slide_index = len(self.all_slides_data) - 1
-                self.mostrar_diapositiva_actual()
-            else:
-                # Si estamos en modo navegación, solo actualizar el contador
-                # con el total actualizado pero manteniendo la diapositiva actual
-                self.slide_counter_label.setText(f"{self.current_slide_index + 1}/{len(self.all_slides_data)}")
-            
-            # Actualizar botones de navegación
-            self.actualizar_botones_navegacion() 
+        # Marcar que se ha actualizado la vista previa temporalmente
+        self.temp_preview_updated = True
+        
+        # Guardar los datos originales para restaurarlos si se cancela
+        self.original_image_path = self.parent_widget.all_slides_data[self.parent_widget.current_slide_index].get('imagen_path')
+        
+        # Crear datos temporales para la vista previa
+        temp_data = {
+            'imagen_path': self.new_image_path,
+            'titulo': self.title_edit.text(),
+            'contenido': self.content_edit.toPlainText()
+        }
+        
+        # Guardar temporalmente los nuevos datos
+        self.parent_widget.all_slides_data[self.parent_widget.current_slide_index] = temp_data
+        
+        # Actualizar la vista previa
+        self.parent_widget.mostrar_diapositiva_actual()
 
     # --- Función modificada para manejar la edición y guardar en PPTX ---
     def editar_diapositiva_actual(self):
@@ -753,7 +1125,7 @@ class VentanaVistaPrevia(QWidget):
             
         current_data = self.all_slides_data[self.current_slide_index]
         
-        # Crear y mostrar el diálogo de edición
+        # Crear y mostrar el diálogo de edición - usar el idioma actual
         dialog = EditSlideDialog(current_data, self.current_language, self)
         if dialog.exec() == QDialog.Accepted:
             # Obtener los datos editados
@@ -995,76 +1367,245 @@ class VentanaVistaPrevia(QWidget):
                 print("ERROR: No se encontró la shape del contenido para actualizar.")
 
 
-            # --- Actualizar Imagen (Lógica sin cambios respecto a la versión anterior) ---
-            pic_shape = None
+            # --- ACTUALIZADO: Manejar imágenes de fondo en diseños especiales --- 
+            new_image_path = edited_data['imagen_path']
+            original_image_path = original_data.get('imagen_path')
+            
+            # Verificar si es un diseño con imagen de fondo (identificado por shape name)
+            background_image_shape = None
             for shp in slide.shapes:
-                # Asegurarse de que no sea un placeholder de imagen vacío
-                if shp.shape_type == MSO_SHAPE_TYPE.PICTURE:
-                    pic_shape = shp
-                    print(f"Shape de imagen encontrada: {pic_shape.name if hasattr(pic_shape, 'name') else 'N/A'}") # Debug
-                    break # Usar la primera que se encuentre
-                elif shp.shape_type == MSO_SHAPE_TYPE.PLACEHOLDER and hasattr(shp, 'placeholder_format') and shp.placeholder_format.type == MSO_SHAPE_TYPE.PICTURE:
-                     # Podría ser un placeholder de imagen, verificar si tiene imagen
-                     if hasattr(shp, 'image'):
-                         pic_shape = shp
-                         print(f"Shape de imagen (placeholder) encontrada: {pic_shape.name if hasattr(pic_shape, 'name') else 'N/A'}") # Debug
-                         break
-
-            if pic_shape:
-                new_image_path = edited_data['imagen_path']
-                original_image_path = original_data.get('imagen_path')
-
-                # ---- SOLO REEMPLAZAR SI LA IMAGEN CAMBIÓ Y ES VÁLIDA ----
+                # Buscar la imagen identificada como fondo
+                if hasattr(shp, 'name') and shp.name == "SLIDE_BACKGROUND_IMAGE":
+                    background_image_shape = shp
+                    print(f"Imagen de fondo encontrada: {shp.name}")
+                    break
+                    
+            if background_image_shape:
+                # Es un diseño especial con imagen de fondo (design3, design4 o design7)
+                print(f"Detectado diseño especial con imagen de fondo")
+                
+                # Solo reemplazar si la imagen cambió y existe
                 if os.path.exists(new_image_path) and new_image_path != original_image_path:
-                    print(f"La ruta de la imagen cambió a: {new_image_path}. Reemplazando...") # Debug
-                    # Obtener posición y tamaño de la imagen original ANTES de borrarla
-                    left, top, width, height = pic_shape.left, pic_shape.top, pic_shape.width, pic_shape.height
-
-                    # Eliminar la shape de imagen antigua
-                    # Comprobar si es un placeholder antes de intentar eliminarlo de la forma estándar
-                    if pic_shape.shape_type != MSO_SHAPE_TYPE.PLACEHOLDER:
+                    print(f"La ruta de la imagen de fondo cambió a: {new_image_path}. Reemplazando...")
+                    
+                    # Obtener posición y tamaño de la imagen original
+                    left, top = Inches(0), Inches(0)  # Siempre posición 0,0 para fondos
+                    # Obtener las dimensiones de la presentación actual
+                    width = prs.slide_width
+                    height = prs.slide_height
+                    
+                    # Para design7, procesar oscurecimiento de la imagen antes de reemplazar
+                    if slide_index >= 0 and slide_index < len(self.all_slides_data):
+                        # Verificar si necesitamos procesar la imagen (design7)
+                        # El diseño 7 usa imágenes procesadas oscurecidas
+                        from PIL import Image, ImageEnhance
                         try:
-                            sp = pic_shape._element
-                            sp.getparent().remove(sp)
-                            print("Shape de imagen anterior eliminada.") # Debug
-                        except Exception as e_rem:
-                            print(f"WARN: No se pudo eliminar la shape de imagen anterior directamente: {e_rem}")
-                            # Podría ser necesario manejar placeholders de imagen de forma diferente si la eliminación directa falla
-                    else:
-                         print("INFO: La imagen original es un placeholder, no se elimina directamente.")
-
-                    # Añadir la nueva imagen en la misma posición/tamaño
+                            # Solo para design7 (detectamos por la transparencia y color del contenido)
+                            is_design7 = False
+                            for shape in slide.shapes:
+                                if shape.has_text_frame and shape.text_frame.paragraphs:
+                                    for para in shape.text_frame.paragraphs:
+                                        if para.runs and hasattr(para.runs[0].font.color, 'type'):
+                                            if para.runs[0].font.color.type == MSO_COLOR_TYPE.RGB:
+                                                color = para.runs[0].font.color.rgb
+                                                # Design7 usa texto blanco
+                                                if color.r == 255 and color.g == 255 and color.b == 255:
+                                                    is_design7 = True
+                                                    break
+                            
+                            if is_design7:
+                                print("Diseño 7 detectado: procesando imagen oscurecida...")
+                                # Mismo procesamiento que en design7
+                                APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
+                                IMAGES_DIR = os.path.join(APP_DATA_DIR, 'images')
+                                if not os.path.exists(IMAGES_DIR):
+                                    os.makedirs(IMAGES_DIR, exist_ok=True)
+                                image = Image.open(new_image_path)
+                                enhancer = ImageEnhance.Brightness(image)
+                                image_darker = enhancer.enhance(0.5)
+                                darker_path = os.path.join(IMAGES_DIR, 'Slide_darker.jpg')
+                                image_darker.save(darker_path)
+                                # Usar la imagen oscurecida en su lugar
+                                new_image_path = darker_path
+                        except Exception as e:
+                            print(f"Error al procesar imagen oscurecida: {e}")
+                    
+                    # ---- MÉTODO MEJORADO: Crear una nueva diapositiva con el mismo diseño y contenido ----
                     try:
-                        print(f"Añadiendo nueva imagen: {new_image_path}") # Debug
-                        # Asegurarse de que el tamaño no sea inválido
-                        if width is not None and height is not None and width > 0 and height > 0:
-                           slide.shapes.add_picture(new_image_path, left, top, width, height)
-                        elif width is not None and width > 0:
-                             print(f"WARN: Altura de imagen original inválida (H:{height}). Añadiendo con ancho fijo.")
-                             slide.shapes.add_picture(new_image_path, left, top, width=width)
-                        elif height is not None and height > 0:
-                             print(f"WARN: Ancho de imagen original inválido (W:{width}). Añadiendo con altura fija.")
-                             slide.shapes.add_picture(new_image_path, left, top, height=height)
-                        else:
-                             print(f"WARN: Dimensiones de imagen original inválidas (W:{width}, H:{height}). Añadiendo con tamaño por defecto.")
-                             slide.shapes.add_picture(new_image_path, left, top)
-                    except Exception as e_add:
-                         print(f"ERROR: No se pudo añadir la nueva imagen: {e_add}")
-                         QMessageBox.warning(self, "Error Imagen", f"No se pudo reemplazar la imagen: {e_add}")
-
+                        # 1. Primero, crear una copia de seguridad del contenido de texto
+                        title_text = ""
+                        content_text = ""
+                        title_shape = None
+                        content_shape = None
+                        
+                        # Buscar el título y contenido actuales
+                        for shape in slide.shapes:
+                            if shape.has_text_frame:
+                                text = shape.text_frame.text.strip()
+                                if not title_shape and text == original_data.get('titulo', '').strip():
+                                    title_shape = shape
+                                    title_text = text
+                                elif not content_shape and text == original_data.get('contenido', '').strip():
+                                    content_shape = shape
+                                    content_text = text
+                        
+                        # 2. Verificar qué diseño estamos usando por marcadores específicos
+                        design_number = 3  # Por defecto asumimos design3
+                        
+                        if is_design7:
+                            design_number = 7
+                        elif title_shape and content_shape:
+                            # Verificar si es design4 (cuadro a la izquierda)
+                            if title_shape.left < prs.slide_width / 2:
+                                design_number = 4
+                        
+                        print(f"Detectado diseño {design_number}, recreando diapositiva con nueva imagen")
+                        
+                        # 3. Importar el módulo de diseños
+                        from Diseños_diapositivas import Diapositivas
+                        
+                        # 4. MÉTODO CORREGIDO: En lugar de eliminar directamente la diapositiva,
+                        # vamos a crear una nueva y luego sobrescribir los contenidos
+                        # El enfoque anterior intentaba manipular directamente la estructura XML
+                        # pero la API no nos da acceso de esa manera
+                        
+                        # Crear una instancia de Diapositivas con la misma configuración que la actual
+                        diapositiva = Diapositivas(prs, 
+                                                  title_font_name=self.title_font_name, 
+                                                  content_font_name=self.content_font_name,
+                                                  title_font_size=self.title_font_size, 
+                                                  content_font_size=self.content_font_size,
+                                                  title_bold=self.title_bold, 
+                                                  title_italic=self.title_italic, 
+                                                  title_underline=self.title_underline,
+                                                  content_bold=self.content_bold, 
+                                                  content_italic=self.content_italic, 
+                                                  content_underline=self.content_underline)
+                        
+                        # 5. Crear una nueva diapositiva temporal con el diseño y contenido actualizados
+                        # Añadir la nueva diapositiva al final
+                        if design_number == 3:
+                            diapositiva.design3(None, edited_data['titulo'], edited_data['contenido'], new_image_path)
+                        elif design_number == 4:
+                            diapositiva.design4(None, edited_data['titulo'], edited_data['contenido'], new_image_path)
+                        elif design_number == 7:
+                            diapositiva.design7(None, edited_data['titulo'], edited_data['contenido'], new_image_path)
+                            
+                        # 6. La nueva diapositiva ahora está al final, obtenemos su índice
+                        new_slide_idx = len(prs.slides) - 1
+                        new_slide = prs.slides[new_slide_idx]
+                        
+                        # 7. Usar el método oficial de python-pptx para mover la diapositiva
+                        # Mover la nueva diapositiva a la posición de la antigua
+                        xml_slides = prs.slides._sldIdLst  # Este es el contenedor XML de slide IDs
+                        
+                        # Si la posición de destino no es el final, debemos mover la diapositiva
+                        if slide_index < new_slide_idx:
+                            # Obtener el elemento XML de la nueva diapositiva
+                            sldId = xml_slides[new_slide_idx]  # El elemento XML que referencia la diapositiva
+                            
+                            # Eliminar la referencia desde su posición actual
+                            xml_slides.remove(sldId)
+                            
+                            # Insertar en la posición deseada
+                            xml_slides.insert(slide_index, sldId)
+                        
+                        # 8. Eliminar la diapositiva original (ahora desplazada al siguiente índice)
+                        # Ya que agregamos una nueva al final y posiblemente la movimos,
+                        # la antigua estará en slide_index+1 si movimos la nueva, o en slide_index si no
+                        # Usamos el enfoque oficial de python-pptx para eliminar la diapositiva
+                        idx_to_remove = slide_index
+                        if slide_index < new_slide_idx:  # Si movimos la nueva a la posición original
+                            idx_to_remove = slide_index + 1  # La antigua está una posición más allá
+                            
+                        if idx_to_remove < len(prs.slides):
+                            # Obtener el ID de la diapositiva a eliminar
+                            try:
+                                sldId_to_remove = xml_slides[idx_to_remove]
+                                xml_slides.remove(sldId_to_remove)
+                                print(f"Diapositiva antigua eliminada en la posición {idx_to_remove+1}")
+                            except Exception as e_remove:
+                                print(f"Error al eliminar diapositiva antigua: {e_remove}")
+                                # No es crítico si falla la eliminación, simplemente tendríamos una diapositiva duplicada
+                                
+                        print(f"Nueva diapositiva creada con éxito en la posición {slide_index+1}")
+                        
+                    except Exception as e:
+                        print(f"ERROR al recrear diapositiva: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        QMessageBox.warning(self, "Error al reemplazar imagen", 
+                                          f"Se produjo un error al reemplazar la imagen de fondo: {e}")
+                    
                 elif not os.path.exists(new_image_path):
                     print(f"Error: La nueva imagen no existe en la ruta: {new_image_path}")
                     QMessageBox.warning(self, "Error Imagen", f"La ruta de la nueva imagen no es válida:\n{new_image_path}")
                 else:
-                    # La ruta es la misma o la nueva no existe pero es igual a la original
-                    print("La imagen no ha cambiado o la nueva ruta no es válida y es igual a la original. No se reemplaza.") # Debug
-                # ---- FIN DEL BLOQUE DE REEMPLAZO ----
+                    print("La imagen de fondo no ha cambiado. No se reemplaza.")
             else:
-                print("WARN: No se encontró ninguna shape de imagen para actualizar.")
+                # --- Caso de imágenes regulares (método anterior) ---
+                pic_shape = None
+                for shp in slide.shapes:
+                    # Asegurarse de que no sea un placeholder de imagen vacío
+                    if shp.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                        pic_shape = shp
+                        print(f"Shape de imagen encontrada: {pic_shape.name if hasattr(pic_shape, 'name') else 'N/A'}")
+                        break # Usar la primera que se encuentre
+                    elif shp.shape_type == MSO_SHAPE_TYPE.PLACEHOLDER and hasattr(shp, 'placeholder_format') and shp.placeholder_format.type == MSO_SHAPE_TYPE.PICTURE:
+                         # Podría ser un placeholder de imagen, verificar si tiene imagen
+                         if hasattr(shp, 'image'):
+                             pic_shape = shp
+                             print(f"Shape de imagen (placeholder) encontrada: {pic_shape.name if hasattr(pic_shape, 'name') else 'N/A'}")
+                             break
+
+                if pic_shape:
+                    # ---- SOLO REEMPLAZAR SI LA IMAGEN CAMBIÓ Y ES VÁLIDA ----
+                    if os.path.exists(new_image_path) and new_image_path != original_image_path:
+                        print(f"La ruta de la imagen cambió a: {new_image_path}. Reemplazando...")
+                        # Obtener posición y tamaño de la imagen original ANTES de borrarla
+                        left, top, width, height = pic_shape.left, pic_shape.top, pic_shape.width, pic_shape.height
+
+                        # Eliminar la shape de imagen antigua
+                        # Comprobar si es un placeholder antes de intentar eliminarlo de la forma estándar
+                        if pic_shape.shape_type != MSO_SHAPE_TYPE.PLACEHOLDER:
+                            try:
+                                # ENFOQUE MENOS INVASIVO - MANTENER COMPATIBILIDAD
+                                # En lugar de manipular el XML directamente, simplemente añadimos la nueva imagen
+                                # y no eliminamos la antigua, confiando en que PowerPoint la manejará correctamente
+                                # cuando se abra (se mostrará la más reciente)
+                                print("Añadiendo nueva imagen sobre la anterior")
+                                new_pic = slide.shapes.add_picture(new_image_path, left, top, width, height)
+                                
+                                # Intentar renombrar la nueva imagen con el mismo nombre que la antigua si tenía alguno
+                                if hasattr(pic_shape, 'name') and pic_shape.name:
+                                    try:
+                                        new_pic.name = pic_shape.name
+                                    except:
+                                        pass
+                            except Exception as e_rem:
+                                print(f"WARN: No se pudo gestionar la imagen: {e_rem}")
+                        else:
+                             print("INFO: La imagen original es un placeholder, se intentará actualizar")
+                             # Para placeholders, intentamos una técnica más segura
+                             try:
+                                 new_pic = slide.shapes.add_picture(new_image_path, left, top, width, height)
+                             except Exception as e_add:
+                                 print(f"ERROR: No se pudo añadir la nueva imagen: {e_add}")
+                                 QMessageBox.warning(self, "Error Imagen", f"No se pudo reemplazar la imagen: {e_add}")
+                    elif not os.path.exists(new_image_path):
+                        print(f"Error: La nueva imagen no existe en la ruta: {new_image_path}")
+                        QMessageBox.warning(self, "Error Imagen", f"La ruta de la nueva imagen no es válida:\n{new_image_path}")
+                    else:
+                        # La ruta es la misma o la nueva no existe pero es igual a la original
+                        print("La imagen no ha cambiado o la nueva ruta no es válida y es igual a la original. No se reemplaza.")
+                    # ---- FIN DEL BLOQUE DE REEMPLAZO ----
+                else:
+                    print("WARN: No se encontró ninguna shape de imagen para actualizar.")
+            # --- Fin de gestión de imágenes ---
 
             # --- Guardar la presentación ---
             prs.save(self.pptx_path)
-            print("Presentación guardada con éxito.") # Debug
+            print("Presentación guardada con éxito.")
 
         except Exception as e:
             print(f"Error general al guardar cambios en PPTX: {e}")
@@ -1072,4 +1613,107 @@ class VentanaVistaPrevia(QWidget):
             traceback.print_exc() # Imprimir stack trace completo
             QMessageBox.critical(self,
                                obtener_traduccion('edit_save_pptx_error_title', self.current_language),
-                               obtener_traduccion('edit_save_pptx_error_message', self.current_language).format(error=e)) 
+                               obtener_traduccion('edit_save_pptx_error_message', self.current_language).format(error=e))
+
+    # --- NUEVA FUNCIÓN: Abrir presentación en el programa predeterminado del sistema ---
+    def abrir_presentacion(self):
+        if not self.pptx_path or not os.path.exists(self.pptx_path):
+            QMessageBox.warning(self,
+                                obtener_traduccion('open_pptx_error_title', self.current_language),
+                                obtener_traduccion('open_pptx_not_found_message', self.current_language))
+            return
+            
+        try:
+            # En Windows usar 'start', en otros sistemas puede variar
+            if sys.platform == 'win32':
+                os.startfile(self.pptx_path)
+            elif sys.platform == 'darwin':  # macOS
+                subprocess.call(['open', self.pptx_path])
+            else:  # Linux y otros
+                subprocess.call(['xdg-open', self.pptx_path])
+                
+            print(f"Presentación abierta: {self.pptx_path}")
+        except Exception as e:
+            print(f"Error al abrir la presentación: {e}")
+            QMessageBox.critical(self, 
+                                obtener_traduccion('open_pptx_error_title', self.current_language),
+                                obtener_traduccion('open_pptx_error_message', self.current_language).format(error=e)) 
+
+    # --- NUEVA FUNCIÓN para manejar la cancelación ---
+    def cancel_image_generation(self):
+        print("Señal de cancelación recibida.")
+        if hasattr(self, 'worker') and self.worker and self.worker.isRunning():
+            print("Solicitando interrupción del worker...")
+            self.worker.requestInterruption()
+            # Opcional: podrías esperar un poco aquí, pero `deleteLater` ya está conectado a finished
+            # self.worker.quit()
+            # self.worker.wait(1000) # Esperar máx 1 seg
+        else:
+            print("Worker no encontrado o no está corriendo.")
+        # El diálogo de progreso se cierra automáticamente al cancelar
+        
+    def update_preview_temporarily(self):
+        """Actualizar la vista previa temporalmente sin guardar los cambios"""
+        if not self.parent_widget or not isinstance(self.parent_widget, VentanaVistaPrevia):
+            return
+            
+        # Marcar que se ha actualizado la vista previa temporalmente
+        self.temp_preview_updated = True
+        
+        # Guardar los datos originales para restaurarlos si se cancela
+        self.original_image_path = self.parent_widget.all_slides_data[self.parent_widget.current_slide_index].get('imagen_path')
+        
+        # Crear datos temporales para la vista previa
+        temp_data = {
+            'imagen_path': self.new_image_path,
+            'titulo': self.title_edit.text(),
+            'contenido': self.content_edit.toPlainText()
+        }
+        
+        # Guardar temporalmente los nuevos datos
+        self.parent_widget.all_slides_data[self.parent_widget.current_slide_index] = temp_data
+        
+        # Actualizar la vista previa
+        self.parent_widget.mostrar_diapositiva_actual()
+
+    # Función para actualizar el mensaje cuando no hay diapositivas
+    def actualizar_mensaje_vacio(self):
+        try:
+            mensaje = obtener_traduccion('vista_previa_empty_message', self.current_language)
+            if not mensaje:
+                mensaje = "Aquí aparecerán las diapositivas generadas"
+            
+            # Actualizar SOLO el objeto mensaje_vacio principal
+            if hasattr(self, 'mensaje_vacio') and self.mensaje_vacio is not None:
+                try:
+                    self.mensaje_vacio.setText(mensaje)
+                except RuntimeError:
+                    # Ignorar si el objeto ya ha sido eliminado
+                    pass
+                
+            # No intentar buscar en la jerarquía de widgets para evitar
+            # acceder a widgets que puedan haber sido eliminados
+        except Exception as e:
+            print(f"Error en actualizar_mensaje_vacio: {str(e)}")
+
+    # Función para agregar una nueva diapositiva a la vista previa  
+    def agregar_diapositiva(self, imagen_path, titulo, contenido):
+        # Guardar datos de la diapositiva
+        if os.path.exists(imagen_path):
+            self.all_slides_data.append({
+                'imagen_path': imagen_path,
+                'titulo': titulo,
+                'contenido': contenido
+            })
+            
+            # Solo actualizar a la última si no estamos en modo navegación
+            if not self.modo_navegacion:
+                self.current_slide_index = len(self.all_slides_data) - 1
+                self.mostrar_diapositiva_actual()
+            else:
+                # Si estamos en modo navegación, solo actualizar el contador
+                # con el total actualizado pero manteniendo la diapositiva actual
+                self.slide_counter_label.setText(f"{self.current_slide_index + 1}/{len(self.all_slides_data)}")
+            
+            # Actualizar botones de navegación
+            self.actualizar_botones_navegacion() 

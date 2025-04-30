@@ -433,7 +433,7 @@ class Diapositivas:
         decoration.line.fill.background()
         decoration.rotation = 45
 
-        # Diseño que muestra una imagen para que ocupe toda la diapositiva y un título y contenido a la derecha
+    # Diseño que muestra una imagen para que ocupe toda la diapositiva y un título y contenido a la derecha
     def design3(self, slide, section, content, image_path):
         slide_bg_layout = self.presentation.slide_layouts[6]
         slide = self.presentation.slides.add_slide(slide_bg_layout)
@@ -443,7 +443,9 @@ class Diapositivas:
         top = Inches(0)
         width = self.presentation.slide_width
         height = self.presentation.slide_height
+        # Identificar la imagen como fondo con un nombre específico para identificación posterior
         pic = slide.shapes.add_picture(image_path, left, top, width, height)
+        pic.name = "SLIDE_BACKGROUND_IMAGE"  # Nombre especial para identificarla
 
         # Añadir una forma de relleno con esquinas redondeadas y semitransparente a la derecha
         left = Inches(4.5)
@@ -520,7 +522,7 @@ class Diapositivas:
         corner_dec.line.fill.background()
         corner_dec.rotation = 45
 
-        # Diseño que muestra una imagen oscurecida y un título y contenido a la derecha
+    # Diseño que muestra una imagen oscurecida y un título y contenido a la derecha
     def design4(self, slide, section, content, image_path):
         slide_bg_layout = self.presentation.slide_layouts[6]
         slide = self.presentation.slides.add_slide(slide_bg_layout)
@@ -531,6 +533,7 @@ class Diapositivas:
         width = self.presentation.slide_width
         height = self.presentation.slide_height
         pic = slide.shapes.add_picture(image_path, left, top, width, height)
+        pic.name = "SLIDE_BACKGROUND_IMAGE"  # Nombre especial para identificarla
 
         # Añadir una forma de relleno con esquinas redondeadas a la izquierda
         left = Inches(0.5)
@@ -607,7 +610,7 @@ class Diapositivas:
         corner_dec.line.fill.background()
         corner_dec.rotation = 45
 
-        # Diseño que muestra una imagen cuadrada a la izquierda y un título y contenido a la derecha
+    # Diseño que muestra una imagen cuadrada a la izquierda y un título y contenido a la derecha
     def design5(self, slide, section, content, image_path):
         slide_layout = self.presentation.slide_layouts[6]
         slide = self.presentation.slides.add_slide(slide_layout)
@@ -764,7 +767,7 @@ class Diapositivas:
         corner_dec.line.fill.background()
         corner_dec.rotation = 45
 
-        # Diseño que muestra una imagen cuadrada a la derecha y un título y contenido a la izquierda
+    # Diseño que muestra una imagen cuadrada a la derecha y un título y contenido a la izquierda
     def design6(self, slide, section, content, image_path):
         slide_layout = self.presentation.slide_layouts[6]
         slide = self.presentation.slides.add_slide(slide_layout)
@@ -946,6 +949,7 @@ class Diapositivas:
         width = self.presentation.slide_width
         height = self.presentation.slide_height
         pic = slide.shapes.add_picture(darker_path, left, top, width, height)
+        pic.name = "SLIDE_BACKGROUND_IMAGE"  # Nombre especial para identificarla
 
         # Añadir título centrado con texto blanco
         title_box = slide.shapes.add_textbox(self.presentation.slide_width / 2 - Inches(2.5), Inches(0.5), Inches(5), Inches(1))

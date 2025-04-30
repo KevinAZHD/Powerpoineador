@@ -55,13 +55,16 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         if modelo == 'meta-llama-3.1-405b-instruct [$0.0067]':
             from modelos.IA_llama3 import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'meta-llama-4-scout-instruct [$0.00046]':
+            from modelos.IA_llama4s import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'meta-llama-4-maverick-instruct [$0.00067]':
-            from modelos.IA_llama4 import intentar_obtener_respuesta
+            from modelos.IA_llama4m import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'claude-3.7-sonnet [$0.0105]':
             from modelos.IA_sonnet3_7 import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
-        elif modelo == 'claude-3.5-sonnet [$0.0131]':
+        elif modelo == 'claude-3.5-sonnet [$0.01312]':
             from modelos.IA_sonnet3_5 import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'claude-3.5-haiku [$0.0035]':
@@ -129,15 +132,15 @@ def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
             return generar_imagen_sdxl(section, content, descripcion, signals, False)
         elif modelo == 'flux-schnell [$0.003]':
             return generar_imagen_fluxschnell(section, content, descripcion, signals, False)
-        elif modelo == 'hyper-flux-8step [$0.0055]':
+        elif modelo == 'hyper-flux-8step [$0.025]':
             return generar_imagen_flux8(section, content, descripcion, signals, False)
-        elif modelo == 'photomaker [$0.0011]':
+        elif modelo == 'photomaker [$0.0069]':
             return generar_imagen_photomaker(section, content, descripcion, None, signals, False)
-        elif modelo == 'hyper-flux-16step [$0.026]':
+        elif modelo == 'hyper-flux-16step [$0.048]':
             return generar_imagen_flux16(section, content, descripcion, signals, False)
         elif modelo == 'dgmtnzflux [$0.03]':
             return generar_imagen_diego(section, content, descripcion, signals, False)
-        elif modelo == 'sana [$0.0023]':
+        elif modelo == 'sana [$0.0021]':
             return generar_imagen_sana(section, content, descripcion, signals, False)
         elif modelo == 'sana-sprint-1.6b [$0.0015]':
             return generar_imagen_sana_sprint(section, content, descripcion, signals, False)

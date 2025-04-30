@@ -8,7 +8,7 @@ def generar_imagen(section, content, nuevo_string):
     image_input = {
         "width": 1024,
         "height": 1024,
-        "prompt": f"{section} {content}, a photo in the context of the PowerPoint of {nuevo_string}",
+        "prompt": f"a photo in the context of the PowerPoint of {content} {section}",
         "model_variant": "1600M-1024px",
         "guidance_scale": 5,
         "negative_prompt": "bad quality, worst quality, text, signature, watermark, extra limbs, schematic, diagram, graph, chart, table, text, logo, watermark, comparative, infographic, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, jpeg artifacts, signature, watermark, username, blurry",

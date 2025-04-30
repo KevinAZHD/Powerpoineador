@@ -9,7 +9,7 @@ def generar_imagen(section, content, nuevo_string):
         "seed": -1,
         "width": 1024,
         "height": 1024,
-        "prompt": f"{section} {content}, a photo in the context of the PowerPoint of {nuevo_string}",
+        "prompt": f"a photo in the context of the PowerPoint of {content} {section}",
         "output_format": "jpg",
         "guidance_scale": 4.5,
         "output_quality": 80,

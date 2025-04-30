@@ -44,6 +44,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **claude-3.7-sonnet** - Nuevo modelo de Anthropic, el más inteligente y con mejor capacidad de razonamiento.
 - **claude-3.5-sonnet** - Modelo equilibrado de Anthropic con buena capacidad de comprensión.
 - **claude-3.5-haiku** - Versión económica de Claude, excelente relación calidad-precio.
+- **meta-llama-4-scout-instruct** - Nuevo modelo de Meta enfocado en la velocidad y costes bajos.
 - **meta-llama-4-maverick-instruct** - Última versión del modelo de Meta con mejor rendimiento.
 - **meta-llama-3.1-405b-instruct** - Modelo de Meta con controles de contenido.
 - **dolphin-2.9-llama3-70b-gguf** - Modelo sin censura para contenido más flexible.
