@@ -984,3 +984,303 @@ class Diapositivas:
         text_frame.word_wrap = True
         text_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
         self.apply_content_font(text_frame)
+
+    # >>> DISEÑO FORMAL MODERNO 2025 <<<
+    def design8(self, slide, section, content, image_path):
+        slide_layout = self.presentation.slide_layouts[6]  # Blank layout
+        slide = self.presentation.slides.add_slide(slide_layout)
+
+        # --- Fondo con gradiente sutil ---
+        bg = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(0),
+            Inches(0),
+            self.presentation.slide_width,
+            self.presentation.slide_height
+        )
+        bg_fill = bg.fill
+        bg_fill.solid()
+        bg_fill.fore_color.rgb = RGBColor(248, 249, 250)  # Off-white moderno
+        bg.line.fill.background()
+        
+        # --- Barra lateral decorativa con gradiente ---
+        sidebar_width = Inches(0.15)
+        sidebar = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(0),
+            Inches(0),
+            sidebar_width,
+            self.presentation.slide_height
+        )
+        sidebar_fill = sidebar.fill
+        sidebar_fill.solid()
+        sidebar_fill.fore_color.rgb = RGBColor(0, 82, 154)  # Azul profundo
+        sidebar.line.fill.background()
+        
+        # --- Segundo elemento decorativo lateral más delgado ---
+        thin_sidebar = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            sidebar_width + Inches(0.05),
+            Inches(0),
+            Inches(0.05),
+            self.presentation.slide_height
+        )
+        thin_fill = thin_sidebar.fill
+        thin_fill.solid()
+        thin_fill.fore_color.rgb = RGBColor(64, 145, 215)  # Azul medio
+        thin_sidebar.line.fill.background()
+
+        # --- Área de título ---
+        title_left = Inches(0.7)
+        title_top = Inches(0.5)
+        title_width = self.presentation.slide_width - Inches(1.4)
+        title_height = Inches(0.8)
+
+        title_box = slide.shapes.add_textbox(title_left, title_top, title_width, title_height)
+        title_frame = title_box.text_frame
+        title_frame.text = section
+        title_frame.word_wrap = False
+        title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+
+        p_title = title_frame.paragraphs[0]
+        p_title.alignment = PP_ALIGN.LEFT
+        run_title = p_title.runs[0]
+        run_title.font.size = Pt(self.title_font_size + 2)  # Ligeramente más grande
+        run_title.font.color.rgb = RGBColor(0, 82, 154)  # Azul profundo para título formal
+        self.apply_title_font(title_frame)
+        if self.title_bold: run_title.font.bold = True
+        else: run_title.font.bold = False
+        if self.title_italic: run_title.font.italic = True
+        else: run_title.font.italic = False
+        if self.title_underline: run_title.font.underline = True
+        else: run_title.font.underline = False
+
+        # --- Línea separadora elegante ---
+        line_top = title_top + title_height + Inches(0.15)
+        line = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            title_left,
+            line_top,
+            Inches(3),  # Línea más corta para un toque minimalista
+            Inches(0.03)  # Ligeramente más gruesa
+        )
+        line_fill = line.fill
+        line_fill.solid()
+        line_fill.fore_color.rgb = RGBColor(64, 145, 215)  # Azul medio
+        line.line.fill.background()
+
+        # --- Área de contenido con mejor espaciado ---
+        content_top = line_top + Inches(0.3)
+        content_left = Inches(0.8)  # Más margen
+        content_width = Inches(5.7)  # Ajustado para dejar espacio a la imagen
+        content_height = self.presentation.slide_height - content_top - Inches(0.8)
+
+        content_box = slide.shapes.add_textbox(content_left, content_top, content_width, content_height)
+        content_frame = content_box.text_frame
+        content_frame.clear()
+        p_content = content_frame.add_paragraph()
+        p_content.text = content
+        p_content.alignment = PP_ALIGN.LEFT
+        p_content.space_after = Pt(12)  # Espacio después de párrafos
+        p_content.space_before = Pt(0)
+        p_content.line_spacing = 1.2  # Mejora legibilidad
+        
+        # Formato de texto mejorado
+        run_content = p_content.runs[0]
+        run_content.font.size = Pt(self.content_font_size)
+        run_content.font.color.rgb = RGBColor(50, 62, 72)  # Gris azulado
+        
+        content_frame.vertical_anchor = MSO_ANCHOR.TOP
+        content_frame.word_wrap = True
+        content_frame.auto_size = MSO_AUTO_SIZE.NONE
+        self.apply_content_font(content_frame)
+
+        # --- Área de imagen (derecha) con borde y sombra ---
+        img_width_max = Inches(3.2)
+        img_height_max = content_height - Inches(0.8)  # Más espacio alrededor
+
+        img_left = content_left + content_width + Inches(0.2)
+        img_top = content_top + Inches(0.1)
+
+        # Contenedor de imagen con borde
+        img_container = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            img_left - Inches(0.03),
+            img_top - Inches(0.03),
+            img_width_max + Inches(0.06),
+            img_height_max + Inches(0.06)
+        )
+        img_container.fill.background()
+        img_container.line.width = Pt(1.5)
+        img_container.line.color.rgb = RGBColor(230, 230, 235)  # Borde sutil
+        img_container.shadow.inherit = False
+
+        # Calcular dimensiones de imagen preservando relación de aspecto
+        try:
+            with Image.open(image_path) as img:
+                img_w, img_h = img.size
+                aspect_ratio = img_w / img_h
+
+                # Escalar por ancho primero
+                img_width = min(img_width_max - Inches(0.06), Inches(img_w / img.info.get('dpi', (96, 96))[0]))
+                img_height = img_width / aspect_ratio
+
+                # Si la altura es demasiada, escalar por altura
+                if img_height > img_height_max - Inches(0.06):
+                    img_height = img_height_max - Inches(0.06)
+                    img_width = img_height * aspect_ratio
+
+                # Centrar imagen en el contenedor
+                img_left_centered = img_left + ((img_width_max - img_width) / 2)
+                img_top_centered = img_top + ((img_height_max - img_height) / 2)
+
+        except Exception as e:
+            print(f"Error calculando dimensiones de imagen para design8: {e}")
+            # Dimensiones por defecto si falla la lectura
+            img_width = Inches(2.5)
+            img_height = Inches(2.5)
+            img_left_centered = img_left + Inches(0.3)
+            img_top_centered = img_top + Inches(0.3)
+
+        # Añadir la imagen
+        if img_width > Inches(0.1) and img_height > Inches(0.1):  # Asegurar dimensiones válidas
+            pic = slide.shapes.add_picture(image_path, img_left_centered, img_top_centered, width=img_width, height=img_height)
+            
+        # --- Elemento decorativo moderno en esquina inferior derecha ---
+        decoration = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            self.presentation.slide_width - Inches(1.0),
+            self.presentation.slide_height - Inches(1.0),
+            Inches(0.8),
+            Inches(0.8)
+        )
+        deco_fill = decoration.fill
+        deco_fill.solid()
+        deco_fill.fore_color.rgb = RGBColor(64, 145, 215)  # Azul medio
+        decoration.transparency = 0.7
+        decoration.line.fill.background()
+
+    # >>> DISEÑO MINIMALISTA 2025 <<<
+    def design9(self, slide, section, content, image_path):
+        slide_layout = self.presentation.slide_layouts[6]  # Blank layout
+        slide = self.presentation.slides.add_slide(slide_layout)
+
+        # --- Fondo minimalista --- 
+        bg = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(0),
+            Inches(0),
+            self.presentation.slide_width,
+            self.presentation.slide_height
+        )
+        bg_fill = bg.fill
+        bg_fill.solid()
+        bg_fill.fore_color.rgb = RGBColor(255, 255, 255) # Blanco puro para mayor minimalismo
+        bg.line.fill.background()
+        
+        # --- Área de título --- 
+        title_left = Inches(0.8)
+        title_top = Inches(0.1) # Subir un poco
+        title_width = self.presentation.slide_width
+        title_height = Inches(1.0)
+
+        title_box = slide.shapes.add_textbox(title_left, title_top, title_width, title_height)
+        title_frame = title_box.text_frame
+        title_frame.clear()
+        p_title = title_frame.add_paragraph()
+        p_title.text = section
+        p_title.alignment = PP_ALIGN.LEFT
+        p_title.space_after = Pt(6) # Pequeño espacio después
+        p_title.space_before = Pt(0)
+
+        run_title = p_title.runs[0]
+        run_title.font.size = Pt(self.title_font_size)
+        run_title.font.color.rgb = RGBColor(30, 30, 35) # Negro muy oscuro
+        self.apply_title_font(title_frame)
+
+        if self.title_bold: run_title.font.bold = True
+        if self.title_italic: run_title.font.italic = True
+        if self.title_underline: run_title.font.underline = True
+
+        title_frame.vertical_anchor = MSO_ANCHOR.TOP
+        title_frame.word_wrap = True
+        title_frame.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT # Permitir que crezca si es necesario
+
+        # --- Línea separadora minimalista más sutil --- 
+        accent_color = RGBColor(0, 120, 215) # Azul vibrante pero profesional
+        
+        # Posicionar la línea relativa al top del título + un offset fijo
+        line_top = title_top + Inches(1.15) # Ajustar este offset si es necesario
+        
+        line = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            title_left,
+            line_top,
+            Inches(2.5), # Línea más corta
+            Inches(0.025) # Más fina
+        )
+        line_fill = line.fill
+        line_fill.solid()
+        line_fill.fore_color.rgb = accent_color
+        line.line.fill.background()
+
+        # --- Área de contenido --- 
+        # Posicionar contenido relativo a la línea
+        content_top = line_top + Inches(0.1) # Más espacio después de la línea
+        content_left = title_left
+        content_width = self.presentation.slide_width - Inches(5.0)
+        content_height = self.presentation.slide_height - content_top - Inches(0.8)
+
+        content_box = slide.shapes.add_textbox(content_left, content_top, content_width, content_height)
+        content_frame = content_box.text_frame
+        content_frame.clear()
+        p_content = content_frame.add_paragraph()
+        p_content.text = content
+        p_content.alignment = PP_ALIGN.LEFT
+        p_content.line_spacing = 1.5 # Espaciado generoso
+        p_content.space_after = Pt(12)
+
+        run_content = p_content.runs[0]
+        run_content.font.size = Pt(self.content_font_size) # Tamaño base del contenido
+        run_content.font.color.rgb = RGBColor(80, 80, 85) # Gris oscuro suave
+        
+        self.apply_content_font(content_frame)
+
+        content_frame.vertical_anchor = MSO_ANCHOR.TOP
+        content_frame.word_wrap = True
+        content_frame.auto_size = MSO_AUTO_SIZE.NONE
+        content_frame.margin_left = Inches(0)
+        content_frame.margin_right = Inches(0.1)
+
+        # --- Área de imagen (derecha, limpia) --- 
+        img_width_max = Inches(4.0) # Ancho máximo permitido para la imagen
+        img_height_max = self.presentation.slide_height - Inches(1.2) # Altura máxima (dejar márgenes)
+        img_left = self.presentation.slide_width - img_width_max - Inches(0.1) # Posición X
+        img_top = Inches(0.6) # Alinear con el título
+
+        # Calcular dimensiones de imagen preservando proporción 
+        try:
+            with Image.open(image_path) as img:
+                img_w, img_h = img.size
+                aspect_ratio = img_w / img_h
+
+                img_width = img_width_max
+                img_height = img_width / aspect_ratio
+
+                if img_height > img_height_max:
+                    img_height = img_height_max
+                    img_width = img_height * aspect_ratio
+                    
+                # Centrar verticalmente la imagen en el espacio disponible
+                available_height_space = self.presentation.slide_height - (2 * img_top)
+                img_top_centered = img_top + (available_height_space - img_height) / 2
+
+        except Exception as e:
+            print(f"Error calculando dimensiones de imagen para design9 (revised): {e}")
+            img_width = img_width_max * 0.8 # Fallback
+            img_height = img_height_max * 0.5 # Fallback
+            img_top_centered = Inches(1.0)
+
+        # Añadir la imagen directamente
+        if img_width > Inches(0.1) and img_height > Inches(0.1):
+            pic = slide.shapes.add_picture(image_path, img_left, img_top_centered, width=img_width, height=img_height)

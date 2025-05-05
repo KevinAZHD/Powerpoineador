@@ -45,7 +45,7 @@ class LogSignals(QObject):
 
 # Clase worker para ejecutar la generación en un hilo separado
 class GenerationWorker(QThread):
-    def __init__(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False, disenos_aleatorios=True):
+    def __init__(self, modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False, disenos_aleatorios=True, selected_layout_index=1):
         super().__init__()
         # Inicialización de variables necesarias para la generación
         self.modelo_texto = modelo_texto
@@ -70,6 +70,7 @@ class GenerationWorker(QThread):
         self.content_underline = content_underline
         # Variable para determinar si los diseños son aleatorios
         self.disenos_aleatorios = disenos_aleatorios
+        self.selected_layout_index = selected_layout_index
 
     # Función para ejecutar la generación de la presentación
     def run(self):
@@ -94,7 +95,8 @@ class GenerationWorker(QThread):
                 self.content_bold,
                 self.content_italic,
                 self.content_underline,
-                self.disenos_aleatorios
+                self.disenos_aleatorios,
+                self.selected_layout_index
             )
         except InterruptedError:
             # Obtener idioma para mensaje de cancelación

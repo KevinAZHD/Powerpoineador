@@ -176,6 +176,22 @@ traducciones = {
         'ai_image_success_title': 'Imagen nueva generada',
         'ai_image_success_message': 'La imagen se ha generado correctamente.',
         'generate_ai_image_label': 'Generando imagen. Espere...',
+        'select_style': 'Seleccionar estilo',
+        'select_style_tooltip': 'Elige el diseño visual de las diapositivas',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO <<<
+        'select_style_dialog_title': 'Seleccionar estilo de diapositiva',
+        'select_style_prompt': 'Elija el estilo general a aplicar:',
+        'style_formal': 'Formal',
+        'style_visual': 'Visual',
+        'style_comparison': 'Comparación',
+        'style_minimalist': 'Minimalista',
+        'style_free': 'Libre',
+        'ok': 'Aceptar',
+        'cancel': 'Cancelar',
+        # >>> AÑADIR TRADUCCIONES PARA VISTA PREVIA <<<
+        'preview_not_available': 'Vista previa no disponible',
+        'preview_error': 'Error al cargar vista previa',
     },
     'en': {
         'auto_open': 'Automatically open presentation',
@@ -353,9 +369,25 @@ traducciones = {
         'ai_image_success_title': 'New image generated',
         'ai_image_success_message': 'The image has been generated correctly.',
         'generate_ai_image_label': 'Generating image. Please wait...',
+        'select_style': 'Select style',
+        'select_style_tooltip': 'Choose the visual design for the slides',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO <<<
+        'select_style_dialog_title': 'Select slide style',
+        'select_style_prompt': 'Choose the general style to apply:',
+        'style_formal': 'Formal',
+        'style_visual': 'Visual',
+        'style_comparison': 'Comparison',
+        'style_minimalist': 'Minimalist',
+        'style_free': 'Free',
+        'ok': 'OK',
+        'cancel': 'Cancel',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'Preview not available',
+        'preview_error': 'Error loading preview',
     },
     'fr': {
-        'auto_open': 'Ouvrir la présentation automatiquement',
+        'auto_open': 'Ouvrir automatiquement la présentation',
         'num_diapositivas': 'Nombre de diapositives:',
         'descripcion_presentacion': 'Décrivez votre présentation:',
         'imagen_modelo': 'Modèle IA d\'image:',
@@ -530,6 +562,22 @@ traducciones = {
         'ai_image_success_title': 'Nouvelle image générée',
         'ai_image_success_message': 'L\'image a été générée correctement.',
         'generate_ai_image_label': 'Génération de l\'image. Veuillez patienter...',
+        'select_style': 'Sélectionner le style',
+        'select_style_tooltip': 'Choisissez le design visuel des diapositives',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': 'Sélectionner le style de diapositive',
+        'select_style_prompt': 'Choisissez le style général à appliquer:',
+        'style_formal': 'Formel',
+        'style_visual': 'Visuel',
+        'style_comparison': 'Comparaison',
+        'style_minimalist': 'Minimaliste',
+        'style_free': 'Libre',
+        'ok': 'OK',
+        'cancel': 'Annuler',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'Aperçu non disponible',
+        'preview_error': "Erreur lors du chargement de l'aperçu",
     },
     'pt': {
         'auto_open': 'Abrir apresentação automaticamente',
@@ -707,6 +755,22 @@ traducciones = {
         'ai_image_success_title': 'Nova imagem gerada',
         'ai_image_success_message': 'A imagem foi gerada corretamente.',
         'generate_ai_image_label': 'Gerando imagem. Por favor, aguarde...',
+        'select_style': 'Selecionar estilo',
+        'select_style_tooltip': 'Escolha o design visual dos slides',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': 'Selecionar estilo de diapositiva',
+        'select_style_prompt': 'Escolha o estilo geral a aplicar:',
+        'style_formal': 'Formal',
+        'style_visual': 'Visual',
+        'style_comparison': 'Comparação',
+        'style_minimalist': 'Minimalista',
+        'style_free': 'Livre',
+        'ok': 'OK',
+        'cancel': 'Cancelar',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'Pré-visualização não disponível',
+        'preview_error': 'Erro ao carregar pré-visualização',
     },
     'it': {
         'auto_open': 'Apri presentazione automaticamente',
@@ -860,7 +924,7 @@ traducciones = {
         'language_option_cn': 'Cinese',
         'language_option_jp': 'Giapponese',
         'language_option_kr': 'Coreano',
-        'language_option_ar': 'Araber',
+        'language_option_ar': 'Arabo',
         'language_option_tl': 'Filippino',
         'edit_slide': 'Modifica diapositiva',
         'edit_slide_dialog_title': 'Modifica diapositiva',
@@ -884,6 +948,22 @@ traducciones = {
         'ai_image_success_title': 'Nuova immagine generata',
         'ai_image_success_message': 'L\'immagine è stata generata correttamente.',
         'generate_ai_image_label': 'Generazione dell\'immagine. Per favore, attendi...',
+        'select_style': 'Seleziona Stile',
+        'select_style_tooltip': 'Scegli il design visivo delle diapositive',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': 'Seleziona Stile diapositiva',
+        'select_style_prompt': 'Scegli lo stile generale da applicare:',
+        'style_formal': 'Formale',
+        'style_visual': 'Visivo',
+        'style_comparison': 'Comparaison',
+        'style_minimalist': 'Minimalista',
+        'style_free': 'Libero',
+        'ok': 'OK',
+        'cancel': 'Annulla',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'Anteprima non disponibile',
+        'preview_error': "Errore durante il caricamento dell'anteprima",
     },
     'de': {
         'auto_open': 'Präsentation automatisch öffnen',
@@ -1061,9 +1141,25 @@ traducciones = {
         'ai_image_success_title': 'Neues Bild generiert',
         'ai_image_success_message': 'Das Bild wurde erfolgreich generiert.',
         'generate_ai_image_label': 'Bild wird generiert. Bitte warten...',
+        'select_style': 'Stil auswählen',
+        'select_style_tooltip': 'Wählen Sie das visuelle Design der Folien',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': 'Stil der Folie auswählen',
+        'select_style_prompt': 'Wählen Sie den allgemeinen Stil, den Sie anwenden möchten:',
+        'style_formal': 'Formell',
+        'style_visual': 'Visuell',
+        'style_comparison': 'Vergleich',
+        'style_minimalist': 'Minimalistisch',
+        'style_free': 'Frei',
+        'ok': 'OK',
+        'cancel': 'Abbrechen',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'Vorschau nicht verfügbar',
+        'preview_error': 'Fehler beim Laden der Vorschau',
     },
     'ru': {
-        'auto_open': 'Автоматически открыть презентацию',
+        'auto_open': 'Автоматически открывать презентацию',
         'num_diapositivas': 'Количество слайдов:',
         'descripcion_presentacion': 'Опишите вашу презентацию:',
         'imagen_modelo': 'Модель ИИ для изображений:',
@@ -1238,6 +1334,22 @@ traducciones = {
         'ai_image_success_title': 'Новое изображение сгенерировано',
         'ai_image_success_message': 'Изображение было сгенерировано правильно.',
         'generate_ai_image_label': 'Генерация изображения. Пожалуйста, подождите...',
+        'select_style': 'Выбрать Стиль',
+        'select_style_tooltip': 'Выберите визуальный дизайн слайдов',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': 'Выберите стиль слайда',
+        'select_style_prompt': 'Выберите общий стиль для применения:',
+        'style_formal': 'Формальный',
+        'style_visual': 'Визуальный',
+        'style_comparison': 'Сравнение',
+        'style_minimalist': 'Минималистский',
+        'style_free': 'Свободный',
+        'ok': 'OK',
+        'cancel': 'Отмена',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'Предпросмотр недоступен',
+        'preview_error': 'Ошибка загрузки предпросмотра',
     },
     'cn': {
         'auto_open': '自动打开演示文稿',
@@ -1415,6 +1527,22 @@ traducciones = {
         'ai_image_success_title': '新图像生成',
         'ai_image_success_message': '图像已正确生成。',
         'generate_ai_image_label': '生成图像。请等待...',
+        'select_style': '选择风格',
+        'select_style_tooltip': '选择幻灯片的视觉设计',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': '选择幻灯片风格',
+        'select_style_prompt': '选择要应用的一般风格:',
+        'style_formal': '正式',
+        'style_visual': '视觉',
+        'style_comparison': '比较',
+        'style_minimalist': '简约',
+        'style_free': '自由',
+        'ok': '确定',
+        'cancel': '取消',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': '预览不可用',
+        'preview_error': '加载预览时出错',
     },
     'jp': {
         'auto_open': '自動的にプレゼンテーションを開く',
@@ -1592,6 +1720,22 @@ traducciones = {
         'ai_image_success_title': '新しい画像が生成されました',
         'ai_image_success_message': '画像が正しく生成されました。',
         'generate_ai_image_label': '画像の生成中です。少々お待ちください...',
+        'select_style': 'スタイルを選択',
+        'select_style_tooltip': 'スライドのビジュアルデザインを選択します',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': 'スライドスタイルを選択',
+        'select_style_prompt': '適用する一般的なスタイルを選択します:',
+        'style_formal': '正式',
+        'style_visual': '視覚',
+        'style_comparison': '比較',
+        'style_minimalist': 'ミニマル',
+        'style_free': 'フリー',
+        'ok': 'OK',
+        'cancel': 'キャンセル',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'プレビューは利用できません',
+        'preview_error': 'プレビューの読み込み中にエラーが発生しました',
     },
     'kr': {
         'auto_open': '프레젠테이션 자동 열기',
@@ -1769,6 +1913,22 @@ traducciones = {
         'ai_image_success_title': '새로운 이미지 생성',
         'ai_image_success_message': '이미지가 성공적으로 생성되었습니다.',
         'generate_ai_image_label': '이미지 생성 중입니다. 잠시만 기다려주세요...',
+        'select_style': '스타일 선택',
+        'select_style_tooltip': '슬라이드의 시각적 디자인을 선택하세요',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': '슬라이드 스타일 선택',
+        'select_style_prompt': '적용할 일반 스타일을 선택하세요:',
+        'style_formal': '정식',
+        'style_visual': '시각',
+        'style_comparison': '비교',
+        'style_minimalist': '미니멀',
+        'style_free': '자유',
+        'ok': '확인',
+        'cancel': '취소',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': '미리보기를 사용할 수 없습니다',
+        'preview_error': '미리보기를 로드하는 중 오류 발생',
     },
     'ar': {
         'auto_open': 'فتح العرض التقديمي تلقائيًا',
@@ -1946,6 +2106,22 @@ traducciones = {
         'ai_image_success_title': 'صورة جديدة تم إنشاؤها',
         'ai_image_success_message': 'تم إنشاء الصورة بنجاح.',
         'generate_ai_image_label': 'يتم إنشاء الصورة. يرجى الإنتظار...',
+        'select_style': 'اختيار النمط',
+        'select_style_tooltip': 'اختر التصميم المرئي للشرائح',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': 'حدد نمط الشريحة',
+        'select_style_prompt': 'حدد النمط العام الذي تريد تطبيقه:',
+        'style_formal': 'رسمي',
+        'style_visual': 'بصري',
+        'style_comparison': 'مقارنة',
+        'style_minimalist': 'مينيماليست',
+        'style_free': 'حر',
+        'ok': 'موافق',
+        'cancel': 'إلغاء',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'المعاينة غير متوفرة',
+        'preview_error': 'خطأ في تحميل المعاينة',
     },
     'tl': {
         'auto_open': 'Awtomatikong buksan ang presentasyon',
@@ -2123,6 +2299,22 @@ traducciones = {
         'ai_image_success_title': 'Nagawa na ang bagong larawan',
         'ai_image_success_message': 'Matagumpay na nagawa ang larawan.',
         'generate_ai_image_label': 'Gumagawa ng larawan. Maghintay...',
+        'select_style': 'Pumili ng Estilo',
+        'select_style_tooltip': 'Piliin ang visual na disenyo para sa mga slide',
+
+        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
+        'select_style_dialog_title': 'Piliin ang slide style',
+        'select_style_prompt': 'Pumili ng pangkalahatang estilo upang ilahad:',
+        'style_formal': 'Pormal',
+        'style_visual': 'Visual',
+        'style_comparison': 'Paghahambing',
+        'style_minimalist': 'Minimalist',
+        'style_free': 'Libre',
+        'ok': 'Oo',
+        'cancel': 'Hindi',
+        # >>> ADD PREVIEW TRANSLATIONS <<<
+        'preview_not_available': 'Hindi available ang preview',
+        'preview_error': 'Error sa pag-load ng preview',
     }
 }
 

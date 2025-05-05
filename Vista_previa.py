@@ -1181,17 +1181,44 @@ class VentanaVistaPrevia(QWidget):
             # --- Actualizar Título (Lógica simplificada similar a la anterior, suele ser menos complejo) ---
             if title_shape:
                 print(f"Actualizando título en shape: {title_shape.name if hasattr(title_shape, 'name') else 'N/A'}")
+                # --- Refined Original Format Detection ---
                 original_alignment = PP_ALIGN.LEFT # Default
-                original_color_rgb = RGBColor(255, 255, 255) # Default white
+                original_color_rgb = RGBColor(0, 0, 0) # Default BLACK now, safer than white
+                title_format_detected = False
                 try:
-                    if title_shape.text_frame and title_shape.text_frame.paragraphs:
+                    if title_shape and title_shape.has_text_frame and title_shape.text_frame.paragraphs:
                         first_para = title_shape.text_frame.paragraphs[0]
                         original_alignment = first_para.alignment or PP_ALIGN.LEFT
-                        if first_para.runs and hasattr(first_para.runs[0].font.color, 'type') and first_para.runs[0].font.color.type == MSO_COLOR_TYPE.RGB:
-                            original_color_rgb = first_para.runs[0].font.color.rgb
-                    print(f"Título original detectado - Alineación: {original_alignment}, Color RGB: {original_color_rgb}")
+
+                        # Try run color first
+                        if first_para.runs and hasattr(first_para.runs[0].font.color, 'type'):
+                            if first_para.runs[0].font.color.type == MSO_COLOR_TYPE.RGB:
+                                original_color_rgb = first_para.runs[0].font.color.rgb
+                                title_format_detected = True
+                                print(f"Title original - Color RGB from run: {original_color_rgb}")
+                            # OPTIONAL: Handle THEME color if needed, though we can't directly reapply it easily
+                            # elif first_para.runs[0].font.color.type == MSO_COLOR_TYPE.THEME:
+                            #     print(f"Title original - Color from run is THEME: {first_para.runs[0].font.color.theme_color}")
+
+                        # If run color wasn't RGB, try paragraph color
+                        if not title_format_detected and hasattr(first_para.font.color, 'type'):
+                            if first_para.font.color.type == MSO_COLOR_TYPE.RGB:
+                                original_color_rgb = first_para.font.color.rgb
+                                title_format_detected = True
+                                print(f"Title original - Color RGB from paragraph: {original_color_rgb}")
+                            # elif first_para.font.color.type == MSO_COLOR_TYPE.THEME:
+                            #     print(f"Title original - Color from paragraph is THEME: {first_para.font.color.theme_color}")
+
+                        if not title_format_detected:
+                            print(f"Title original - Could not detect RGB color, using default BLACK.")
+
+                        print(f"Title original detected - Alineación: {original_alignment}, Color RGB: {original_color_rgb}")
+                    else:
+                        print(f"Title original - Title shape or text frame invalid, using defaults.")
+
                 except Exception as e:
                     print(f"WARN: No se pudo obtener formato original título: {e}, usando defaults.")
+                    original_color_rgb = RGBColor(0, 0, 0) # Ensure default is black on error
 
                 try:
                     nuevo_titulo = edited_data['titulo']
@@ -1204,15 +1231,26 @@ class VentanaVistaPrevia(QWidget):
                         p = tf.add_paragraph()
                         p.text = line
                     
-                    for para in tf.paragraphs:
+                    # Apply formatting (uses potentially improved original_color_rgb)
+                    for para_idx, para in enumerate(tf.paragraphs):
                         para.alignment = original_alignment
-                        for run in para.runs:
-                            run.font.name = self.title_font_name
-                            run.font.size = Pt(self.title_font_size)
-                            run.font.bold = self.title_bold
-                            run.font.italic = self.title_italic
-                            run.font.underline = self.title_underline
-                            run.font.color.rgb = original_color_rgb
+                        # Apply font properties directly to paragraph first
+                        para.font.name = self.title_font_name
+                        para.font.size = Pt(self.title_font_size)
+                        para.font.bold = self.title_bold
+                        para.font.italic = self.title_italic
+                        para.font.underline = self.title_underline
+                        try:
+                            # Apply the detected or default color
+                            para.font.color.rgb = original_color_rgb
+                            # print(f"  Title Para {para_idx}: Applied color {original_color_rgb}")
+                        except Exception as color_err:
+                            print(f"WARN: Could not apply title color to paragraph {para_idx}: {color_err}")
+                            # Apply default black if setting detected color failed
+                            try:
+                                para.font.color.rgb = RGBColor(0, 0, 0)
+                            except: pass # Ignore if setting black also fails
+
                     print(f"Título actualizado a: '{nuevo_titulo}'")
                 except Exception as e:
                     print(f"Error fatal al procesar título: {e}")

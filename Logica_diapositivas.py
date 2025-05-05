@@ -108,6 +108,101 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         import gc
         gc.collect()
 
+# Función para generar texto (título y contenido) con un modelo de IA
+def generar_texto_ia(tipo, contenido_actual, descripcion, modelo, signals=None):
+    # Función interna para manejar logs
+    def log_message(msg):
+        print(msg)
+        if signals:
+            signals.update_log.emit(str(msg))
+    
+    # Obtener el idioma actual
+    current_language = 'es'
+    if signals and hasattr(signals, 'current_language'):
+        current_language = signals.current_language
+    elif signals and hasattr(signals, 'parent') and hasattr(signals.parent, 'current_language'):
+        current_language = signals.parent.current_language
+    elif signals and hasattr(signals, 'parent') and hasattr(signals.parent, 'parent') and hasattr(signals.parent.parent, 'current_language'):
+        current_language = signals.parent.parent.current_language
+
+    try:
+        # Crear un prompt específico según si estamos generando título o contenido
+        if tipo == "titulo":
+            prompt = obtener_traduccion('prompt_titulo', current_language).format(
+                descripcion=descripcion, 
+                contenido_actual=contenido_actual
+            )
+            log_message(obtener_traduccion('generando_titulo', current_language).format(modelo=modelo))
+        else:  # contenido
+            prompt = obtener_traduccion('prompt_contenido', current_language).format(
+                descripcion=descripcion, 
+                contenido_actual=contenido_actual
+            )
+            log_message(obtener_traduccion('generando_contenido', current_language).format(modelo=modelo))
+        
+        # Verificar cuál es el modelo que se está utilizando
+        if modelo == 'meta-llama-3.1-405b-instruct [$0.0067]':
+            from modelos.IA_llama3 import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'meta-llama-4-scout-instruct [$0.00046]':
+            from modelos.IA_llama4s import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'meta-llama-4-maverick-instruct [$0.00067]':
+            from modelos.IA_llama4m import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'claude-3.7-sonnet [$0.0105]':
+            from modelos.IA_sonnet3_7 import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'claude-3.5-sonnet [$0.01312]':
+            from modelos.IA_sonnet3_5 import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'claude-3.5-haiku [$0.0035]':
+            from modelos.IA_haiku import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'grok-2-1212':
+            from modelos.IA_grok2 import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'grok-3-beta':
+            from modelos.IA_grok3 import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'grok-3-mini-beta':
+            from modelos.IA_grok3_mini import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'gemini-2.5-pro-exp-03-25':
+            from modelos.IA_gemini2_pro import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'gemini-2.0-flash-thinking-exp-01-21':
+            from modelos.IA_gemini2_flash_thinking import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'deepseek-r1 [$0.007]':
+            from modelos.IA_deepseek import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        else:
+            from modelos.IA_dolphin import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+
+        # Verificar si se pudo obtener respuesta del modelo
+        if texto_generado:
+            # Imprimir un mensaje con el texto generado
+            if tipo == "titulo":
+                log_message(obtener_traduccion('titulo_generado', current_language).format(texto=texto_generado))
+            else:
+                log_message(obtener_traduccion('contenido_generado', current_language).format(texto=texto_generado))
+            return texto_generado
+        
+        return None
+        
+    except Exception as e:
+        # Imprimir un mensaje indicando que ocurrió un error
+        if tipo == "titulo":
+            log_message(obtener_traduccion('error_generar_titulo', current_language).format(error=str(e)))
+        else:
+            log_message(obtener_traduccion('error_generar_contenido', current_language).format(error=str(e)))
+        return None
+    finally:
+        import gc
+        gc.collect()
+
 # Función para generar una imagen con un modelo de IA
 def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
     # Función interna para manejar logs
@@ -160,7 +255,7 @@ def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
         raise RuntimeError(obtener_traduccion('error_generar_imagen', current_language).format(error=str(e)))
 
 # Función para generar una presentación con un modelo de IA
-def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals=None, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False, disenos_aleatorios=True):
+def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, imagen_personalizada, filename, signals=None, title_font_name='Calibri', content_font_name='Calibri', title_font_size=16, content_font_size=10, title_bold=False, title_italic=False, title_underline=False, content_bold=False, content_italic=False, content_underline=False, disenos_aleatorios=True, selected_layout_index=1):
     # Función interna para manejar logs
     def log_message(msg):
         print(msg)
@@ -243,8 +338,8 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
         # Imprimir un mensaje indicando que se está aplicando diseños a las diapositivas
         log_message(obtener_traduccion('aplicando_disenos', current_language))
         # Crear una lista con los diseños disponibles
-        designs = list(range(1, 8))
-        # Mezclar los diseños disponibles solo si se ha seleccionado diseños aleatorios
+        designs = list(range(1, 10))
+        # LÓGICA DE ALEATORIZACIÓN MODIFICADA
         if disenos_aleatorios:
             random.shuffle(designs)
         # Iterar sobre las secciones del contenido
@@ -252,12 +347,14 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
             try:
                 # Verificar si es la primera diapositiva
                 if i == 0:
-                    # Pasar font_name implícitamente a través del objeto slide_designs
+                    # Aplicar diseño de introducción (design0)
                     slide_designs.design0(presentation.slides, section, content, imagenes_generadas[i])
-                else:
-                    # Obtener el diseño a aplicar
-                    design = designs[(i-1) % len(designs)]
-                    # Verificar cuál es el diseño que se está aplicando
+                # LÓGICA DE APLICACIÓN DE DISEÑO MODIFICADA
+                elif disenos_aleatorios:
+                    # Si la aleatorización está activada, usar la lista (barajada o no)
+                    design_index = (i - 1) % len(designs)
+                    design = designs[design_index]
+                    # Aplicar diseño seleccionado aleatoriamente
                     if design == 1:
                         slide_designs.design1(presentation.slides, section, content, imagenes_generadas[i])
                     elif design == 2:
@@ -272,6 +369,36 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
                         slide_designs.design6(presentation.slides, section, content, imagenes_generadas[i])
                     elif design == 7:
                         slide_designs.design7(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 8:
+                        slide_designs.design8(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 9:
+                        slide_designs.design9(presentation.slides, section, content, imagenes_generadas[i])
+                elif selected_layout_index == 5: # Minimalista (fijo)
+                    slide_designs.design9(presentation.slides, section, content, imagenes_generadas[i])
+                elif selected_layout_index == 1: # Formal (fijo)
+                    slide_designs.design8(presentation.slides, section, content, imagenes_generadas[i])
+                else: # Si no es aleatorio y no es 1 ni 5, usar el índice seleccionado (que debería ser 6 u otro futuro)
+                      # Como fallback o si se selecciona explícitamente "Libre", aplicamos la secuencia *fija*
+                    design_index = (i - 1) % len(designs) # Usar la lista *ordenada*
+                    design = designs[design_index]
+                    if design == 1:
+                        slide_designs.design1(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 2:
+                        slide_designs.design2(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 3:
+                        slide_designs.design3(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 4:
+                        slide_designs.design4(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 5:
+                        slide_designs.design5(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 6:
+                        slide_designs.design6(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 7:
+                        slide_designs.design7(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 8:
+                        slide_designs.design8(presentation.slides, section, content, imagenes_generadas[i])
+                    elif design == 9:
+                        slide_designs.design9(presentation.slides, section, content, imagenes_generadas[i])
                 # Imprimir un mensaje indicando que la diapositiva se completó correctamente
                 log_message(obtener_traduccion('diapositiva_completada', current_language).format(numero=i+1, total=total_slides))
             except Exception as e:
@@ -293,7 +420,9 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
     except Exception as e:
         # Imprimir un mensaje indicando que ocurrió un error durante la generación de la presentación
         log_message(obtener_traduccion('error_generacion_presentacion', current_language).format(error=str(e)))
-        raise
+        # Emitir señal de error
+        if signals:
+            signals.error.emit(str(e))
     finally:
         # Liberar memoria
         import gc

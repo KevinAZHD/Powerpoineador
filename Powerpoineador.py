@@ -14,6 +14,7 @@ from Cifrado import GestorCifrado
 from Traducciones import obtener_traduccion
 from PyPDF2 import PdfReader
 from Vista_previa import PPTX_AVAILABLE
+from Plantillas import StyleSelectionDialog # <--- AÑADIR IMPORT
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -983,6 +984,12 @@ class MainWindow(QMainWindow):
             if hasattr(self.widget, 'content_underline_checkbox'):
                  self.widget.content_underline_checkbox.setEnabled(False)
                  self.widget.content_underline_checkbox.setChecked(False)
+                 
+            # Deshabilitar checkbox de diseños aleatorios y botón de selección de estilo
+            if hasattr(self.widget, 'disenos_aleatorios_checkbox'):
+                self.widget.disenos_aleatorios_checkbox.setEnabled(False)
+            if hasattr(self.widget, 'select_style_btn'):
+                self.widget.select_style_btn.setEnabled(False)
 
             # Limpiar la vista previa y resetearla
             if hasattr(self.widget, 'vista_previa') and self.widget.vista_previa:
@@ -1192,6 +1199,16 @@ class MainWindow(QMainWindow):
                  self.widget.content_italic_checkbox.setEnabled(True)
             if hasattr(self.widget, 'content_underline_checkbox'):
                  self.widget.content_underline_checkbox.setEnabled(True)
+                 
+            # Habilitar checkbox de diseños aleatorios
+            if hasattr(self.widget, 'disenos_aleatorios_checkbox'):
+                self.widget.disenos_aleatorios_checkbox.setEnabled(True)
+                
+            # Actualizar visibilidad y estado del botón de selección de estilo
+            if hasattr(self.widget, 'select_style_btn'):
+                self.widget.select_style_btn.setEnabled(True)
+                if hasattr(self.widget, 'toggle_style_button_visibility'):
+                    self.widget.toggle_style_button_visibility() # Esto configura la visibilidad según checkbox
 
     # Función para manejar el evento de cierre de la ventana
     def closeEvent(self, event):
@@ -1778,6 +1795,8 @@ class PowerpoineatorWidget(QWidget):
         # self.available_fonts = ["Arial", "Calibri", "Times New Roman", "Verdana", "Tahoma", "Georgia", "Comic Sans MS"]
         # self.selected_font = "Calibri" 
 
+        self.selected_layout_index = 1 # <--- AÑADIR Inicializar índice de estilo seleccionado
+
         self.setup_ui()
         self.load_log_visibility_state()
         self.imagen_personalizada = None
@@ -1788,8 +1807,12 @@ class PowerpoineatorWidget(QWidget):
         self.load_num_diapositivas()
         self.load_pdf_path()
         self.load_font_selection() # Cargar fuente guardada después de setup_ui
-        self.load_content_font_selection() # <--- AÑADIR CARGA FUENTE CONTENIDO
-        self.load_font_sizes() # Cargar tamaños de fuente guardados
+        self.load_content_font_selection()
+        self.load_font_sizes()
+        self.load_format_settings()
+        self.load_disenos_aleatorios_state()
+        self.load_selected_style() # Importante: cargar índice de estilo antes de actualizar la etiqueta
+        self.update_style_label() # Actualizar la etiqueta con el estilo seleccionado
         # --- MODIFICADO: Eliminar esta línea, ya se estableció con initial_language ---
         # self.current_language = 'es'
         # ----------------------------------------------------------------------------
@@ -1867,6 +1890,14 @@ class PowerpoineatorWidget(QWidget):
             
             # Auto open checkbox
             self.auto_open_checkbox.setText(obtener_traduccion('auto_open', idioma))
+
+            # >>> AÑADIR ACTUALIZACIÓN PARA BOTÓN ESTILO <<<
+            self.select_style_btn.setText(obtener_traduccion('select_style', idioma))
+            self.select_style_btn.setToolTip(obtener_traduccion('select_style_tooltip', idioma))
+            
+            # >>> ACTUALIZAR LA ETIQUETA DEL ESTILO SELECCIONADO <<<
+            self.update_style_label()
+            
         except Exception as e:
             print(f"Error general al actualizar traducciones: {str(e)}")
 
@@ -2073,7 +2104,19 @@ class PowerpoineatorWidget(QWidget):
         self.disenos_aleatorios_checkbox = QCheckBox(obtener_traduccion('disenos_aleatorios', current_language))
         self.disenos_aleatorios_checkbox.setChecked(True)
         self.disenos_aleatorios_checkbox.stateChanged.connect(self.save_disenos_aleatorios_state)
+        self.disenos_aleatorios_checkbox.stateChanged.connect(self.toggle_style_button_visibility)
         self.contador_checkbox_layout.addWidget(self.disenos_aleatorios_checkbox)
+        
+        # >>> AÑADIR BOTÓN SELECCIONAR ESTILO (con traducción) <<<
+        self.select_style_btn = QPushButton(obtener_traduccion('select_style', current_language)) # Revertido a traducción
+        self.select_style_btn.setToolTip(obtener_traduccion('select_style_tooltip', current_language))
+        self.select_style_btn.clicked.connect(self.select_slide_style)
+        self.contador_checkbox_layout.addWidget(self.select_style_btn)
+        
+        # >>> AÑADIR ETIQUETA DE ESTILO ACTUAL <<<
+        self.current_style_label = QLabel("")
+        self.current_style_label.setStyleSheet("color: gray;")
+        self.contador_checkbox_layout.addWidget(self.current_style_label)
         
         left_stretch = 1
         left_spacing = 0
@@ -2247,7 +2290,7 @@ class PowerpoineatorWidget(QWidget):
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-scout-instruct [$0.00046]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-maverick-instruct [$0.00067]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct [$0.0067]')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.018]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.037]')
             
             self.imagen_combo.setEnabled(True)
             self.imagen_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
@@ -2597,6 +2640,9 @@ class PowerpoineatorWidget(QWidget):
         
         # Deshabilitar checkbox de diseños aleatorios
         self.disenos_aleatorios_checkbox.setEnabled(False)
+        
+        # Deshabilitar botón de selección de estilo
+        self.select_style_btn.setEnabled(False)
 
         # Deshabilitar área de descripción
         self.descripcion_text.setEnabled(False)
@@ -2722,6 +2768,9 @@ class PowerpoineatorWidget(QWidget):
         
         # Habilitar checkbox de diseños aleatorios
         self.disenos_aleatorios_checkbox.setEnabled(True)
+
+        # Habilitar botón de selección de estilo
+        self.select_style_btn.setEnabled(True)
         
         # Habilitar área de descripción
         self.descripcion_text.setEnabled(True)
@@ -2865,6 +2914,9 @@ class PowerpoineatorWidget(QWidget):
             from Ventana_progreso import GenerationWorker
             idioma = current_language  # Usar la variable current_language en lugar de self.parent().current_language
             instruccion_idioma = obtener_traduccion('language_instruction', idioma)
+            selected_layout_index = self.selected_layout_index # <-- Obtener el índice seleccionado
+            usa_disenos_aleatorios = self.disenos_aleatorios_checkbox.isChecked() # Obtener estado del checkbox
+
             self.worker = GenerationWorker(
                 modelo_texto,
                 modelo_imagen,
@@ -2883,7 +2935,8 @@ class PowerpoineatorWidget(QWidget):
                 content_bold, # Pasar opción de negrita para contenido
                 content_italic, # Pasar opción de cursiva para contenido
                 content_underline, # Pasar opción de subrayado para contenido
-                self.disenos_aleatorios_checkbox.isChecked() # Pasar opción de diseños aleatorios
+                usa_disenos_aleatorios, # Pasar el estado del checkbox
+                selected_layout_index=selected_layout_index # Pasar el índice seleccionado (se usará si aleatorio es False)
             )
             self.worker.start()
 
@@ -3700,17 +3753,179 @@ class PowerpoineatorWidget(QWidget):
             
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                 json.dump(config, f, ensure_ascii=False, indent=4)
+                
+            # Actualizar la visibilidad del botón de estilo
+            self.toggle_style_button_visibility()
         except Exception as e:
             print(f"Error al guardar el estado de diseños aleatorios: {str(e)}")
 
     def load_disenos_aleatorios_state(self):
         try:
+            checked_state = True # Default a True
             if os.path.exists(CONFIG_FILE):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-                    self.disenos_aleatorios_checkbox.setChecked(config.get('disenos_aleatorios', True))
+                    # Obtener el estado guardado, si no existe, usar True
+                    checked_state = config.get('disenos_aleatorios', True)
+
+            self.disenos_aleatorios_checkbox.setChecked(checked_state)
+
+            # >>> LLAMAR A LA FUNCIÓN PARA AJUSTAR VISIBILIDAD INICIAL <<<
+            self.toggle_style_button_visibility()
+            # -----------------------------------------------------------
+
         except Exception as e:
             print(f"Error al cargar el estado de diseños aleatorios: {str(e)}")
+            # Aplicar estado por defecto y actualizar visibilidad en caso de error
+            self.disenos_aleatorios_checkbox.setChecked(True)
+            self.toggle_style_button_visibility()
+
+    # >>> NUEVA FUNCIÓN PLACEHOLDER <<<
+    def select_slide_style(self):
+        # --- MODIFICADO: Implementar lógica del diálogo ---
+        # Asegurarse de tener el idioma actual
+        current_language = 'es'
+        if self.parent() and hasattr(self.parent(), 'current_language'):
+            current_language = self.parent().current_language
+        else:
+            current_language = self.current_language # Usar el del widget si no hay padre
+
+        # Crear y mostrar el diálogo
+        dialog = StyleSelectionDialog(
+            current_language=current_language,
+            current_selection_index=self.selected_layout_index,
+            parent=self # Pasar el widget como padre
+        )
+
+        if dialog.exec(): # Si el usuario hace clic en OK
+            self.selected_layout_index = dialog.get_selected_index()
+            self.save_selected_style() # Guardar la nueva selección
+            self.update_style_label() # Actualizar la etiqueta con el estilo seleccionado
+            print(f"Estilo de diseño seleccionado: {self.selected_layout_index}") # Opcional: para depuración
+        # ----------------------------------------------------
+        # pass # <-- Eliminar el placeholder pass
+
+    # >>> AÑADIR NUEVAS FUNCIONES PARA GUARDAR/CARGAR ESTILO <<<
+    def save_selected_style(self):
+        """Guarda el índice del estilo de diseño seleccionado en config.json."""
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+
+            config['selected_layout_index'] = self.selected_layout_index
+
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar el índice de estilo seleccionado: {str(e)}")
+
+    def load_selected_style(self):
+        """Carga el índice del estilo de diseño seleccionado desde config.json."""
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    # Obtener el índice guardado, usar 1 (Formal) si no existe
+                    self.selected_layout_index = config.get('selected_layout_index', 1)
+            else:
+                self.selected_layout_index = 1 # Default si no existe config.json
+        except Exception as e:
+            print(f"Error al cargar el índice de estilo seleccionado: {str(e)}")
+            self.selected_layout_index = 1 # Default en caso de error
+
+    # >>> AÑADIR NUEVA FUNCIÓN <<<
+    def toggle_style_button_visibility(self):
+        """Muestra u oculta el botón 'Seleccionar estilo' según el estado del checkbox."""
+        is_random = self.disenos_aleatorios_checkbox.isChecked()
+        self.select_style_btn.setVisible(not is_random)
+        self.current_style_label.setVisible(not is_random)
+
+    # >>> AÑADIR NUEVA FUNCIÓN PARA ACTUALIZAR LA ETIQUETA <<<
+    def update_style_label(self):
+        """Actualiza la etiqueta que muestra el estilo actual seleccionado."""
+        try:
+            # Mapeo de índices de estilo a nombres traducidos
+            style_names = {
+                1: obtener_traduccion('style_formal', self.current_language),
+                5: obtener_traduccion('style_minimalist', self.current_language),
+                6: obtener_traduccion('style_free', self.current_language),
+                # 3: obtener_traduccion('style_comparison', self.current_language),
+                # 8: obtener_traduccion('style_visual', self.current_language),
+            }
+            
+            # Obtener el nombre del estilo según el índice seleccionado
+            style_name = style_names.get(self.selected_layout_index, obtener_traduccion('style_formal', self.current_language))
+            
+            # Actualizar el texto de la etiqueta
+            self.current_style_label.setText(f"({style_name})")
+        except Exception as e:
+            print(f"Error al actualizar la etiqueta de estilo: {str(e)}")
+
+    def actualizar_traducciones(self, idioma='es'):
+        try:
+            # Actualizar los textos de los elementos según el idioma
+            self.current_language = idioma
+            
+            # Actualizar modelos
+            self.texto_label.setText(obtener_traduccion('texto_modelo', idioma))
+            self.imagen_label.setText(obtener_traduccion('imagen_modelo', idioma))
+            
+            # Actualizar botones y etiquetas de PDF
+            self.cargar_pdf_btn.setText(obtener_traduccion('cargar_pdf', idioma))
+            self.revisar_pdf_btn.setText(obtener_traduccion('revisar_pdf', idioma))
+            self.eliminar_pdf_btn.setText(obtener_traduccion('eliminar_pdf', idioma))
+            
+            # Actualizar descripciones y contadores
+            self.descripcion_label.setText(obtener_traduccion('descripcion_presentacion', idioma))
+            self.diapositivas_label.setText(obtener_traduccion('num_diapositivas', idioma))
+            
+            # Actualizar labels de fuentes
+            self.title_font_label.setText(obtener_traduccion('title_font_label', idioma))
+            self.content_font_label.setText(obtener_traduccion('content_font_label', idioma))
+            self.title_font_size_label.setText(obtener_traduccion('title_font_size_label', idioma))
+            self.content_font_size_label.setText(obtener_traduccion('content_font_size_label', idioma))
+            
+            # Checkboxes de formateo
+            self.title_bold_checkbox.setText(obtener_traduccion('title_bold', idioma))
+            self.title_italic_checkbox.setText(obtener_traduccion('title_italic', idioma))
+            self.title_underline_checkbox.setText(obtener_traduccion('title_underline', idioma))
+            self.content_bold_checkbox.setText(obtener_traduccion('content_bold', idioma))
+            self.content_italic_checkbox.setText(obtener_traduccion('content_italic', idioma))
+            self.content_underline_checkbox.setText(obtener_traduccion('content_underline', idioma))
+            
+            # Actualizar el texto del botón de generar si está en modo cancelar
+            if hasattr(self, 'worker') and self.worker and self.worker.isRunning():
+                self.generar_btn.setText(obtener_traduccion('cancel_generation', idioma))
+            if not self.descripcion_text.isEnabled():
+                self.descripcion_text.setPlaceholderText(obtener_traduccion('description_text', idioma))
+            self.actualizar_contador()
+            
+            # Actualizar la vista previa si existe
+            if hasattr(self, 'vista_previa') and self.vista_previa:
+                try:
+                    # Establecer el idioma y actualizar completamente
+                    self.vista_previa.current_language = idioma
+                    self.vista_previa.actualizar_idioma(idioma)
+                except Exception as e:
+                    print(f"Error al actualizar vista previa: {str(e)}")
+            
+            # Diseños aleatorios checkbox
+            self.disenos_aleatorios_checkbox.setText(obtener_traduccion('disenos_aleatorios', idioma))
+            
+            # Auto open checkbox
+            self.auto_open_checkbox.setText(obtener_traduccion('auto_open', idioma))
+
+            # >>> AÑADIR ACTUALIZACIÓN PARA BOTÓN ESTILO <<<
+            self.select_style_btn.setText(obtener_traduccion('select_style', idioma))
+            self.select_style_btn.setToolTip(obtener_traduccion('select_style_tooltip', idioma))
+            
+            # >>> ACTUALIZAR LA ETIQUETA DEL ESTILO SELECCIONADO <<<
+            self.update_style_label()
+            
+        except Exception as e:
+            print(f"Error general al actualizar traducciones: {str(e)}")
 
 # Función principal para iniciar la aplicación
 if __name__ == "__main__":

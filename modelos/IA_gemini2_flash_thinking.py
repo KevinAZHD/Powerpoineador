@@ -106,9 +106,16 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
         # Intentar evaluar la respuesta procesada como un diccionario
         try:
             contenido = ast.literal_eval(respuesta_procesada)
+            # Verificar si el contenido evaluado es un diccionario
+            if not isinstance(contenido, dict):
+                # Registrar el tipo inesperado
+                msg_error_tipo = obtener_traduccion('error_tipo_inesperado', current_language).format(tipo=type(contenido).__name__, esperado='dict')
+                # Lanzar un error para activar el reintento
+                raise TypeError(msg_error_tipo) # Mantenemos el error para reintentar
             return contenido
-        except:
-            return respuesta_procesada
+        except (ValueError, SyntaxError, TypeError) as eval_error:
+            # Lanzar la excepción para ser capturada por el bucle exterior para reintentar
+            raise eval_error
             
     except Exception as e:
         # Imprimir un mensaje indicando que ocurrió un error al obtener la respuesta
