@@ -178,8 +178,6 @@ traducciones = {
         'generate_ai_image_label': 'Generando imagen. Espere...',
         'select_style': 'Seleccionar estilo',
         'select_style_tooltip': 'Elige el diseño visual de las diapositivas',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO <<<
         'select_style_dialog_title': 'Seleccionar estilo de diapositiva',
         'select_style_prompt': 'Elija el estilo general a aplicar:',
         'style_formal': 'Formal',
@@ -189,9 +187,13 @@ traducciones = {
         'style_free': 'Libre',
         'ok': 'Aceptar',
         'cancel': 'Cancelar',
-        # >>> AÑADIR TRADUCCIONES PARA VISTA PREVIA <<<
         'preview_not_available': 'Vista previa no disponible',
         'preview_error': 'Error al cargar vista previa',
+        'generate_ai_title': 'Generar textos con IA',
+        'generate_ai_title_progress_title': 'Generar textos con IA',
+        'generate_ai_title_progress_label': 'Generando textos. Espere...',
+        'ai_title_success_message': 'Los textos se han generado correctamente',
+        'ai_title_success_title': 'Textos nuevos generados',
     },
     'en': {
         'auto_open': 'Automatically open presentation',
@@ -371,8 +373,6 @@ traducciones = {
         'generate_ai_image_label': 'Generating image. Please wait...',
         'select_style': 'Select style',
         'select_style_tooltip': 'Choose the visual design for the slides',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO <<<
         'select_style_dialog_title': 'Select slide style',
         'select_style_prompt': 'Choose the general style to apply:',
         'style_formal': 'Formal',
@@ -382,9 +382,13 @@ traducciones = {
         'style_free': 'Free',
         'ok': 'OK',
         'cancel': 'Cancel',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'Preview not available',
         'preview_error': 'Error loading preview',
+        'generate_ai_title': 'Generate texts with AI',
+        'generate_ai_title_progress_title': 'Generate texts with AI',
+        'generate_ai_title_progress_label': 'Generating texts. Please wait...',
+        'ai_title_success_message': 'The texts have been generated correctly',
+        'ai_title_success_title': 'New texts generated',
     },
     'fr': {
         'auto_open': 'Ouvrir automatiquement la présentation',
@@ -564,8 +568,6 @@ traducciones = {
         'generate_ai_image_label': 'Génération de l\'image. Veuillez patienter...',
         'select_style': 'Sélectionner le style',
         'select_style_tooltip': 'Choisissez le design visuel des diapositives',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': 'Sélectionner le style de diapositive',
         'select_style_prompt': 'Choisissez le style général à appliquer:',
         'style_formal': 'Formel',
@@ -575,9 +577,13 @@ traducciones = {
         'style_free': 'Libre',
         'ok': 'OK',
         'cancel': 'Annuler',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'Aperçu non disponible',
-        'preview_error': "Erreur lors du chargement de l'aperçu",
+        'preview_error': 'Erreur lors du chargement de l\'aperçu',
+        'generate_ai_title': 'Générer des textes avec IA',
+        'generate_ai_title_progress_title': 'Générer des textes avec IA',
+        'generate_ai_title_progress_label': 'Génération des textes. Veuillez patienter...',
+        'ai_title_success_message': 'Les textes ont été générés correctement.',
+        'ai_title_success_title': 'Nouveaux textes générés',
     },
     'pt': {
         'auto_open': 'Abrir apresentação automaticamente',
@@ -757,8 +763,6 @@ traducciones = {
         'generate_ai_image_label': 'Gerando imagem. Por favor, aguarde...',
         'select_style': 'Selecionar estilo',
         'select_style_tooltip': 'Escolha o design visual dos slides',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': 'Selecionar estilo de diapositiva',
         'select_style_prompt': 'Escolha o estilo geral a aplicar:',
         'style_formal': 'Formal',
@@ -768,9 +772,13 @@ traducciones = {
         'style_free': 'Livre',
         'ok': 'OK',
         'cancel': 'Cancelar',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'Pré-visualização não disponível',
         'preview_error': 'Erro ao carregar pré-visualização',
+        'generate_ai_title': 'Gerar textos com IA',
+        'generate_ai_title_progress_title': 'Gerar textos com IA',
+        'generate_ai_title_progress_label': 'Gerando textos. Por favor, aguarde...',
+        'ai_title_success_message': 'Os textos foram gerados corretamente',
+        'ai_title_success_title': 'Novos textos gerados',
     },
     'it': {
         'auto_open': 'Apri presentazione automaticamente',
@@ -950,8 +958,6 @@ traducciones = {
         'generate_ai_image_label': 'Generazione dell\'immagine. Per favore, attendi...',
         'select_style': 'Seleziona Stile',
         'select_style_tooltip': 'Scegli il design visivo delle diapositive',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': 'Seleziona Stile diapositiva',
         'select_style_prompt': 'Scegli lo stile generale da applicare:',
         'style_formal': 'Formale',
@@ -961,9 +967,13 @@ traducciones = {
         'style_free': 'Libero',
         'ok': 'OK',
         'cancel': 'Annulla',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'Anteprima non disponibile',
         'preview_error': "Errore durante il caricamento dell'anteprima",
+        'generate_ai_title': 'Genera testi con IA',
+        'generate_ai_title_progress_title': 'Genera testi con IA',
+        'generate_ai_title_progress_label': 'Generazione testi. Attendi...',
+        'ai_title_success_message': 'I testi sono stati generati correttamente.',
+        'ai_title_success_title': 'Nuovi testi generati',
     },
     'de': {
         'auto_open': 'Präsentation automatisch öffnen',
@@ -1143,8 +1153,6 @@ traducciones = {
         'generate_ai_image_label': 'Bild wird generiert. Bitte warten...',
         'select_style': 'Stil auswählen',
         'select_style_tooltip': 'Wählen Sie das visuelle Design der Folien',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': 'Stil der Folie auswählen',
         'select_style_prompt': 'Wählen Sie den allgemeinen Stil, den Sie anwenden möchten:',
         'style_formal': 'Formell',
@@ -1154,9 +1162,13 @@ traducciones = {
         'style_free': 'Frei',
         'ok': 'OK',
         'cancel': 'Abbrechen',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'Vorschau nicht verfügbar',
         'preview_error': 'Fehler beim Laden der Vorschau',
+        'generate_ai_title': 'Texte mit KI generieren',
+        'generate_ai_title_progress_title': 'Texte mit KI generieren',
+        'generate_ai_title_progress_label': 'Texte werden generiert. Bitte warten...',
+        'ai_title_success_message': 'Die Texte wurden erfolgreich generiert.',
+        'ai_title_success_title': 'Neue Texte generiert',
     },
     'ru': {
         'auto_open': 'Автоматически открывать презентацию',
@@ -1336,8 +1348,6 @@ traducciones = {
         'generate_ai_image_label': 'Генерация изображения. Пожалуйста, подождите...',
         'select_style': 'Выбрать Стиль',
         'select_style_tooltip': 'Выберите визуальный дизайн слайдов',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': 'Выберите стиль слайда',
         'select_style_prompt': 'Выберите общий стиль для применения:',
         'style_formal': 'Формальный',
@@ -1347,9 +1357,13 @@ traducciones = {
         'style_free': 'Свободный',
         'ok': 'OK',
         'cancel': 'Отмена',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'Предпросмотр недоступен',
         'preview_error': 'Ошибка загрузки предпросмотра',
+        'generate_ai_title': 'Создать тексты с помощью ИИ',
+        'generate_ai_title_progress_title': 'Создать тексты с помощью ИИ',
+        'generate_ai_title_progress_label': 'Создание текстов. Подождите...',
+        'ai_title_success_message': 'Тексты успешно созданы.',
+        'ai_title_success_title': 'Новые тексты созданы',
     },
     'cn': {
         'auto_open': '自动打开演示文稿',
@@ -1529,8 +1543,6 @@ traducciones = {
         'generate_ai_image_label': '生成图像。请等待...',
         'select_style': '选择风格',
         'select_style_tooltip': '选择幻灯片的视觉设计',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': '选择幻灯片风格',
         'select_style_prompt': '选择要应用的一般风格:',
         'style_formal': '正式',
@@ -1540,9 +1552,13 @@ traducciones = {
         'style_free': '自由',
         'ok': '确定',
         'cancel': '取消',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': '预览不可用',
         'preview_error': '加载预览时出错',
+        'generate_ai_title': '使用AI生成文本',
+        'generate_ai_title_progress_title': '使用AI生成文本',
+        'generate_ai_title_progress_label': '正在生成文本。请稍候...',
+        'ai_title_success_message': '文本已成功生成。',
+        'ai_title_success_title': '新文本已生成',
     },
     'jp': {
         'auto_open': '自動的にプレゼンテーションを開く',
@@ -1722,8 +1738,6 @@ traducciones = {
         'generate_ai_image_label': '画像の生成中です。少々お待ちください...',
         'select_style': 'スタイルを選択',
         'select_style_tooltip': 'スライドのビジュアルデザインを選択します',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': 'スライドスタイルを選択',
         'select_style_prompt': '適用する一般的なスタイルを選択します:',
         'style_formal': '正式',
@@ -1733,9 +1747,13 @@ traducciones = {
         'style_free': 'フリー',
         'ok': 'OK',
         'cancel': 'キャンセル',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'プレビューは利用できません',
         'preview_error': 'プレビューの読み込み中にエラーが発生しました',
+        'generate_ai_title': 'AIでテキストを生成',
+        'generate_ai_title_progress_title': 'AIでテキストを生成',
+        'generate_ai_title_progress_label': 'テキストを生成中です。お待ちください...',
+        'ai_title_success_message': 'テキストは正常に生成されました。',
+        'ai_title_success_title': '新しいテキストが生成されました',
     },
     'kr': {
         'auto_open': '프레젠테이션 자동 열기',
@@ -1915,8 +1933,6 @@ traducciones = {
         'generate_ai_image_label': '이미지 생성 중입니다. 잠시만 기다려주세요...',
         'select_style': '스타일 선택',
         'select_style_tooltip': '슬라이드의 시각적 디자인을 선택하세요',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': '슬라이드 스타일 선택',
         'select_style_prompt': '적용할 일반 스타일을 선택하세요:',
         'style_formal': '정식',
@@ -1926,9 +1942,13 @@ traducciones = {
         'style_free': '자유',
         'ok': '확인',
         'cancel': '취소',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': '미리보기를 사용할 수 없습니다',
         'preview_error': '미리보기를 로드하는 중 오류 발생',
+        'generate_ai_title': 'AI로 텍스트 생성',
+        'generate_ai_title_progress_title': 'AI로 텍스트 생성',
+        'generate_ai_title_progress_label': '텍스트 생성 중입니다. 잠시만 기다려주세요...',
+        'ai_title_success_message': '텍스트가 성공적으로 생성되었습니다.',
+        'ai_title_success_title': '새로운 텍스트 생성됨',
     },
     'ar': {
         'auto_open': 'فتح العرض التقديمي تلقائيًا',
@@ -2108,8 +2128,6 @@ traducciones = {
         'generate_ai_image_label': 'يتم إنشاء الصورة. يرجى الإنتظار...',
         'select_style': 'اختيار النمط',
         'select_style_tooltip': 'اختر التصميم المرئي للشرائح',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': 'حدد نمط الشريحة',
         'select_style_prompt': 'حدد النمط العام الذي تريد تطبيقه:',
         'style_formal': 'رسمي',
@@ -2119,9 +2137,13 @@ traducciones = {
         'style_free': 'حر',
         'ok': 'موافق',
         'cancel': 'إلغاء',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'المعاينة غير متوفرة',
         'preview_error': 'خطأ في تحميل المعاينة',
+        'generate_ai_title': 'إنشاء نصوص باستخدام الذكاء الاصطناعي',
+        'generate_ai_title_progress_title': 'إنشاء نصوص باستخدام الذكاء الاصطناعي',
+        'generate_ai_title_progress_label': 'جاري إنشاء النصوص. يرجى الانتظار...',
+        'ai_title_success_message': 'تم إنشاء النصوص بنجاح.',
+        'ai_title_success_title': 'تم إنشاء نصوص جديدة',
     },
     'tl': {
         'auto_open': 'Awtomatikong buksan ang presentasyon',
@@ -2301,8 +2323,6 @@ traducciones = {
         'generate_ai_image_label': 'Gumagawa ng larawan. Maghintay...',
         'select_style': 'Pumili ng Estilo',
         'select_style_tooltip': 'Piliin ang visual na disenyo para sa mga slide',
-
-        # >>> NUEVAS TRADUCCIONES DIÁLOGO ESTILO (Placeholder) <<<
         'select_style_dialog_title': 'Piliin ang slide style',
         'select_style_prompt': 'Pumili ng pangkalahatang estilo upang ilahad:',
         'style_formal': 'Pormal',
@@ -2312,16 +2332,19 @@ traducciones = {
         'style_free': 'Libre',
         'ok': 'Oo',
         'cancel': 'Hindi',
-        # >>> ADD PREVIEW TRANSLATIONS <<<
         'preview_not_available': 'Hindi available ang preview',
         'preview_error': 'Error sa pag-load ng preview',
+        'generate_ai_title': 'Bumuo ng mga teksto gamit ang AI',
+        'generate_ai_title_progress_title': 'Bumuo ng mga teksto gamit ang AI',
+        'generate_ai_title_progress_label': 'Binubuo ang mga teksto. Maghintay...',
+        'ai_title_success_message': 'Matagumpay na nabuo ang mga teksto.',
+        'ai_title_success_title': 'Mga bagong tekstong nabuo',
     }
 }
 
 def obtener_traduccion(clave, idioma='es'):
-    # >>> Añadir 'fr' a la lista de idiomas válidos <<<
     if idioma not in traducciones:
-        idioma = 'es' # Volver a español si el idioma no es válido
+        idioma = 'es'
 
     lang_dict = traducciones.get(idioma, traducciones.get('es', {}))
     translation = lang_dict.get(clave)

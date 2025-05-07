@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QPushButton, QSizePolicy, QApplication, QDialog, QLineEdit, QTextEdit, QFileDialog, QDialogButtonBox, QSpacerItem, QMessageBox, QProgressDialog, QProgressBar
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QPushButton, QSizePolicy, QApplication, QDialog, QLineEdit, QTextEdit, QFileDialog, QDialogButtonBox, QMessageBox, QProgressDialog, QProgressBar
 from PySide6.QtCore import Qt, QSize, QThread, Signal, QObject, QTimer
 from PySide6.QtGui import QPixmap, QFont, QResizeEvent, QIcon
-import os, sys, subprocess, time, re
+import os, sys, subprocess
 from Traducciones import obtener_traduccion
 
 # Intentar importar python-pptx y manejar el error si no está instalado
@@ -244,134 +244,170 @@ class EditSlideDialog(QDialog):
             self.update_navigation_button_state() # Actualiza el estado de los botones
 
     # >>> INICIO: Funciones para generar título con IA (SIN CAMBIOS EN ESTA PARTE) <<<
+    def _find_main_powerpoineator_widget(self):
+        """Función auxiliar para encontrar el widget principal PowerpoineatorWidget."""
+        main_widget = None
+        if not self.parent_widget:
+            return None
+
+        # Estrategia 1: El padre directo es el widget principal
+        if hasattr(self.parent_widget, 'descripcion_text') and \
+           hasattr(self.parent_widget, 'texto_combo') and \
+           hasattr(self.parent_widget, 'num_diapositivas_spin') and \
+           hasattr(self.parent_widget, 'current_language'):
+            main_widget = self.parent_widget
+            return main_widget
+
+        # Estrategia 2: El "abuelo" es el widget principal
+        parent_obj = self.parent_widget.parent()
+        if parent_obj and hasattr(parent_obj, 'descripcion_text') and \
+           hasattr(parent_obj, 'texto_combo') and \
+           hasattr(parent_obj, 'num_diapositivas_spin') and \
+           hasattr(parent_obj, 'current_language'):
+            main_widget = parent_obj
+            return main_widget
+        
+        # Estrategia 3: Ir un nivel más arriba si el abuelo no lo era pero existe un bisabuelo
+        if parent_obj and hasattr(parent_obj, 'parent'):
+            grandparent_obj = parent_obj.parent()
+            if grandparent_obj and hasattr(grandparent_obj, 'descripcion_text') and \
+               hasattr(grandparent_obj, 'texto_combo') and \
+               hasattr(grandparent_obj, 'num_diapositivas_spin') and \
+               hasattr(grandparent_obj, 'current_language'):
+                main_widget = grandparent_obj
+                return main_widget
+
+        # Estrategia 4: Buscar en todos los widgets de nivel superior
+        for widget_app in QApplication.topLevelWidgets():
+            if hasattr(widget_app, 'widget') and widget_app.widget and \
+               hasattr(widget_app.widget, 'descripcion_text') and \
+               hasattr(widget_app.widget, 'texto_combo') and \
+               hasattr(widget_app.widget, 'num_diapositivas_spin') and \
+               hasattr(widget_app.widget, 'current_language'):
+                main_widget = widget_app.widget
+                return main_widget
+        
+        return None # No encontrado o no válido
+
     def generate_new_ai_title(self):
-        # Importar QApplication al principio para evitar UnboundLocalError
         from PySide6.QtWidgets import QApplication, QStyle
         from PySide6.QtCore import Qt
         
-        # Buscar la ventana principal (PowerpoineatorWidget) recorriendo la jerarquía de padres
-        main_powerpoineator_widget = None
+        self.title_progress_dialog = QProgressDialog(
+            obtener_traduccion('generate_ai_title_progress_label', self.current_language),
+            obtener_traduccion('edit_cancel', self.current_language), 0, 0, self
+        )
+        self.title_progress_dialog.setWindowTitle(obtener_traduccion('generate_ai_title_progress_title', self.current_language))
+        self.title_progress_dialog.setWindowModality(Qt.WindowModal)
+        self.title_progress_dialog.setMinimumDuration(0)
+        self.title_progress_dialog.setMinimumWidth(450)
+        self.title_progress_dialog.setAutoClose(False)
+        self.title_progress_dialog.setAutoReset(False)
+
+        title_progress_bar_widget = self.title_progress_dialog.findChild(QProgressBar)
+        if title_progress_bar_widget:
+            title_progress_bar_widget.setMinimumWidth(400)
+            title_progress_bar_widget.setMaximumWidth(420)
+            title_progress_bar_widget.setAlignment(Qt.AlignCenter)
+        else:
+            print("Advertencia: No se pudo encontrar QProgressBar en QProgressDialog para el título.")
+
+        desktop = QApplication.primaryScreen().availableGeometry()
+        dialog_rect = QStyle.alignedRect(Qt.LeftToRight, Qt.AlignCenter, self.title_progress_dialog.size(), desktop)
+        self.title_progress_dialog.setGeometry(dialog_rect)
         
-        # Verificar si tenemos un widget padre válido para comenzar la búsqueda
-        if not self.parent_widget:
-            QMessageBox.warning(self, "Error", "No se puede acceder a la ventana principal para obtener datos.")
-            return
+        self.title_progress_dialog.show()
+        QApplication.processEvents() # Clave para que la UI se actualice y la barra de progreso empiece a animar
         
-        # Intentar obtener la ventana principal con diferentes estrategias
-        if hasattr(self.parent_widget, 'descripcion_text') and \
-           hasattr(self.parent_widget, 'texto_combo') and \
-           hasattr(self.parent_widget, 'num_diapositivas_spin'):
-            # El parent_widget mismo es PowerpoineatorWidget
-            main_powerpoineator_widget = self.parent_widget
-        elif hasattr(self.parent_widget, 'parent'):
-            # Intentar buscar en el nivel superior
-            parent_obj = self.parent_widget.parent()
-            
-            if parent_obj and hasattr(parent_obj, 'descripcion_text') and \
-               hasattr(parent_obj, 'texto_combo') and \
-               hasattr(parent_obj, 'num_diapositivas_spin'):
-                main_powerpoineator_widget = parent_obj
-            else:
-                # Ir un nivel más arriba si existe
-                try:
-                    # En caso de parent_obj sea None, manejo la excepción
-                    if parent_obj and hasattr(parent_obj, 'parent'):
-                        grandparent_obj = parent_obj.parent()
-                        if grandparent_obj and hasattr(grandparent_obj, 'descripcion_text') and \
-                           hasattr(grandparent_obj, 'texto_combo') and \
-                           hasattr(grandparent_obj, 'num_diapositivas_spin'):
-                            main_powerpoineator_widget = grandparent_obj
-                except:
-                    pass
-        
-        # Última oportunidad: buscar a través de QApplication para encontrar la ventana principal
+        slide_idx_for_this_request = self.parent_widget.current_slide_index if hasattr(self.parent_widget, 'current_slide_index') else 0
+
+        # --- Recopilación RÁPIDA de referencias en el hilo principal ---
+        main_powerpoineator_widget = self._find_main_powerpoineator_widget()
+
         if not main_powerpoineator_widget:
-            for widget in QApplication.topLevelWidgets():
-                if hasattr(widget, 'widget') and widget.widget and \
-                   hasattr(widget.widget, 'descripcion_text') and \
-                   hasattr(widget.widget, 'texto_combo') and \
-                   hasattr(widget.widget, 'num_diapositivas_spin'):
-                    main_powerpoineator_widget = widget.widget
-                    break
-
-        # Si aún no encontramos el widget, mostrar error
-        if not main_powerpoineator_widget:
-            QMessageBox.warning(self, "Error", "No se puede acceder a la ventana principal para obtener datos.")
+            self.title_progress_dialog.close()
+            # Usar traducciones existentes o genéricas si las nuevas no están disponibles aún
+            error_title = obtener_traduccion('error', self.current_language)
+            error_msg = obtener_traduccion('ai_title_main_window_access_error', self.current_language) # Buscar una traducción existente adecuada
+            if error_msg == 'ai_title_main_window_access_error': error_msg = "No se puede acceder a la ventana principal para obtener datos."
+            QMessageBox.warning(self, error_title, error_msg)
             return
 
-        # Verificación final de atributos necesarios
-        if not hasattr(main_powerpoineator_widget, 'descripcion_text') or \
-           not hasattr(main_powerpoineator_widget, 'texto_combo') or \
-           not hasattr(main_powerpoineator_widget, 'num_diapositivas_spin') or \
-           not hasattr(main_powerpoineator_widget, 'current_language'):
-            QMessageBox.warning(self, "Error", "No se puede acceder a los componentes necesarios de la ventana principal.")
+        required_attrs = ['descripcion_text', 'texto_combo', 'num_diapositivas_spin', 'current_language']
+        missing_attrs = [attr for attr in required_attrs if not hasattr(main_powerpoineator_widget, attr)]
+        if missing_attrs:
+            self.title_progress_dialog.close()
+            error_title = obtener_traduccion('error', self.current_language)
+            error_msg_format = obtener_traduccion('ai_title_missing_components_error', self.current_language) # Buscar una traducción existente adecuada
+            if error_msg_format == 'ai_title_missing_components_error': error_msg_format = "Faltan componentes necesarios en la ventana principal: {components}"
+            QMessageBox.warning(self, error_title, error_msg_format.format(components=', '.join(missing_attrs)))
             return
-
-        descripcion_original = main_powerpoineator_widget.descripcion_text.toPlainText()
-        modelo_texto = main_powerpoineator_widget.texto_combo.currentText()
-        num_diapositivas_original = main_powerpoineator_widget.num_diapositivas_spin.value()
-        main_window_language = main_powerpoineator_widget.current_language
-
-
-        if not modelo_texto:
-            QMessageBox.warning(self,
-                                obtener_traduccion('ai_title_missing_model_title', self.current_language),
-                                obtener_traduccion('ai_title_missing_model_message', self.current_language))
-            return
-
-        instruccion_idioma = obtener_traduccion('language_instruction', main_window_language)
         
-        full_description_for_ia = descripcion_original
-        if hasattr(main_powerpoineator_widget, 'pdf_cargado') and \
-           main_powerpoineator_widget.pdf_cargado and \
-           os.path.exists(main_powerpoineator_widget.pdf_cargado):
-            try:
-                texto_doc = ""
-                # Asegurarse de que los métodos de extracción de texto existen en main_powerpoineator_widget
-                if hasattr(main_powerpoineator_widget, 'extraer_texto_pdf') and \
-                   hasattr(main_powerpoineator_widget, 'extraer_texto_txt'):
-                    if main_powerpoineator_widget.pdf_cargado.lower().endswith('.pdf'):
-                        texto_doc = main_powerpoineator_widget.extraer_texto_pdf(main_powerpoineator_widget.pdf_cargado)
-                    elif main_powerpoineator_widget.pdf_cargado.lower().endswith('.txt'):
-                        texto_doc = main_powerpoineator_widget.extraer_texto_txt(main_powerpoineator_widget.pdf_cargado)
-                
-                if texto_doc.strip():
-                    full_description_for_ia += f"\n\nContenido del documento para tener en cuenta:\n{texto_doc}"
-            except Exception as e:
-                print(f"Error al procesar el documento para el título AI: {str(e)}")
-
-        final_prompt_descripcion = full_description_for_ia + f" hazlo OBLIGATORIAMENTE en {num_diapositivas_original} claves-valores (diapositivas) y en {instruccion_idioma}, tal que los títulos de la tupla NO superen 4 palabras y del contenido NO superen 69 palabras"
-
         class GenerateTitleSignals(QObject):
-            success = Signal(list) # MODIFICADO: de dict a list
+            success = Signal(list)
             error = Signal(str)
             finished = Signal()
 
         class GenerateTitleWorker(QThread):
-            def __init__(self, descripcion_ia_prompt, modelo_texto_sel):
+            def __init__(self, main_widget_ref, dialog_lang_ref, slide_idx_ref):
                 super().__init__()
-                self.descripcion_ia_prompt = descripcion_ia_prompt
-                self.modelo_texto_sel = modelo_texto_sel
+                self.main_widget = main_widget_ref
+                self.dialog_language = dialog_lang_ref
+                self.slide_idx = slide_idx_ref
                 self.signals = GenerateTitleSignals()
                 self._is_interrupted = False
 
             def run(self):
                 try:
-                    from Logica_diapositivas import obtener_respuesta_ia
+                    descripcion_original = self.main_widget.descripcion_text.toPlainText()
+                    modelo_texto = self.main_widget.texto_combo.currentText()
+                    num_diapositivas_original = self.main_widget.num_diapositivas_spin.value()
+                    main_app_language = self.main_widget.current_language
+
+                    if not modelo_texto:
+                        error_msg = obtener_traduccion('ai_title_missing_model_message', self.dialog_language)
+                        self.signals.error.emit(error_msg)
+                        return
                     
+                    instruccion_idioma = obtener_traduccion('language_instruction', main_app_language)
+                    full_description_for_ia = descripcion_original
+                    
+                    pdf_file_path = getattr(self.main_widget, 'pdf_cargado', None)
+                    if pdf_file_path and os.path.exists(pdf_file_path):
+                        try:
+                            texto_doc = ""
+                            if hasattr(self.main_widget, 'extraer_texto_pdf') and hasattr(self.main_widget, 'extraer_texto_txt'):
+                                if pdf_file_path.lower().endswith('.pdf'):
+                                    texto_doc = self.main_widget.extraer_texto_pdf(pdf_file_path)
+                                elif pdf_file_path.lower().endswith('.txt'):
+                                    texto_doc = self.main_widget.extraer_texto_txt(pdf_file_path)
+                            
+                            if texto_doc.strip():
+                                # Escapar correctamente las nuevas líneas para f-string
+                                full_description_for_ia += f"\n\nContenido del documento para tener en cuenta:\n{texto_doc}"
+                        except Exception as e_doc:
+                            print(f"Error al procesar el documento para el título AI en worker: {str(e_doc)}")
+
+                    final_prompt_descripcion = full_description_for_ia + f" hazlo OBLIGATORIAMENTE en {num_diapositivas_original} claves-valores (diapositivas) y en {instruccion_idioma}, tal que los títulos de la tupla NO superen 4 palabras y del contenido NO superen 69 palabras"
+
                     if self.isInterruptionRequested(): return
 
-                    tupla_respuesta_dict = obtener_respuesta_ia(self.descripcion_ia_prompt, self.modelo_texto_sel, None) # Sigue siendo un dict
+                    from Logica_diapositivas import obtener_respuesta_ia # Importar aquí para evitar problemas de importación cíclica a nivel de módulo
+                    tupla_respuesta_dict = obtener_respuesta_ia(final_prompt_descripcion, modelo_texto, None)
 
                     if self.isInterruptionRequested(): return
 
                     if tupla_respuesta_dict and isinstance(tupla_respuesta_dict, dict):
-                        # MODIFICADO: Convertir dict a lista de items para preservar el orden
                         lista_ordenada_items = list(tupla_respuesta_dict.items())
-                        self.signals.success.emit(lista_ordenada_items) # Emitir lista de tuplas (key, value)
+                        self.signals.success.emit(lista_ordenada_items)
                     else:
-                        error_msg = "La respuesta del modelo no es una tupla válida o está vacía."
+                        error_msg = obtener_traduccion('ai_title_invalid_response', self.dialog_language) # Reutilizar traducción existente
+                        if error_msg == 'ai_title_invalid_response': error_msg = "La respuesta del modelo no tiene un formato válido o está vacía."
                         self.signals.error.emit(error_msg)
+                except ImportError as e_imp:
+                    error_msg = obtener_traduccion('ai_module_import_error', self.dialog_language) # Buscar traducción adecuada
+                    if error_msg == 'ai_module_import_error': error_msg = f"Error de importación en el worker: {e_imp}"
+                    self.signals.error.emit(error_msg)
                 except Exception as e:
                     self.signals.error.emit(str(e))
                 finally:
@@ -381,97 +417,77 @@ class EditSlideDialog(QDialog):
                 self._is_interrupted = True
                 super().requestInterruption()
             
-            def isInterruptionRequested(self): # Sobrescribir para usar nuestro flag
+            def isInterruptionRequested(self):
                 return self._is_interrupted or super().isInterruptionRequested()
 
-
-        self.title_progress_dialog = QProgressDialog(
-            obtener_traduccion('generate_ai_title_progress_label', self.current_language),
-            obtener_traduccion('edit_cancel', self.current_language),
-            0, 0, self
-        )
-        self.title_progress_dialog.setWindowTitle(obtener_traduccion('generate_ai_title_progress_title', self.current_language))
-        self.title_progress_dialog.setWindowModality(Qt.WindowModal)
-        self.title_progress_dialog.setMinimumDuration(0)
-        self.title_progress_dialog.setMinimumWidth(450)
-        self.title_progress_dialog.setAutoClose(False)
-        self.title_progress_dialog.setAutoReset(False)
-        
-        # Centrar dialogo
-        desktop = QApplication.primaryScreen().availableGeometry()
-        dialog_rect = QStyle.alignedRect(Qt.LeftToRight, Qt.AlignCenter, self.title_progress_dialog.size(), desktop)
-        self.title_progress_dialog.setGeometry(dialog_rect)
-        
-        self.title_progress_dialog.show()
-        QApplication.processEvents()
-
-        # Capturar el índice de la diapositiva en el momento de la solicitud
-        slide_idx_for_this_request = self.parent_widget.current_slide_index
-
-        self.title_worker = GenerateTitleWorker(final_prompt_descripcion, modelo_texto)
-        # Pasar el índice capturado a handle_title_success
+        self.title_worker = GenerateTitleWorker(main_powerpoineator_widget, 
+                                                self.current_language,
+                                                slide_idx_for_this_request)
+                                                
         self.title_worker.signals.success.connect(
-            # MODIFICADO: el lambda ahora pasa lista_ordenada_items
             lambda lista_items: self.handle_title_success(lista_items, slide_idx_for_this_request)
         )
-        self.title_worker.signals.error.connect(self.handle_title_error)
+        self.title_worker.signals.error.connect(self.handle_title_error) 
         self.title_worker.signals.finished.connect(self.handle_title_finished)
         self.title_progress_dialog.canceled.connect(self.cancel_title_generation)
+        
         self.title_worker.start()
 
-    def handle_title_success(self, lista_ordenada_items, captured_slide_idx): # MODIFICADO: parámetro y lógica
+    def handle_title_success(self, lista_ordenada_items, captured_slide_idx):
         if hasattr(self, 'title_progress_dialog') and self.title_progress_dialog.isVisible():
             self.title_progress_dialog.close()
         try:
             current_slide_idx = captured_slide_idx
 
             if current_slide_idx < 0:
-                QMessageBox.warning(self, "Error", "Índice de diapositiva no válido.")
+                QMessageBox.warning(self, obtener_traduccion('error', self.current_language), 
+                                    obtener_traduccion('ai_title_invalid_slide_index', self.current_language))
                 return
             
             if not isinstance(lista_ordenada_items, list) or not lista_ordenada_items:
-                 QMessageBox.warning(self, "Error", obtener_traduccion('ai_title_invalid_response', self.current_language))
+                 QMessageBox.warning(self, obtener_traduccion('error', self.current_language),
+                                     obtener_traduccion('ai_title_invalid_response', self.current_language))
                  return
 
-            # MODIFICADO: Extraer títulos (claves) y contenidos (valores) de la lista de items
             if current_slide_idx < len(lista_ordenada_items):
                 nuevo_titulo = lista_ordenada_items[current_slide_idx][0]
                 nuevo_contenido = lista_ordenada_items[current_slide_idx][1]
                 
                 self.title_edit.setText(nuevo_titulo)
-                self.content_edit.setPlainText(nuevo_contenido) # <--- AÑADIDO para actualizar contenido
+                self.content_edit.setPlainText(nuevo_contenido)
                 
                 print(f"INFO: Título actualizado a: {nuevo_titulo}")
                 print(f"INFO: Contenido actualizado a: {nuevo_contenido}")
 
                 QMessageBox.information(self,
-                                        obtener_traduccion('ai_title_success_title', self.current_language), # Podríamos tener un mensaje más específico
-                                        obtener_traduccion('ai_title_success_message', self.current_language)) # Idem
+                                        obtener_traduccion('ai_title_success_title', self.current_language),
+                                        obtener_traduccion('ai_title_success_message', self.current_language))
             else:
                 QMessageBox.warning(self,
                                     obtener_traduccion('ai_title_index_error_title', self.current_language),
                                     obtener_traduccion('ai_title_index_error_message', self.current_language).format(index=current_slide_idx + 1, total=len(lista_ordenada_items)))
         except Exception as e:
-            QMessageBox.critical(self, "Error procesando título y contenido", str(e)) # Mensaje de error más general
+            QMessageBox.critical(self, obtener_traduccion('error', self.current_language),
+                                 f"{obtener_traduccion('ai_title_processing_error', self.current_language)}: {str(e)}")
 
     def handle_title_error(self, error_msg):
-        if hasattr(self, 'title_progress_dialog') and self.title_progress_dialog:
+        if hasattr(self, 'title_progress_dialog') and self.title_progress_dialog and self.title_progress_dialog.isVisible():
             self.title_progress_dialog.close()
         QMessageBox.critical(self,
                              obtener_traduccion('ai_title_error_title', self.current_language),
                              obtener_traduccion('ai_title_error_message', self.current_language).format(error=error_msg))
 
     def handle_title_finished(self):
+        # Asegurarse de que el diálogo se cierre si el worker termina y el diálogo sigue visible
+        # (aunque success y error ya deberían haberlo cerrado)
         if hasattr(self, 'title_progress_dialog') and self.title_progress_dialog and self.title_progress_dialog.isVisible():
              self.title_progress_dialog.close()
         if hasattr(self, 'title_worker') and self.title_worker:
             self.title_worker.deleteLater()
-            # Asegurarse de que la referencia se elimina para evitar problemas si se cancela y se vuelve a intentar
             try:
-                del self.title_worker
+                del self.title_worker 
             except AttributeError:
-                pass
-
+                pass # Puede que ya se haya eliminado si hubo un error rápido o cancelación
 
     def cancel_title_generation(self):
         if hasattr(self, 'title_worker') and self.title_worker and self.title_worker.isRunning():
@@ -896,26 +912,55 @@ class VentanaVistaPrevia(QWidget):
         
         # Inicializar los botones con texto traducido
         # --- MODIFICADO: Usar self.current_language determinado al inicio ---
-        texto_anterior = obtener_traduccion('slide_previous', self.current_language)
-        self.prev_button = QPushButton(f"< {texto_anterior}")
-        # ------------------------------------------------------------------
+        # texto_anterior = obtener_traduccion('slide_previous', self.current_language)
+        # self.prev_button = QPushButton(f"< {texto_anterior}")
+        # # ------------------------------------------------------------------
+        # self.prev_button.setEnabled(False)
+        # self.prev_button.clicked.connect(self.mostrar_diapositiva_anterior)
+        # self.prev_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        # self.prev_button.setFixedHeight(25)  # Altura reducida
+        
+        # --- NUEVO: Botón Anterior con Icono ---
+        self.prev_button = QPushButton()
+        left_icon_path = resource_path("iconos/left.png")
+        if os.path.exists(left_icon_path):
+            self.prev_button.setIcon(QIcon(left_icon_path))
+        else:
+            self.prev_button.setText("<") # Fallback
+        self.prev_button.setIconSize(QSize(32, 32))
+        self.prev_button.setFixedSize(QSize(40, 40))
+        self.prev_button.setToolTip(obtener_traduccion('slide_previous', self.current_language))
+        self.prev_button.setStyleSheet("QPushButton { border: none; background-color: transparent; }")
+        self.prev_button.setCursor(Qt.PointingHandCursor)
         self.prev_button.setEnabled(False)
         self.prev_button.clicked.connect(self.mostrar_diapositiva_anterior)
-        self.prev_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        self.prev_button.setFixedHeight(25)  # Altura reducida
-        
+        # --- FIN NUEVO ---
+
         self.slide_counter_label = QLabel("0/0")
         self.slide_counter_label.setAlignment(Qt.AlignCenter)
         self.slide_counter_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         
-        # --- MODIFICADO: Usar self.current_language determinado al inicio ---
-        texto_siguiente = obtener_traduccion('slide_next', self.current_language)
-        self.next_button = QPushButton(f"{texto_siguiente} >")
-        # ------------------------------------------------------------------
+        # --- NUEVO: Aumentar tamaño de fuente para el contador ---
+        font_contador = QFont()
+        font_contador.setPointSize(17) # Tamaño de fuente más grande
+        self.slide_counter_label.setFont(font_contador)
+        # --- FIN NUEVO ---
+
+        # --- NUEVO: Botón Siguiente con Icono ---
+        self.next_button = QPushButton()
+        right_icon_path = resource_path("iconos/right.png")
+        if os.path.exists(right_icon_path):
+            self.next_button.setIcon(QIcon(right_icon_path))
+        else:
+            self.next_button.setText(">") # Fallback
+        self.next_button.setIconSize(QSize(32, 32))
+        self.next_button.setFixedSize(QSize(40, 40))
+        self.next_button.setToolTip(obtener_traduccion('slide_next', self.current_language))
+        self.next_button.setStyleSheet("QPushButton { border: none; background-color: transparent; }")
+        self.next_button.setCursor(Qt.PointingHandCursor)
         self.next_button.setEnabled(False)
         self.next_button.clicked.connect(self.mostrar_diapositiva_siguiente)
-        self.next_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        self.next_button.setFixedHeight(25)  # Altura reducida
+        # --- FIN NUEVO ---
         
         nav_layout.addWidget(self.prev_button)
         nav_layout.addWidget(self.slide_counter_label)
@@ -1067,25 +1112,51 @@ class VentanaVistaPrevia(QWidget):
             # Verificar si los botones existen antes de actualizarlos
             if hasattr(self, 'prev_button') and self.prev_button is not None:
                 try:
-                    self.prev_button.setText("< " + texto_anterior)
+                    # self.prev_button.setText("< " + texto_anterior) # Ya no se establece texto
+                    self.prev_button.setToolTip(texto_anterior) # Actualizar tooltip
                 except RuntimeError:
-                    # Si el botón ya fue eliminado, recrearlo
-                    self.prev_button = QPushButton("< " + texto_anterior)
-                    self.prev_button.setEnabled(False)
+                    # Si el botón ya fue eliminado, recrearlo con el nuevo estilo
+                    # self.prev_button = QPushButton("< " + texto_anterior)
+                    self.prev_button = QPushButton()
+                    left_icon_path = resource_path("iconos/left.png")
+                    if os.path.exists(left_icon_path):
+                        self.prev_button.setIcon(QIcon(left_icon_path))
+                    else:
+                        self.prev_button.setText("<")
+                    self.prev_button.setIconSize(QSize(32, 32))
+                    self.prev_button.setFixedSize(QSize(40, 40))
+                    self.prev_button.setToolTip(texto_anterior)
+                    self.prev_button.setStyleSheet("QPushButton { border: none; background-color: transparent; }")
+                    self.prev_button.setCursor(Qt.PointingHandCursor)
+                    # El estado de enabled se maneja en actualizar_botones_navegacion,
+                    # pero mantenemos el connect y una configuración inicial segura.
+                    self.prev_button.setEnabled(False) 
                     self.prev_button.clicked.connect(self.mostrar_diapositiva_anterior)
-                    self.prev_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-                    self.prev_button.setFixedHeight(25)
+                    # self.prev_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed) # Ya no es necesario
+                    # self.prev_button.setFixedHeight(25) # Ya no es necesario
                 
             if hasattr(self, 'next_button') and self.next_button is not None:
                 try:
-                    self.next_button.setText(texto_siguiente + " >")
+                    # self.next_button.setText(texto_siguiente + " >") # Ya no se establece texto
+                    self.next_button.setToolTip(texto_siguiente) # Actualizar tooltip
                 except RuntimeError:
-                    # Si el botón ya fue eliminado, recrearlo
-                    self.next_button = QPushButton(texto_siguiente + " >")
+                    # Si el botón ya fue eliminado, recrearlo con el nuevo estilo
+                    # self.next_button = QPushButton(texto_siguiente + " >")
+                    self.next_button = QPushButton()
+                    right_icon_path = resource_path("iconos/right.png")
+                    if os.path.exists(right_icon_path):
+                        self.next_button.setIcon(QIcon(right_icon_path))
+                    else:
+                        self.next_button.setText(">")
+                    self.next_button.setIconSize(QSize(32, 32))
+                    self.next_button.setFixedSize(QSize(40, 40))
+                    self.next_button.setToolTip(texto_siguiente)
+                    self.next_button.setStyleSheet("QPushButton { border: none; background-color: transparent; }")
+                    self.next_button.setCursor(Qt.PointingHandCursor)
                     self.next_button.setEnabled(False)
                     self.next_button.clicked.connect(self.mostrar_diapositiva_siguiente)
-                    self.next_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-                    self.next_button.setFixedHeight(25)
+                    # self.next_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed) # Ya no es necesario
+                    # self.next_button.setFixedHeight(25) # Ya no es necesario
         except Exception as e:
             print(f"Error al actualizar textos de botones: {str(e)}")
     
