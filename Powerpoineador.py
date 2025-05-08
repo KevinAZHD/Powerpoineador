@@ -2297,12 +2297,12 @@ class PowerpoineatorWidget(QWidget):
             self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell [$0.003]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 [$0.05]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast [$0.025]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.0021]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.0015]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana-sprint-1.6b [$0.0015]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker [$0.0069]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid [$0.029]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step [$0.025]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step [$0.048]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker [$0.0070]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid [$0.026]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step [$0.027]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step [$0.020]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step [$0.0014]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/lightweight.png")), 'model3_4 [$0.00098]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/dgmtnzflux.png")), 'dgmtnzflux [$0.03]')
@@ -2851,7 +2851,7 @@ class PowerpoineatorWidget(QWidget):
                                obtener_traduccion('empty_description', current_language))
             return
         
-        if modelo_imagen in ['photomaker [$0.0069]', 'flux-pulid [$0.029]']:
+        if modelo_imagen in ['photomaker [$0.0070]', 'flux-pulid [$0.026]']:
             if not self.imagen_personalizada or not os.path.exists(self.imagen_personalizada):
                 QMessageBox.warning(self, obtener_traduccion('error', current_language), 
                                    obtener_traduccion('image_required', current_language))
@@ -3034,7 +3034,7 @@ class PowerpoineatorWidget(QWidget):
 
     # Función para manejar el cambio en la selección de modelos de imagen
     def on_imagen_combo_changed(self, texto):
-        if texto in ['flux-pulid [$0.029]', 'photomaker [$0.0069]']:
+        if texto in ['flux-pulid [$0.026]', 'photomaker [$0.0070]']:
             self.cargar_imagen_btn.show()
             self.ver_imagen_btn.show()
             self.cargar_imagen_btn.setEnabled(True)
@@ -3129,7 +3129,7 @@ class PowerpoineatorWidget(QWidget):
                         index = self.imagen_combo.findText(imagen_modelo)
                         if index >= 0:
                             self.imagen_combo.setCurrentIndex(index)
-                            if imagen_modelo in ['flux-pulid [$0.029]', 'photomaker [$0.0069]']:
+                            if imagen_modelo in ['flux-pulid [$0.026]', 'photomaker [$0.0070]']:
                                 self.cargar_imagen_btn.show()
                                 self.ver_imagen_btn.show()
                                 self.cargar_imagen_btn.setEnabled(True)

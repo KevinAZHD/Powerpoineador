@@ -73,8 +73,11 @@ class StyleSelectionDialog(QDialog):
         # Initial preview update
         self.update_preview()
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.update_preview()
+
     def update_preview(self):
-        """Updates the preview label based on the selected style."""
         current_item = self.list_widget.currentItem()
         if not current_item:
             self.preview_label.setText(obtener_traduccion('select_style_prompt', self.current_language))

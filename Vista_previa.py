@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QPushButton, QSizePolicy, QApplication, QDialog, QLineEdit, QTextEdit, QFileDialog, QDialogButtonBox, QMessageBox, QProgressDialog, QProgressBar
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QPushButton, QSizePolicy, QApplication, QDialog, QLineEdit, QTextEdit, QFileDialog, QDialogButtonBox, QMessageBox, QProgressDialog, QProgressBar, QFontComboBox, QComboBox, QCheckBox, QGroupBox, QSpinBox
 from PySide6.QtCore import Qt, QSize, QThread, Signal, QObject, QTimer
-from PySide6.QtGui import QPixmap, QFont, QResizeEvent, QIcon
+from PySide6.QtGui import QPixmap, QFont, QResizeEvent, QIcon, QFontDatabase
 import os, sys, subprocess
 from Traducciones import obtener_traduccion
 
@@ -39,7 +39,7 @@ class EditSlideDialog(QDialog):
         self.temp_preview_updated = False
 
         self.setWindowTitle(obtener_traduccion('edit_slide_dialog_title', self.current_language))
-        self.setMinimumWidth(600) # Aumentar ancho mínimo para acomodar botones
+        self.setMinimumWidth(700) # Aumentar ancho mínimo para acomodar más controles
 
         # --- Layout Principal Horizontal --- 
         main_dialog_layout = QHBoxLayout(self) 
@@ -110,6 +110,117 @@ class EditSlideDialog(QDialog):
         self.text_change_timer = QObject()
         self.text_change_timer.timer = None
         
+        # --- NUEVO: Opciones de formato de texto ---
+        # Crear dos grupos de opciones: uno para título y otro para contenido
+        format_layout = QHBoxLayout()
+        
+        # --- Grupo de formato para título ---
+        title_format_group = QGroupBox(obtener_traduccion('title_font_label', self.current_language))
+        title_format_layout = QVBoxLayout(title_format_group)
+        
+        # Fuente del título
+        title_font_layout = QHBoxLayout()
+        title_font_layout.addWidget(QLabel(obtener_traduccion('font_label', self.current_language)))
+        
+        # Usar ComboBox con las mismas fuentes del sistema que PowerpoineatorWidget
+        self.title_font_combo = QComboBox()
+        # Obtener las fuentes del sistema
+        self.system_fonts = QFontDatabase.families()
+        if not self.system_fonts:  # Fallback por si no se encuentran fuentes
+            self.system_fonts = ["Arial", "Calibri", "Times New Roman"]
+            
+        # Agregar las fuentes al combobox
+        for font_name in self.system_fonts:
+            self.title_font_combo.addItem(font_name)
+            index = self.title_font_combo.count() - 1
+            font = QFont(font_name, 10)
+            self.title_font_combo.setItemData(index, font, Qt.FontRole)
+            
+        # Se configurará con el valor actual en load_format_settings
+        self.title_font_combo.currentTextChanged.connect(self.on_title_font_changed)
+        title_font_layout.addWidget(self.title_font_combo)
+        title_format_layout.addLayout(title_font_layout)
+        
+        # Tamaño de fuente del título
+        title_size_layout = QHBoxLayout()
+        title_size_layout.addWidget(QLabel(obtener_traduccion('title_font_size_label', self.current_language)))
+        self.title_size_spin = QSpinBox()
+        self.title_size_spin.setRange(1, 30)  # Mismo rango que en PowerpoineatorWidget
+        # Se configurará con el valor actual en load_format_settings
+        self.title_size_spin.valueChanged.connect(self.on_title_size_changed)
+        title_size_layout.addWidget(self.title_size_spin)
+        title_format_layout.addLayout(title_size_layout)
+        
+        # Checkboxes para estilo de título
+        title_style_layout = QHBoxLayout()
+        self.title_bold_check = QCheckBox(obtener_traduccion('title_bold', self.current_language))
+        self.title_bold_check.toggled.connect(self.on_title_style_changed)
+        title_style_layout.addWidget(self.title_bold_check)
+        
+        self.title_italic_check = QCheckBox(obtener_traduccion('title_italic', self.current_language))
+        self.title_italic_check.toggled.connect(self.on_title_style_changed)
+        title_style_layout.addWidget(self.title_italic_check)
+        
+        self.title_underline_check = QCheckBox(obtener_traduccion('title_underline', self.current_language))
+        self.title_underline_check.toggled.connect(self.on_title_style_changed)
+        title_style_layout.addWidget(self.title_underline_check)
+        
+        title_format_layout.addLayout(title_style_layout)
+        format_layout.addWidget(title_format_group)
+        
+        # --- Grupo de formato para contenido ---
+        content_format_group = QGroupBox(obtener_traduccion('content_font_label', self.current_language))
+        content_format_layout = QVBoxLayout(content_format_group)
+        
+        # Fuente del contenido
+        content_font_layout = QHBoxLayout()
+        content_font_layout.addWidget(QLabel(obtener_traduccion('font_label', self.current_language)))
+        
+        # Usar ComboBox con las mismas fuentes del sistema que PowerpoineatorWidget
+        self.content_font_combo = QComboBox()
+        # Usar las mismas fuentes obtenidas para el título
+        for font_name in self.system_fonts:
+            self.content_font_combo.addItem(font_name)
+            index = self.content_font_combo.count() - 1
+            font = QFont(font_name, 10)
+            self.content_font_combo.setItemData(index, font, Qt.FontRole)
+            
+        # Se configurará con el valor actual en load_format_settings
+        self.content_font_combo.currentTextChanged.connect(self.on_content_font_changed)
+        content_font_layout.addWidget(self.content_font_combo)
+        content_format_layout.addLayout(content_font_layout)
+        
+        # Tamaño de fuente del contenido
+        content_size_layout = QHBoxLayout()
+        content_size_layout.addWidget(QLabel(obtener_traduccion('content_font_size_label', self.current_language)))
+        self.content_size_spin = QSpinBox()
+        self.content_size_spin.setRange(1, 20)  # Mismo rango que en PowerpoineatorWidget
+        # Se configurará con el valor actual en load_format_settings
+        self.content_size_spin.valueChanged.connect(self.on_content_size_changed)
+        content_size_layout.addWidget(self.content_size_spin)
+        content_format_layout.addLayout(content_size_layout)
+        
+        # Checkboxes para estilo de contenido
+        content_style_layout = QHBoxLayout()
+        self.content_bold_check = QCheckBox(obtener_traduccion('content_bold', self.current_language))
+        self.content_bold_check.toggled.connect(self.on_content_style_changed)
+        content_style_layout.addWidget(self.content_bold_check)
+        
+        self.content_italic_check = QCheckBox(obtener_traduccion('content_italic', self.current_language))
+        self.content_italic_check.toggled.connect(self.on_content_style_changed)
+        content_style_layout.addWidget(self.content_italic_check)
+        
+        self.content_underline_check = QCheckBox(obtener_traduccion('content_underline', self.current_language))
+        self.content_underline_check.toggled.connect(self.on_content_style_changed)
+        content_style_layout.addWidget(self.content_underline_check)
+        
+        content_format_layout.addLayout(content_style_layout)
+        format_layout.addWidget(content_format_group)
+        
+        # Añadir el layout de formato al layout principal
+        layout.addLayout(format_layout)
+        # --- FIN NUEVO: Opciones de formato de texto ---
+        
         # Imagen
         image_layout = QHBoxLayout()
         image_label_text = obtener_traduccion('edit_image_label', self.current_language)
@@ -163,9 +274,98 @@ class EditSlideDialog(QDialog):
         main_dialog_layout.addWidget(self.next_slide_button, 0, Qt.AlignVCenter)
 
         # --- Inicialización Final --- 
+        self.load_format_settings() # Cargar configuración de formato primero
         self.load_slide_data() # Cargar datos de la diapositiva inicial
         self.update_navigation_button_state() # Establecer estado inicial de botones
         self.finished.connect(self.on_dialog_finished) # Conexión para restaurar vista previa al cerrar
+
+    # >>> NUEVO: Método para cargar la configuración de formato <<<
+    def load_format_settings(self):
+        if not self.parent_widget or not hasattr(self.parent_widget, 'title_font_name'):
+            return
+            
+        # Guardar una copia de la configuración original en caso de cancelación
+        self.original_format_settings = {
+            'title_font_name': self.parent_widget.title_font_name,
+            'content_font_name': self.parent_widget.content_font_name,
+            'title_font_size': self.parent_widget.title_font_size,
+            'content_font_size': self.parent_widget.content_font_size,
+            'title_bold': self.parent_widget.title_bold,
+            'title_italic': self.parent_widget.title_italic,
+            'title_underline': self.parent_widget.title_underline,
+            'content_bold': self.parent_widget.content_bold,
+            'content_italic': self.parent_widget.content_italic,
+            'content_underline': self.parent_widget.content_underline,
+        }
+        
+        # Configurar controles con los valores actuales
+        # Fuente título
+        title_font_index = self.title_font_combo.findText(self.parent_widget.title_font_name)
+        if title_font_index >= 0:
+            self.title_font_combo.setCurrentIndex(title_font_index)
+        else:
+            # Si no se encuentra la fuente, usar "Calibri" como predeterminado
+            default_font_index = self.title_font_combo.findText("Calibri")
+            if default_font_index >= 0:
+                self.title_font_combo.setCurrentIndex(default_font_index)
+        
+        # Tamaño título
+        self.title_size_spin.setValue(self.parent_widget.title_font_size)
+        
+        # Estilos título
+        self.title_bold_check.setChecked(self.parent_widget.title_bold)
+        self.title_italic_check.setChecked(self.parent_widget.title_italic)
+        self.title_underline_check.setChecked(self.parent_widget.title_underline)
+        
+        # Fuente contenido
+        content_font_index = self.content_font_combo.findText(self.parent_widget.content_font_name)
+        if content_font_index >= 0:
+            self.content_font_combo.setCurrentIndex(content_font_index)
+        else:
+            # Si no se encuentra la fuente, usar "Calibri" como predeterminado
+            default_font_index = self.content_font_combo.findText("Calibri")
+            if default_font_index >= 0:
+                self.content_font_combo.setCurrentIndex(default_font_index)
+        
+        # Tamaño contenido
+        self.content_size_spin.setValue(self.parent_widget.content_font_size)
+        
+        # Estilos contenido
+        self.content_bold_check.setChecked(self.parent_widget.content_bold)
+        self.content_italic_check.setChecked(self.parent_widget.content_italic)
+        self.content_underline_check.setChecked(self.parent_widget.content_underline)
+        
+        # Crear variables para los valores actuales
+        self.current_format_settings = dict(self.original_format_settings)
+
+    # >>> NUEVO: Métodos para manejar cambios en los controles de formato <<<
+    def on_title_font_changed(self, font):
+        self.current_format_settings['title_font_name'] = font
+        self.update_preview_temporarily()
+        
+    def on_title_size_changed(self, value):
+        self.current_format_settings['title_font_size'] = value
+        self.update_preview_temporarily()
+        
+    def on_title_style_changed(self):
+        self.current_format_settings['title_bold'] = self.title_bold_check.isChecked()
+        self.current_format_settings['title_italic'] = self.title_italic_check.isChecked()
+        self.current_format_settings['title_underline'] = self.title_underline_check.isChecked()
+        self.update_preview_temporarily()
+        
+    def on_content_font_changed(self, font):
+        self.current_format_settings['content_font_name'] = font
+        self.update_preview_temporarily()
+        
+    def on_content_size_changed(self, value):
+        self.current_format_settings['content_font_size'] = value
+        self.update_preview_temporarily()
+        
+    def on_content_style_changed(self):
+        self.current_format_settings['content_bold'] = self.content_bold_check.isChecked()
+        self.current_format_settings['content_italic'] = self.content_italic_check.isChecked()
+        self.current_format_settings['content_underline'] = self.content_underline_check.isChecked()
+        self.update_preview_temporarily()
 
     # >>> NUEVO: Cargar datos de la diapositiva actual en los campos <<< 
     def load_slide_data(self):
@@ -760,7 +960,22 @@ class EditSlideDialog(QDialog):
         self.temp_preview_updated = True
         
         # Guardar los datos originales para restaurarlos si se cancela
-        self.original_image_path = self.parent_widget.all_slides_data[self.parent_widget.current_slide_index].get('imagen_path')
+        if not hasattr(self, 'original_image_path'):
+            self.original_image_path = self.parent_widget.all_slides_data[self.parent_widget.current_slide_index].get('imagen_path')
+        
+        # Aplicar los cambios de formato temporalmente
+        self.parent_widget.update_format_settings(
+            self.current_format_settings['title_font_name'],
+            self.current_format_settings['content_font_name'],
+            self.current_format_settings['title_font_size'],
+            self.current_format_settings['content_font_size'],
+            self.current_format_settings['title_bold'],
+            self.current_format_settings['title_italic'],
+            self.current_format_settings['title_underline'],
+            self.current_format_settings['content_bold'],
+            self.current_format_settings['content_italic'],
+            self.current_format_settings['content_underline']
+        )
         
         # Crear datos temporales para la vista previa
         temp_data = {
@@ -783,13 +998,31 @@ class EditSlideDialog(QDialog):
                 # Restaurar imagen original
                 original_data = dict(self.initial_data)  # Crear una copia
                 self.parent_widget.all_slides_data[self.parent_widget.current_slide_index] = original_data
+                
+                # Restaurar configuración de formato original
+                self.parent_widget.update_format_settings(
+                    self.original_format_settings['title_font_name'],
+                    self.original_format_settings['content_font_name'],
+                    self.original_format_settings['title_font_size'],
+                    self.original_format_settings['content_font_size'],
+                    self.original_format_settings['title_bold'],
+                    self.original_format_settings['title_italic'],
+                    self.original_format_settings['title_underline'],
+                    self.original_format_settings['content_bold'],
+                    self.original_format_settings['content_italic'],
+                    self.original_format_settings['content_underline']
+                )
+                
+                # Actualizar la vista previa con los datos originales
                 self.parent_widget.mostrar_diapositiva_actual()
 
     def get_edited_data(self):
+        # Incluir también la configuración de formato en los datos editados
         return {
             'titulo': self.title_edit.text(),
             'contenido': self.content_edit.toPlainText(),
-            'imagen_path': self.new_image_path
+            'imagen_path': self.new_image_path,
+            'format_settings': self.current_format_settings
         }
 
     # --- NUEVA FUNCIÓN para manejar la cancelación ---
@@ -801,6 +1034,28 @@ class EditSlideDialog(QDialog):
         else:
             print("Worker no encontrado o no está corriendo en EditSlideDialog.")
         # El diálogo de progreso se cierra automáticamente al cancelar (no es necesario cerrarlo aquí)
+
+    def accept(self):
+        current_item = self.list_widget.currentItem() if hasattr(self, 'list_widget') else None
+        if current_item:
+            self.selected_layout_index = current_item.data(Qt.UserRole)
+            
+        # Aplicar la configuración de formato a la ventana principal
+        if self.parent_widget:
+            self.parent_widget.update_format_settings(
+                self.current_format_settings['title_font_name'],
+                self.current_format_settings['content_font_name'],
+                self.current_format_settings['title_font_size'],
+                self.current_format_settings['content_font_size'],
+                self.current_format_settings['title_bold'],
+                self.current_format_settings['title_italic'],
+                self.current_format_settings['title_underline'],
+                self.current_format_settings['content_bold'],
+                self.current_format_settings['content_italic'],
+                self.current_format_settings['content_underline']
+            )
+            
+        super().accept()
 # --- Fin Clase EditSlideDialog ---
 
 # Clase para la ventana de vista previa de diapositivas
@@ -1594,6 +1849,26 @@ class VentanaVistaPrevia(QWidget):
 
             slide = prs.slides[slide_index]
 
+            # --- Obtener la configuración de formato actualizada si está disponible ---
+            format_settings = edited_data.get('format_settings')
+            if format_settings:
+                # Actualizar la configuración de formato en la vista previa
+                self.update_format_settings(
+                    format_settings['title_font_name'],
+                    format_settings['content_font_name'],
+                    format_settings['title_font_size'],
+                    format_settings['content_font_size'],
+                    format_settings['title_bold'],
+                    format_settings['title_italic'],
+                    format_settings['title_underline'],
+                    format_settings['content_bold'],
+                    format_settings['content_italic'],
+                    format_settings['content_underline']
+                )
+                print(f"Configuración de formato actualizada: {format_settings}")
+            else:
+                print("No se encontró configuración de formato en los datos editados")
+
             # --- Actualizar Texto ---
             title_shape = None
             content_shape = None
@@ -1669,12 +1944,23 @@ class VentanaVistaPrevia(QWidget):
                     # Apply formatting (uses potentially improved original_color_rgb)
                     for para_idx, para in enumerate(tf.paragraphs):
                         para.alignment = original_alignment
-                        # Apply font properties directly to paragraph first
-                        para.font.name = self.title_font_name
-                        para.font.size = Pt(self.title_font_size)
-                        para.font.bold = self.title_bold
-                        para.font.italic = self.title_italic
-                        para.font.underline = self.title_underline
+                        
+                        # Usar la configuración de formato del editor si está disponible
+                        if format_settings:
+                            # Apply font properties directly to paragraph first
+                            para.font.name = format_settings['title_font_name']
+                            para.font.size = Pt(format_settings['title_font_size'])
+                            para.font.bold = format_settings['title_bold']
+                            para.font.italic = format_settings['title_italic']
+                            para.font.underline = format_settings['title_underline']
+                        else:
+                            # Usar la configuración actual de la vista previa
+                            para.font.name = self.title_font_name
+                            para.font.size = Pt(self.title_font_size)
+                            para.font.bold = self.title_bold
+                            para.font.italic = self.title_italic
+                            para.font.underline = self.title_underline
+                        
                         try:
                             # Apply the detected or default color
                             para.font.color.rgb = original_color_rgb
@@ -1807,24 +2093,23 @@ class VentanaVistaPrevia(QWidget):
 
                         # --- Aplicar Formato a Nivel de Párrafo --- 
                         para.alignment = alignment_to_apply
-                        # Aplicar propiedades de fuente directamente al párrafo
-                        para.font.name = self.content_font_name
-                        para.font.size = Pt(self.content_font_size)
-                        para.font.bold = self.content_bold
-                        para.font.italic = self.content_italic
-                        para.font.underline = self.content_underline
-                        para.font.color.rgb = color_to_apply
-                        # print(f"Contenido Para {para_idx}: Align={alignment_to_apply}, Color={color_to_apply}, Font={para.font.name}, Size={para.font.size}pt")
                         
-                        # --- Ya no se itera sobre runs para aplicar formato base ---
-                        # for run in para.runs:
-                        #     run.font.name = self.content_font_name
-                        #     run.font.size = Pt(self.content_font_size)
-                        #     run.font.bold = self.content_bold
-                        #     run.font.italic = self.content_italic
-                        #     run.font.underline = self.content_underline
-                        #     run.font.color.rgb = color_to_apply
-                        #     # print(f"  Run: Color aplicado {color_to_apply}")
+                        # Usar la configuración de formato del editor si está disponible
+                        if format_settings:
+                            para.font.name = format_settings['content_font_name']
+                            para.font.size = Pt(format_settings['content_font_size'])
+                            para.font.bold = format_settings['content_bold']
+                            para.font.italic = format_settings['content_italic']
+                            para.font.underline = format_settings['content_underline']
+                        else:
+                            # Usar la configuración actual de la vista previa
+                            para.font.name = self.content_font_name
+                            para.font.size = Pt(self.content_font_size)
+                            para.font.bold = self.content_bold
+                            para.font.italic = self.content_italic
+                            para.font.underline = self.content_underline
+                        
+                        para.font.color.rgb = color_to_apply
 
                     # Optional: Adjust text frame shape to fit text?
                     # Considerar si MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT es deseable aquí
