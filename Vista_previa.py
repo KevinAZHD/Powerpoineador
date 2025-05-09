@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QPushButton, QSizePolicy, QApplication, QDialog, QLineEdit, QTextEdit, QFileDialog, QDialogButtonBox, QMessageBox, QProgressDialog, QProgressBar, QFontComboBox, QComboBox, QCheckBox, QGroupBox, QSpinBox
-from PySide6.QtCore import Qt, QSize, QThread, Signal, QObject, QTimer
-from PySide6.QtGui import QPixmap, QFont, QResizeEvent, QIcon, QFontDatabase
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QPushButton, QSizePolicy, QApplication, QDialog, QLineEdit, QTextEdit, QFileDialog, QDialogButtonBox, QMessageBox, QProgressDialog, QProgressBar, QComboBox, QCheckBox, QGroupBox, QSpinBox
+from PySide6.QtCore import Qt, QSize, QThread, Signal, QObject, QTimer, QRect
+from PySide6.QtGui import QPixmap, QFont, QResizeEvent, QIcon, QFontDatabase, QFontMetrics
 import os, sys, subprocess
 from Traducciones import obtener_traduccion
 
@@ -34,9 +34,15 @@ class EditSlideDialog(QDialog):
     def __init__(self, current_data, language, parent=None):
         super().__init__(parent)
         self.current_language = language
-        # self.initial_data = current_data # Guardaremos los datos de la diapositiva actual en su lugar
-        self.parent_widget = parent  # Guardar referencia al widget padre (VentanaVistaPrevia)
+        self.parent_widget = parent # VentanaVistaPrevia
         self.temp_preview_updated = False
+        
+        self.new_image_path = current_data.get('imagen_path') # Inicializar new_image_path con la imagen actual
+        self.initial_data = dict(current_data) # Guardar una copia de los datos iniciales
+
+        # Inicializar current_format_settings y original_format_settings aquí
+        self.current_format_settings = {} 
+        self.original_format_settings = {}
 
         self.setWindowTitle(obtener_traduccion('edit_slide_dialog_title', self.current_language))
         self.setMinimumWidth(700) # Aumentar ancho mínimo para acomodar más controles
@@ -281,62 +287,84 @@ class EditSlideDialog(QDialog):
 
     # >>> NUEVO: Método para cargar la configuración de formato <<<
     def load_format_settings(self):
-        if not self.parent_widget or not hasattr(self.parent_widget, 'title_font_name'):
-            return
-            
-        # Guardar una copia de la configuración original en caso de cancelación
-        self.original_format_settings = {
-            'title_font_name': self.parent_widget.title_font_name,
-            'content_font_name': self.parent_widget.content_font_name,
-            'title_font_size': self.parent_widget.title_font_size,
-            'content_font_size': self.parent_widget.content_font_size,
-            'title_bold': self.parent_widget.title_bold,
-            'title_italic': self.parent_widget.title_italic,
-            'title_underline': self.parent_widget.title_underline,
-            'content_bold': self.parent_widget.content_bold,
-            'content_italic': self.parent_widget.content_italic,
-            'content_underline': self.parent_widget.content_underline,
-        }
-        
-        # Configurar controles con los valores actuales
-        # Fuente título
-        title_font_index = self.title_font_combo.findText(self.parent_widget.title_font_name)
-        if title_font_index >= 0:
-            self.title_font_combo.setCurrentIndex(title_font_index)
+        # Prioridad 1: Usar la configuración específica de la diapositiva si existe y fue guardada
+        slide_specific_format = self.initial_data.get('format_settings')
+
+        if slide_specific_format:
+            # Si la diapositiva tiene su propio formato guardado, usarlo como base para el diálogo
+            self.original_format_settings = dict(slide_specific_format)
+            print(f"Diálogo: Cargando formato específico de la diapositiva: {self.original_format_settings}")
+        elif self.parent_widget and hasattr(self.parent_widget, 'title_font_name'):
+            # Prioridad 2: Si no hay formato específico, usar el formato global de VentanaVistaPrevia
+            self.original_format_settings = {
+                'title_font_name': self.parent_widget.title_font_name,
+                'content_font_name': self.parent_widget.content_font_name,
+                'title_font_size': self.parent_widget.title_font_size,
+                'content_font_size': self.parent_widget.content_font_size,
+                'title_bold': self.parent_widget.title_bold,
+                'title_italic': self.parent_widget.title_italic,
+                'title_underline': self.parent_widget.title_underline,
+                'content_bold': self.parent_widget.content_bold,
+                'content_italic': self.parent_widget.content_italic,
+                'content_underline': self.parent_widget.content_underline,
+            }
+            print(f"Diálogo: Cargando formato global de VentanaVistaPrevia: {self.original_format_settings}")
         else:
-            # Si no se encuentra la fuente, usar "Calibri" como predeterminado
-            default_font_index = self.title_font_combo.findText("Calibri")
-            if default_font_index >= 0:
-                self.title_font_combo.setCurrentIndex(default_font_index)
-        
-        # Tamaño título
-        self.title_size_spin.setValue(self.parent_widget.title_font_size)
-        
-        # Estilos título
-        self.title_bold_check.setChecked(self.parent_widget.title_bold)
-        self.title_italic_check.setChecked(self.parent_widget.title_italic)
-        self.title_underline_check.setChecked(self.parent_widget.title_underline)
-        
-        # Fuente contenido
-        content_font_index = self.content_font_combo.findText(self.parent_widget.content_font_name)
-        if content_font_index >= 0:
-            self.content_font_combo.setCurrentIndex(content_font_index)
-        else:
-            # Si no se encuentra la fuente, usar "Calibri" como predeterminado
-            default_font_index = self.content_font_combo.findText("Calibri")
-            if default_font_index >= 0:
-                self.content_font_combo.setCurrentIndex(default_font_index)
-        
-        # Tamaño contenido
-        self.content_size_spin.setValue(self.parent_widget.content_font_size)
-        
-        # Estilos contenido
-        self.content_bold_check.setChecked(self.parent_widget.content_bold)
-        self.content_italic_check.setChecked(self.parent_widget.content_italic)
-        self.content_underline_check.setChecked(self.parent_widget.content_underline)
-        
-        # Crear variables para los valores actuales
+            # Prioridad 3: Fallback a valores predeterminados si no hay nada más
+            print("Advertencia: Faltan atributos de formato en parent_widget. Usando predeterminados para el diálogo.")
+            default_font = "Calibri"
+            default_title_size = 24
+            default_content_size = 12
+            self.original_format_settings = {
+                'title_font_name': default_font, 'content_font_name': default_font,
+                'title_font_size': default_title_size, 'content_font_size': default_content_size,
+                'title_bold': False, 'title_italic': False, 'title_underline': False,
+                'content_bold': False, 'content_italic': False, 'content_underline': False,
+            }
+
+        # current_format_settings siempre empieza como una copia de original_format_settings al cargar el diálogo o la diapositiva
         self.current_format_settings = dict(self.original_format_settings)
+        
+        # Configurar controles con los valores actuales (de current_format_settings)
+        # (Bloquear señales temporalmente para evitar llamadas a update_preview_temporarily)
+        self.title_font_combo.blockSignals(True)
+        self.title_size_spin.blockSignals(True)
+        self.title_bold_check.blockSignals(True)
+        self.title_italic_check.blockSignals(True)
+        self.title_underline_check.blockSignals(True)
+        self.content_font_combo.blockSignals(True)
+        self.content_size_spin.blockSignals(True)
+        self.content_bold_check.blockSignals(True)
+        self.content_italic_check.blockSignals(True)
+        self.content_underline_check.blockSignals(True)
+
+        title_font_index = self.title_font_combo.findText(self.current_format_settings['title_font_name'])
+        self.title_font_combo.setCurrentIndex(title_font_index if title_font_index >=0 else self.title_font_combo.findText("Calibri"))
+        
+        self.title_size_spin.setValue(self.current_format_settings['title_font_size'])
+        self.title_bold_check.setChecked(self.current_format_settings['title_bold'])
+        self.title_italic_check.setChecked(self.current_format_settings['title_italic'])
+        self.title_underline_check.setChecked(self.current_format_settings['title_underline'])
+        
+        content_font_index = self.content_font_combo.findText(self.current_format_settings['content_font_name'])
+        self.content_font_combo.setCurrentIndex(content_font_index if content_font_index >=0 else self.content_font_combo.findText("Calibri"))
+
+        self.content_size_spin.setValue(self.current_format_settings['content_font_size'])
+        self.content_bold_check.setChecked(self.current_format_settings['content_bold'])
+        self.content_italic_check.setChecked(self.current_format_settings['content_italic'])
+        self.content_underline_check.setChecked(self.current_format_settings['content_underline'])
+        
+        # Reactivar señales
+        self.title_font_combo.blockSignals(False)
+        self.title_size_spin.blockSignals(False)
+        self.title_bold_check.blockSignals(False)
+        self.title_italic_check.blockSignals(False)
+        self.title_underline_check.blockSignals(False)
+        self.content_font_combo.blockSignals(False)
+        self.content_size_spin.blockSignals(False)
+        self.content_bold_check.blockSignals(False)
+        self.content_italic_check.blockSignals(False)
+        self.content_underline_check.blockSignals(False)
 
     # >>> NUEVO: Métodos para manejar cambios en los controles de formato <<<
     def on_title_font_changed(self, font):
@@ -376,24 +404,25 @@ class EditSlideDialog(QDialog):
         if 0 <= current_index < len(self.parent_widget.all_slides_data):
             slide_data = self.parent_widget.all_slides_data[current_index]
             
-            # Guardar datos actuales como 'initial_data' para poder restaurar si se cancela
             self.initial_data = dict(slide_data) 
+            self.new_image_path = self.initial_data.get('imagen_path') # Asegurar que new_image_path se actualiza
             
-            # Actualizar campos de edición
-            self.title_edit.setText(slide_data.get('titulo', ''))
-            self.content_edit.setPlainText(slide_data.get('contenido', ''))
-            self.new_image_path = slide_data.get('imagen_path') # Actualizar ruta interna
+            self.title_edit.setText(self.initial_data.get('titulo', ''))
+            self.content_edit.setPlainText(self.initial_data.get('contenido', ''))
             self.current_image_label.setText(os.path.basename(self.new_image_path) if self.new_image_path else "N/A")
             
-            # Resetear el flag de vista previa temporal
+            # Cargar la configuración de formato específica de esta diapositiva (o la global si no tiene)
+            self.load_format_settings() # <--- Llamar aquí para cargar el formato de la diapositiva actual
+
             self.temp_preview_updated = False 
         else:
-            # Manejar caso de índice inválido (aunque no debería ocurrir si la navegación está bien)
             self.title_edit.clear()
             self.content_edit.clear()
             self.new_image_path = None
             self.current_image_label.setText("N/A")
             self.initial_data = {}
+            # Incluso si no hay datos, cargar un formato predeterminado
+            self.load_format_settings() # <--- Llamar aquí también para estado vacío
 
     # >>> NUEVO: Actualizar estado de los botones de navegación <<< 
     def update_navigation_button_state(self):
@@ -414,16 +443,17 @@ class EditSlideDialog(QDialog):
             return
         current_index = self.parent_widget.current_slide_index
         if current_index > 0:
-            # IMPORTANTE: Restaurar la vista previa original ANTES de navegar
-            # si hubo cambios temporales en la diapositiva actual
             if self.temp_preview_updated:
+                 # Restaurar datos de la diapositiva que se deja
                  self.parent_widget.all_slides_data[current_index] = dict(self.initial_data)
-                 self.parent_widget.mostrar_diapositiva_actual() # Mostrar la original restaurada brevemente
-                 QApplication.processEvents() # Procesar eventos para que se vea el cambio
+                 # Restaurar el formato global de VentanaVistaPrevia al que tenía ANTES de editar ESTA diapositiva
+                 self.parent_widget.update_format_settings(**self.original_format_settings) 
+                 self.parent_widget.mostrar_diapositiva_actual() # Mostrar brevemente restaurada
+                 QApplication.processEvents()
 
-            self.parent_widget.mostrar_diapositiva_anterior() # Navega en el widget padre
-            self.load_slide_data() # Carga los datos de la nueva diapositiva en el diálogo
-            self.update_navigation_button_state() # Actualiza el estado de los botones
+            self.parent_widget.mostrar_diapositiva_anterior()
+            self.load_slide_data() # Esto cargará los datos Y el formato de la nueva diapositiva
+            self.update_navigation_button_state()
 
     # >>> NUEVO: Navegar a la diapositiva siguiente <<< 
     def navigate_next_slide(self):
@@ -433,15 +463,15 @@ class EditSlideDialog(QDialog):
         current_index = self.parent_widget.current_slide_index
         total_slides = len(self.parent_widget.all_slides_data)
         if current_index < total_slides - 1:
-            # IMPORTANTE: Restaurar la vista previa original ANTES de navegar
             if self.temp_preview_updated:
                  self.parent_widget.all_slides_data[current_index] = dict(self.initial_data)
+                 self.parent_widget.update_format_settings(**self.original_format_settings)
                  self.parent_widget.mostrar_diapositiva_actual()
                  QApplication.processEvents()
 
-            self.parent_widget.mostrar_diapositiva_siguiente() # Navega en el widget padre
-            self.load_slide_data() # Carga los datos de la nueva diapositiva en el diálogo
-            self.update_navigation_button_state() # Actualiza el estado de los botones
+            self.parent_widget.mostrar_diapositiva_siguiente() 
+            self.load_slide_data() # Esto cargará los datos Y el formato de la nueva diapositiva
+            self.update_navigation_button_state()
 
     # >>> INICIO: Funciones para generar título con IA (SIN CAMBIOS EN ESTA PARTE) <<<
     def _find_main_powerpoineator_widget(self):
@@ -956,14 +986,20 @@ class EditSlideDialog(QDialog):
         if not self.parent_widget or not isinstance(self.parent_widget, VentanaVistaPrevia):
             return
             
-        # Marcar que se ha actualizado la vista previa temporalmente
         self.temp_preview_updated = True
         
-        # Guardar los datos originales para restaurarlos si se cancela
-        if not hasattr(self, 'original_image_path'):
-            self.original_image_path = self.parent_widget.all_slides_data[self.parent_widget.current_slide_index].get('imagen_path')
+        # Guardar los datos originales de la diapositiva actual (solo la imagen si es lo único que cambia aquí)
+        # self.original_image_path se maneja en browse_new_image y generación IA
         
-        # Aplicar los cambios de formato temporalmente
+        # Aplicar los cambios de formato (current_format_settings del diálogo) TEMPORALMENTE a VentanaVistaPrevia
+        # para que la vista previa refleje estos cambios.
+        # Guardamos el estado global de VentanaVistaPrevia para poder restaurarlo.
+        # Esto se hace en load_format_settings y se guarda en self.original_format_settings del diálogo.
+        
+        # Clonamos original_format_settings para no modificarlo por referencia
+        temp_parent_original_format = dict(self.original_format_settings)
+        
+        # Aplicamos los cambios actuales del diálogo a la VentanaVistaPrevia para la vista previa
         self.parent_widget.update_format_settings(
             self.current_format_settings['title_font_name'],
             self.current_format_settings['content_font_name'],
@@ -977,44 +1013,51 @@ class EditSlideDialog(QDialog):
             self.current_format_settings['content_underline']
         )
         
-        # Crear datos temporales para la vista previa
-        temp_data = {
-            'imagen_path': self.new_image_path,
+        # Crear datos temporales para la diapositiva actual (título, contenido, imagen)
+        temp_slide_data = {
+            'imagen_path': self.new_image_path, # self.new_image_path se actualiza en browse_new_image o IA
             'titulo': self.title_edit.text(),
-            'contenido': self.content_edit.toPlainText()
+            'contenido': self.content_edit.toPlainText(),
+            # No guardamos format_settings aquí, porque la vista previa ya usa el formato global
+            # de VentanaVistaPrevia, que acabamos de actualizar temporalmente.
+            'format_settings': self.current_format_settings  # Incluir la configuración específica de formato
         }
         
-        # Guardar temporalmente los nuevos datos
-        self.parent_widget.all_slides_data[self.parent_widget.current_slide_index] = temp_data
+        # Guardar temporalmente los nuevos datos de la diapositiva
+        current_slide_idx = self.parent_widget.current_slide_index
+        self.parent_widget.all_slides_data[current_slide_idx] = temp_slide_data
         
         # Actualizar la vista previa
         self.parent_widget.mostrar_diapositiva_actual()
         
+        # Ya no es necesario restaurar el formato global porque ahora cada diapositiva usa su propio formato
+        # self.parent_widget.update_format_settings(**temp_parent_original_format)
+        
     def on_dialog_finished(self, result):
         """Manejar el cierre del diálogo, restaurando vista previa si es necesario"""
-        if result == QDialog.Rejected and self.temp_preview_updated:
-            # Si se canceló y se había actualizado la vista previa, restaurar los datos originales
-            if self.parent_widget and isinstance(self.parent_widget, VentanaVistaPrevia):
-                # Restaurar imagen original
-                original_data = dict(self.initial_data)  # Crear una copia
-                self.parent_widget.all_slides_data[self.parent_widget.current_slide_index] = original_data
+        if self.parent_widget and isinstance(self.parent_widget, VentanaVistaPrevia):
+            if result == QDialog.Rejected and self.temp_preview_updated:
+                # Si se canceló y hubo cambios temporales, restaurar datos y formato original de la diapositiva
+                current_slide_idx = self.parent_widget.current_slide_index
+                self.parent_widget.all_slides_data[current_slide_idx] = dict(self.initial_data)
                 
-                # Restaurar configuración de formato original
-                self.parent_widget.update_format_settings(
-                    self.original_format_settings['title_font_name'],
-                    self.original_format_settings['content_font_name'],
-                    self.original_format_settings['title_font_size'],
-                    self.original_format_settings['content_font_size'],
-                    self.original_format_settings['title_bold'],
-                    self.original_format_settings['title_italic'],
-                    self.original_format_settings['title_underline'],
-                    self.original_format_settings['content_bold'],
-                    self.original_format_settings['content_italic'],
-                    self.original_format_settings['content_underline']
-                )
+                # Restaurar la configuración de formato global de VentanaVistaPrevia a como estaba
+                # ANTES de que se abriera este diálogo de edición para esta diapositiva.
+                # self.original_format_settings del diálogo guarda ese estado.
+                self.parent_widget.update_format_settings(**self.original_format_settings)
                 
-                # Actualizar la vista previa con los datos originales
                 self.parent_widget.mostrar_diapositiva_actual()
+            elif result == QDialog.Accepted:
+                # Si se aceptó, la configuración de formato actual del diálogo (current_format_settings)
+                # se convertirá en la configuración específica de esta diapositiva.
+                # Y también se aplicará como la nueva configuración global de VentanaVistaPrevia.
+                current_slide_idx = self.parent_widget.current_slide_index
+                edited_data = self.get_edited_data() # Esto ya incluye format_settings
+                self.parent_widget.all_slides_data[current_slide_idx] = edited_data
+                
+                # Aplicar la configuración de formato del diálogo a VentanaVistaPrevia como la nueva global
+                self.parent_widget.update_format_settings(**self.current_format_settings)
+                self.parent_widget.mostrar_diapositiva_actual() # Refrescar para mostrar con el formato final
 
     def get_edited_data(self):
         # Incluir también la configuración de formato en los datos editados
@@ -1036,25 +1079,8 @@ class EditSlideDialog(QDialog):
         # El diálogo de progreso se cierra automáticamente al cancelar (no es necesario cerrarlo aquí)
 
     def accept(self):
-        current_item = self.list_widget.currentItem() if hasattr(self, 'list_widget') else None
-        if current_item:
-            self.selected_layout_index = current_item.data(Qt.UserRole)
-            
-        # Aplicar la configuración de formato a la ventana principal
-        if self.parent_widget:
-            self.parent_widget.update_format_settings(
-                self.current_format_settings['title_font_name'],
-                self.current_format_settings['content_font_name'],
-                self.current_format_settings['title_font_size'],
-                self.current_format_settings['content_font_size'],
-                self.current_format_settings['title_bold'],
-                self.current_format_settings['title_italic'],
-                self.current_format_settings['title_underline'],
-                self.current_format_settings['content_bold'],
-                self.current_format_settings['content_italic'],
-                self.current_format_settings['content_underline']
-            )
-            
+        # Ya no se llama a list_widget aquí, se asume que este método es solo para QDialogButtonBox.Save
+        # La lógica de actualizar VentanaVistaPrevia con current_format_settings se mueve a on_dialog_finished
         super().accept()
 # --- Fin Clase EditSlideDialog ---
 
@@ -1262,6 +1288,7 @@ class VentanaVistaPrevia(QWidget):
         self.content_italic = content_italic
         self.content_underline = content_underline
         print("Configuración de formato de VistaPrevia actualizada.") # Debug
+        # Nota: Ya no actualizamos la diapositiva automáticamente aquí
     # -------------------------------------------------------------
 
     # --- Nueva función para establecer la ruta del PPTX ---
@@ -1467,13 +1494,29 @@ class VentanaVistaPrevia(QWidget):
             # Obtener datos de la diapositiva actual
             datos = self.all_slides_data[self.current_slide_index]
             
+            # Obtener la configuración de formato específica de esta diapositiva si existe
+            # Si no existe, usar la configuración global actual
+            format_settings = datos.get('format_settings', {})
+            
+            # Usar formato específico de la diapositiva o la configuración global como fallback
+            title_font_name = format_settings.get('title_font_name', self.title_font_name)
+            content_font_name = format_settings.get('content_font_name', self.content_font_name)
+            title_font_size = format_settings.get('title_font_size', self.title_font_size)
+            content_font_size = format_settings.get('content_font_size', self.content_font_size)
+            title_bold = format_settings.get('title_bold', self.title_bold)
+            title_italic = format_settings.get('title_italic', self.title_italic)
+            title_underline = format_settings.get('title_underline', self.title_underline)
+            content_bold = format_settings.get('content_bold', self.content_bold)
+            content_italic = format_settings.get('content_italic', self.content_italic)
+            content_underline = format_settings.get('content_underline', self.content_underline)
+            
             # Crear frame para la diapositiva
             slide_frame = QFrame()
-            slide_frame.setFrameStyle(QFrame.Box)
+            # slide_frame.setFrameStyle(QFrame.Box) # Opcional: quitar si no se desea borde
             slide_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             slide_layout = QVBoxLayout()
-            slide_layout.setSpacing(8)
-            slide_layout.setContentsMargins(8, 8, 8, 8)
+            slide_layout.setSpacing(8) # Mantener espaciado actual o ajustar
+            slide_layout.setContentsMargins(8, 8, 8, 8) # Mantener márgenes actuales o ajustar
             
             # --- Layout Superior (Título y Botones) ---
             top_layout = QHBoxLayout()
@@ -1485,127 +1528,145 @@ class VentanaVistaPrevia(QWidget):
             icon_path_open = resource_path("iconos/open.png")
             if os.path.exists(icon_path_open):
                 self.open_button.setIcon(QIcon(icon_path_open))
-                self.open_button.setIconSize(QSize(24, 24))
-                self.open_button.setFixedSize(QSize(32, 32))
+                self.open_button.setIconSize(QSize(32, 32))
+                self.open_button.setFixedSize(QSize(40, 40))
             else:
                 self.open_button.setText("O") # Texto fallback si no hay icono
-                self.open_button.setFixedSize(QSize(32, 32))
+                self.open_button.setFixedSize(QSize(40, 40))
                 
-            # Usar el idioma actual para el tooltip
             open_tooltip = obtener_traduccion('open_slide', self.current_language)
             self.open_button.setToolTip(open_tooltip if open_tooltip != 'open_slide' else "Abrir diapositiva")
             self.open_button.setStyleSheet("QPushButton { border: none; background-color: transparent; padding: 2px; }")
             self.open_button.setCursor(Qt.PointingHandCursor)
             self.open_button.clicked.connect(self.abrir_presentacion)
-            # Deshabilitar si no hay ruta PPTX
             self.open_button.setEnabled(self.pptx_path is not None)
             
             titulo_label = QLabel(datos['titulo'])
             titulo_label.setAlignment(Qt.AlignCenter)
             titulo_label.setWordWrap(True)
-            # --- MODIFICADO: Usar config + cálculo dinámico responsivo ---
-            # Calcular tamaño dinámico basado en ancho disponible
-            available_width_title = self.scroll.width() - 80 # Ancho disponible (menos botón y márgenes)
-            dynamic_title_size = max(10, int(available_width_title / 50)) # Tamaño basado en ancho, mínimo 10
-            # Usar el menor entre el tamaño configurado y el dinámico calculado
-            final_title_size = min(self.title_font_size, dynamic_title_size)
             
-            title_font = QFont(self.title_font_name, final_title_size) # Usar tamaño final
-            title_font.setBold(self.title_bold)
-            title_font.setItalic(self.title_italic)
-            title_font.setUnderline(self.title_underline)
-            titulo_label.setFont(title_font)
-            # ----------------------------------------------------------
+            final_title_size = title_font_size 
+            title_font_obj = QFont(title_font_name, final_title_size)
+            title_font_obj.setBold(title_bold)
+            title_font_obj.setItalic(title_italic)
+            title_font_obj.setUnderline(title_underline)
+            titulo_label.setFont(title_font_obj)
             
-            # Crear Botón Editar
             self.edit_button = QPushButton()
             icon_path = resource_path("iconos/editar.png")
             if os.path.exists(icon_path):
                 self.edit_button.setIcon(QIcon(icon_path))
-                self.edit_button.setIconSize(QSize(24, 24))
-                self.edit_button.setFixedSize(QSize(32, 32))
+                self.edit_button.setIconSize(QSize(32, 32))
+                self.edit_button.setFixedSize(QSize(40, 40))
             else:
-                self.edit_button.setText("E") # Texto fallback si no hay icono
-                self.edit_button.setFixedSize(QSize(32, 32))
+                self.edit_button.setText("E") 
+                self.edit_button.setFixedSize(QSize(40, 40))
                 
-            # Usar el idioma actual para el tooltip
             edit_tooltip = obtener_traduccion('edit_slide', self.current_language)
             self.edit_button.setToolTip(edit_tooltip if edit_tooltip != 'edit_slide' else "Editar diapositiva")
             self.edit_button.setStyleSheet("QPushButton { border: none; background-color: transparent; padding: 2px; }")
             self.edit_button.setCursor(Qt.PointingHandCursor)
             self.edit_button.clicked.connect(self.editar_diapositiva_actual)
-            # Deshabilitar si python-pptx no está disponible o no hay ruta PPTX
             self.edit_button.setEnabled(PPTX_AVAILABLE and self.pptx_path is not None) 
             
-            # Añadir botones y título al layout superior
             top_layout.addWidget(self.open_button, 0, Qt.AlignLeft | Qt.AlignTop)
-            top_layout.addWidget(titulo_label, 1) # Título toma el espacio extra
+            top_layout.addWidget(titulo_label, 1) 
             top_layout.addWidget(self.edit_button, 0, Qt.AlignRight | Qt.AlignTop)
             
-            slide_layout.addLayout(top_layout)
-            # --- Fin Layout Superior ---
+            # --- Contenido (crear y calcular su altura necesaria ANTES de la imagen) ---
+            contenido_label = QLabel()
+            contenido_label.setTextFormat(Qt.PlainText) 
+            contenido_label.setText(datos['contenido']) 
+            contenido_label.setAlignment(Qt.AlignLeft) # o Qt.AlignJustify
+            contenido_label.setWordWrap(True)
             
-            # Calcular tamaños responsivos basados en el tamaño disponible
-            available_width = self.scroll.width() - 30  # Reducir márgenes para dar más espacio
-            available_height = self.scroll.height() - 100  # Reducir espacio reservado para texto y botón
+            final_content_size = content_font_size
+            content_font_obj = QFont(content_font_name, final_content_size)
+            content_font_obj.setBold(content_bold)
+            content_font_obj.setItalic(content_italic)
+            content_font_obj.setUnderline(content_underline)
+            contenido_label.setFont(content_font_obj)
+
+            # Calcular el ancho efectivo para el texto (título y contenido)
+            # Esta es la anchura disponible DENTRO de slide_layout para sus hijos.
+            effective_text_width = (self.scroll.viewport().width() -
+                                   (self.contenedor_layout.contentsMargins().left() + self.contenedor_layout.contentsMargins().right()) -
+                                   (slide_frame.contentsMargins().left() + slide_frame.contentsMargins().right()) -
+                                   (slide_layout.contentsMargins().left() + slide_layout.contentsMargins().right()) -
+                                   20) # Buffer adicional (e.g., para posible scrollbar si el cálculo no es perfecto)
+            if effective_text_width <= 20: # Fallback si el cálculo da un ancho muy pequeño
+                effective_text_width = int(self.scroll.viewport().width() * 0.85)
+
+
+            # Calcular la altura necesaria para el contenido_label:
+            fm_content = QFontMetrics(content_font_obj)
+            # boundingRect para calcular la altura del texto con word wrap.
+            text_rect_content = fm_content.boundingRect(QRect(0, 0, int(effective_text_width), 9999),
+                                                       int(Qt.TextWordWrap | Qt.AlignLeft), datos['contenido'])
+            needed_content_height = text_rect_content.height() + fm_content.leading() // 2 # Pequeño buffer (ej. medio interlineado)
+            min_content_height = fm_content.height() # Altura mínima de una línea
+            needed_content_height = max(needed_content_height, min_content_height)
+            contenido_label.setMaximumHeight(needed_content_height) # FIJAR SU ALTURA MÁXIMA
+
+            # Estimar altura del top_layout (título + botones)
+            fm_title = QFontMetrics(title_font_obj)
+            title_rect = fm_title.boundingRect(QRect(0, 0, int(effective_text_width), 9999),
+                                              int(Qt.TextWordWrap | Qt.AlignCenter), datos['titulo'])
+            estimated_title_text_height = title_rect.height()
             
-            # Agregar imagen con mayor prioridad
+            button_height_estimate = self.edit_button.sizeHint().height() # Usar sizeHint del botón
+            if button_height_estimate <=0: button_height_estimate = 32 # Fallback
+            
+            top_layout_height_estimate = (max(estimated_title_text_height, button_height_estimate) +
+                                          top_layout.contentsMargins().top() + top_layout.contentsMargins().bottom())
+
+
+            # Calcular altura disponible para la imagen
+            scroll_viewport_h = self.scroll.viewport().height()
+
+            # Márgenes verticales totales desde el viewport hasta el interior de slide_layout
+            total_v_margins_around_slide_layout_children = (
+                self.contenedor_layout.contentsMargins().top() + self.contenedor_layout.contentsMargins().bottom() +
+                slide_frame.contentsMargins().top() + slide_frame.contentsMargins().bottom() +
+                slide_layout.contentsMargins().top() + slide_layout.contentsMargins().bottom()
+            )
+            
+            # Espaciados dentro del slide_layout (entre top_layout, imagen, contenido)
+            num_gaps_in_slide_layout = 2 
+            slide_layout_total_spacing = slide_layout.spacing() * num_gaps_in_slide_layout
+
+            total_fixed_height_plus_margins_spacing = (top_layout_height_estimate + needed_content_height +
+                                                       total_v_margins_around_slide_layout_children +
+                                                       slide_layout_total_spacing)
+
+            available_height_for_image = scroll_viewport_h - total_fixed_height_plus_margins_spacing
+            min_image_render_height = 30 # Mínimo absoluto en píxeles para que la imagen no desaparezca
+            available_height_for_image = max(available_height_for_image, min_image_render_height)
+
+            # --- Imagen (crear y escalar) ---
             imagen_label = QLabel()
-            imagen_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            imagen_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding) # Importante
             imagen_label.setAlignment(Qt.AlignCenter)
-            
-            # Cargar y escalar la imagen de forma responsiva con mayores proporciones
+
             pixmap = QPixmap(datos['imagen_path'])
-            if not pixmap.isNull(): # Comprobar si la imagen se cargó correctamente
-                max_img_width = int(available_width * 0.95)  # Aumentar ancho al 95%
-                max_img_height = int(available_height * 0.85)  # Aumentar altura al 85%
-                
-                # Verificar que la imagen no sea demasiado pequeña
-                min_width = 400
-                if max_img_width < min_width and available_width >= min_width:
-                    max_img_width = min_width
+            if not pixmap.isNull():
+                # Usar effective_text_width para el ancho máximo de la imagen, ya que es el ancho disponible.
+                max_img_width_px = int(effective_text_width)
                 
                 scaled_pixmap = pixmap.scaled(
-                    max_img_width, 
-                    max_img_height,
-                    Qt.KeepAspectRatio, 
+                    max_img_width_px,
+                    int(available_height_for_image), # Usar la altura calculada
+                    Qt.KeepAspectRatio,
                     Qt.SmoothTransformation
                 )
                 imagen_label.setPixmap(scaled_pixmap)
             else:
                  imagen_label.setText(f"Error al cargar: {os.path.basename(datos['imagen_path'])}")
                  imagen_label.setStyleSheet("color: red;")
-                 
-            imagen_label.setMinimumHeight(int(available_height * 0.6))  # Garantizar altura mínima
             
-            # Dar más espacio a la imagen (factor 3 en vez de 1)
-            slide_layout.addWidget(imagen_label, 3)
-            
-            # Agregar contenido con menos espacio
-            contenido_label = QLabel()
-            # --- NUEVO: Forzar texto plano para evitar interpretación HTML ---
-            contenido_label.setTextFormat(Qt.PlainText) 
-            # -------------------------------------------------------------
-            contenido_label.setText(datos['contenido']) # Establecer el texto DESPUÉS de fijar el formato
-            contenido_label.setAlignment(Qt.AlignLeft)
-            contenido_label.setWordWrap(True)
-            contenido_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-            
-            # --- MODIFICADO: Usar config + cálculo dinámico responsivo ---
-             # Calcular tamaño dinámico basado en ancho disponible
-            available_width_content = self.scroll.width() - 40 # Ancho disponible (menos márgenes)
-            dynamic_content_size = max(8, int(available_width_content / 70)) # Tamaño basado en ancho, mínimo 8
-            # Usar el menor entre el tamaño configurado y el dinámico calculado
-            final_content_size = min(self.content_font_size, dynamic_content_size)
-
-            content_font = QFont(self.content_font_name, final_content_size) # Usar tamaño final
-            content_font.setBold(self.content_bold)
-            content_font.setItalic(self.content_italic)
-            content_font.setUnderline(self.content_underline)
-            contenido_label.setFont(content_font)
-            # ---------------------------------------------------------------
-            contenido_label.setMaximumHeight(int(available_height * 0.25))  # Limitar altura máxima
-            
+            # --- Añadir al layout en orden ---
+            slide_layout.addLayout(top_layout)
+            slide_layout.addWidget(imagen_label) 
             slide_layout.addWidget(contenido_label)
             
             slide_frame.setLayout(slide_layout)
@@ -1618,10 +1679,12 @@ class VentanaVistaPrevia(QWidget):
             if self.current_slide_index == len(self.all_slides_data) - 1:
                 self.modo_navegacion = False
             
-            # Asegurar que la diapositiva sea visible
-            self.contenedor.adjustSize()
+            # Asegurar que la diapositiva sea visible y se ajuste
+            self.contenedor.adjustSize() # Puede ayudar a que el layout se recalcule
         except Exception as e:
             print(f"Error en mostrar_diapositiva_actual: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
     # Función para limpiar el contenedor de diapositivas
     def limpiar_contenedor(self):
@@ -2458,10 +2521,26 @@ class VentanaVistaPrevia(QWidget):
     def agregar_diapositiva(self, imagen_path, titulo, contenido):
         # Guardar datos de la diapositiva
         if os.path.exists(imagen_path):
+            # Crear configuración de formato específica para esta diapositiva
+            # utilizando la configuración global actual
+            format_settings = {
+                'title_font_name': self.title_font_name,
+                'content_font_name': self.content_font_name,
+                'title_font_size': self.title_font_size,
+                'content_font_size': self.content_font_size,
+                'title_bold': self.title_bold,
+                'title_italic': self.title_italic,
+                'title_underline': self.title_underline,
+                'content_bold': self.content_bold,
+                'content_italic': self.content_italic,
+                'content_underline': self.content_underline
+            }
+            
             self.all_slides_data.append({
                 'imagen_path': imagen_path,
                 'titulo': titulo,
-                'contenido': contenido
+                'contenido': contenido,
+                'format_settings': format_settings  # Incluir configuración de formato específica
             })
             
             # Solo actualizar a la última si no estamos en modo navegación
