@@ -22,9 +22,10 @@ class StyleSelectionDialog(QDialog):
         self.setWindowIcon(QIcon(resource_path("iconos/icon.png")))
 
         self.style_options = {
+            obtener_traduccion('style_random', self.current_language): 0,
             obtener_traduccion('style_formal', self.current_language): 1,
-            #obtener_traduccion('style_visual', self.current_language): 8,
-            #obtener_traduccion('style_comparison', self.current_language): 3,
+            obtener_traduccion('style_visual', self.current_language): 8,
+            obtener_traduccion('style_comparison', self.current_language): 3,
             obtener_traduccion('style_minimalist', self.current_language): 5,
             obtener_traduccion('style_free', self.current_language): 6,
         }

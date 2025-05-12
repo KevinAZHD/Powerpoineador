@@ -194,6 +194,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'Generando textos. Espere...',
         'ai_title_success_message': 'Los textos se han generado correctamente',
         'ai_title_success_title': 'Textos nuevos generados',
+        'style_random': 'Aleatorio',
     },
     'en': {
         'auto_open': 'Automatically open presentation',
@@ -389,6 +390,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'Generating texts. Please wait...',
         'ai_title_success_message': 'The texts have been generated correctly',
         'ai_title_success_title': 'New texts generated',
+        'style_random': 'Random',
     },
     'fr': {
         'auto_open': 'Ouvrir automatiquement la présentation',
@@ -584,6 +586,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'Génération des textes. Veuillez patienter...',
         'ai_title_success_message': 'Les textes ont été générés correctement.',
         'ai_title_success_title': 'Nouveaux textes générés',
+        'style_random': 'Aléatoire',
     },
     'pt': {
         'auto_open': 'Abrir apresentação automaticamente',
@@ -779,6 +782,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'Gerando textos. Por favor, aguarde...',
         'ai_title_success_message': 'Os textos foram gerados corretamente',
         'ai_title_success_title': 'Novos textos gerados',
+        'style_random': 'Aleatório',
     },
     'it': {
         'auto_open': 'Apri presentazione automaticamente',
@@ -974,6 +978,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'Generazione testi. Attendi...',
         'ai_title_success_message': 'I testi sono stati generati correttamente.',
         'ai_title_success_title': 'Nuovi testi generati',
+        'style_random': 'Casuale',
     },
     'de': {
         'auto_open': 'Präsentation automatisch öffnen',
@@ -1169,6 +1174,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'Texte werden generiert. Bitte warten...',
         'ai_title_success_message': 'Die Texte wurden erfolgreich generiert.',
         'ai_title_success_title': 'Neue Texte generiert',
+        'style_random': 'Zufällig',
     },
     'ru': {
         'auto_open': 'Автоматически открывать презентацию',
@@ -1364,6 +1370,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'Создание текстов. Подождите...',
         'ai_title_success_message': 'Тексты успешно созданы.',
         'ai_title_success_title': 'Новые тексты созданы',
+        'style_random': 'Случайный',
     },
     'cn': {
         'auto_open': '自动打开演示文稿',
@@ -1559,6 +1566,7 @@ traducciones = {
         'generate_ai_title_progress_label': '正在生成文本。请稍候...',
         'ai_title_success_message': '文本已成功生成。',
         'ai_title_success_title': '新文本已生成',
+        'style_random': '随机',
     },
     'jp': {
         'auto_open': '自動的にプレゼンテーションを開く',
@@ -1754,6 +1762,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'テキストを生成中です。お待ちください...',
         'ai_title_success_message': 'テキストは正常に生成されました。',
         'ai_title_success_title': '新しいテキストが生成されました',
+        'style_random': 'ランダム',
     },
     'kr': {
         'auto_open': '프레젠테이션 자동 열기',
@@ -1949,6 +1958,7 @@ traducciones = {
         'generate_ai_title_progress_label': '텍스트 생성 중입니다. 잠시만 기다려주세요...',
         'ai_title_success_message': '텍스트가 성공적으로 생성되었습니다.',
         'ai_title_success_title': '새로운 텍스트 생성됨',
+        'style_random': '랜덤',
     },
     'ar': {
         'auto_open': 'فتح العرض التقديمي تلقائيًا',
@@ -2144,6 +2154,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'جاري إنشاء النصوص. يرجى الانتظار...',
         'ai_title_success_message': 'تم إنشاء النصوص بنجاح.',
         'ai_title_success_title': 'تم إنشاء نصوص جديدة',
+        'style_random': 'عشوائي',
     },
     'tl': {
         'auto_open': 'Awtomatikong buksan ang presentasyon',
@@ -2339,6 +2350,7 @@ traducciones = {
         'generate_ai_title_progress_label': 'Binubuo ang mga teksto. Maghintay...',
         'ai_title_success_message': 'Matagumpay na nabuo ang mga teksto.',
         'ai_title_success_title': 'Mga bagong tekstong nabuo',
+        'style_random': 'Random',
     }
 }
 

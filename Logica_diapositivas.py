@@ -339,9 +339,12 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
         log_message(obtener_traduccion('aplicando_disenos', current_language))
         # Crear una lista con los diseños disponibles
         designs = list(range(1, 10))
-        # LÓGICA DE ALEATORIZACIÓN MODIFICADA
-        if disenos_aleatorios:
+        # Modificar la lógica de diseños
+        if selected_layout_index == 0:  # Aleatorio
             random.shuffle(designs)
+            disenos_aleatorios = True
+        else:
+            disenos_aleatorios = False
         # Iterar sobre las secciones del contenido
         for i, (section, content) in enumerate(sections.items()):
             try:
@@ -377,7 +380,19 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
                     slide_designs.design9(presentation.slides, section, content, imagenes_generadas[i])
                 elif selected_layout_index == 1: # Formal (fijo)
                     slide_designs.design8(presentation.slides, section, content, imagenes_generadas[i])
-                else: # Si no es aleatorio y no es 1 ni 5, usar el índice seleccionado (que debería ser 6 u otro futuro)
+                elif selected_layout_index == 8: # Visual (fijo)
+                    # Alternar entre design1 y design2 para crear un diseño visual dinámico
+                    if i % 2 == 0:
+                        slide_designs.design1(presentation.slides, section, content, imagenes_generadas[i])
+                    else:
+                        slide_designs.design2(presentation.slides, section, content, imagenes_generadas[i])
+                elif selected_layout_index == 3: # Comparacion (fijo)
+                    # Alternar entre design5 y design6 para crear un estilo de comparación
+                    if i % 2 == 0:
+                        slide_designs.design5(presentation.slides, section, content, imagenes_generadas[i])
+                    else:
+                        slide_designs.design6(presentation.slides, section, content, imagenes_generadas[i])
+                else: # Si no es aleatorio y no es 1, 5, 8 ni 3, usar el índice seleccionado (que debería ser 6 u otro futuro)
                       # Como fallback o si se selecciona explícitamente "Libre", aplicamos la secuencia *fija*
                     design_index = (i - 1) % len(designs) # Usar la lista *ordenada*
                     design = designs[design_index]

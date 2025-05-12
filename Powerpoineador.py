@@ -984,12 +984,6 @@ class MainWindow(QMainWindow):
             if hasattr(self.widget, 'content_underline_checkbox'):
                  self.widget.content_underline_checkbox.setEnabled(False)
                  self.widget.content_underline_checkbox.setChecked(False)
-                 
-            # Deshabilitar checkbox de diseños aleatorios y botón de selección de estilo
-            if hasattr(self.widget, 'disenos_aleatorios_checkbox'):
-                self.widget.disenos_aleatorios_checkbox.setEnabled(False)
-            if hasattr(self.widget, 'select_style_btn'):
-                self.widget.select_style_btn.setEnabled(False)
 
             # Limpiar la vista previa y resetearla
             if hasattr(self.widget, 'vista_previa') and self.widget.vista_previa:
@@ -1048,6 +1042,10 @@ class MainWindow(QMainWindow):
             
             self.widget.cargar_imagen_btn.hide()
             self.widget.ver_imagen_btn.hide()
+
+            # >>> AÑADIR Deshabilitar botón de selección de estilo <<<
+            if hasattr(self.widget, 'select_style_btn'):
+                self.widget.select_style_btn.setEnabled(False)
     
     # Función para habilitar la funcionalidad de la aplicación
     def enable_functionality(self):
@@ -1199,16 +1197,10 @@ class MainWindow(QMainWindow):
                  self.widget.content_italic_checkbox.setEnabled(True)
             if hasattr(self.widget, 'content_underline_checkbox'):
                  self.widget.content_underline_checkbox.setEnabled(True)
-                 
-            # Habilitar checkbox de diseños aleatorios
-            if hasattr(self.widget, 'disenos_aleatorios_checkbox'):
-                self.widget.disenos_aleatorios_checkbox.setEnabled(True)
-                
-            # Actualizar visibilidad y estado del botón de selección de estilo
+
+            # >>> AÑADIR Habilitar botón de selección de estilo <<<
             if hasattr(self.widget, 'select_style_btn'):
                 self.widget.select_style_btn.setEnabled(True)
-                if hasattr(self.widget, 'toggle_style_button_visibility'):
-                    self.widget.toggle_style_button_visibility() # Esto configura la visibilidad según checkbox
 
     # Función para manejar el evento de cierre de la ventana
     def closeEvent(self, event):
@@ -1810,7 +1802,6 @@ class PowerpoineatorWidget(QWidget):
         self.load_content_font_selection()
         self.load_font_sizes()
         self.load_format_settings()
-        self.load_disenos_aleatorios_state()
         self.load_selected_style() # Importante: cargar índice de estilo antes de actualizar la etiqueta
         self.update_style_label() # Actualizar la etiqueta con el estilo seleccionado
         # --- MODIFICADO: Eliminar esta línea, ya se estableció con initial_language ---
@@ -1884,9 +1875,6 @@ class PowerpoineatorWidget(QWidget):
                     self.vista_previa.actualizar_idioma(idioma)
                 except Exception as e:
                     print(f"Error al actualizar vista previa: {str(e)}")
-            
-            # Diseños aleatorios checkbox
-            self.disenos_aleatorios_checkbox.setText(obtener_traduccion('disenos_aleatorios', idioma))
             
             # Auto open checkbox
             self.auto_open_checkbox.setText(obtener_traduccion('auto_open', idioma))
@@ -2100,15 +2088,15 @@ class PowerpoineatorWidget(QWidget):
         self.auto_open_checkbox.stateChanged.connect(self.save_auto_open_state)
         self.contador_checkbox_layout.addWidget(self.auto_open_checkbox)
         
-        # Añadir checkbox para diseños aleatorios o lineales
-        self.disenos_aleatorios_checkbox = QCheckBox(obtener_traduccion('disenos_aleatorios', current_language))
-        self.disenos_aleatorios_checkbox.setChecked(True)
-        self.disenos_aleatorios_checkbox.stateChanged.connect(self.save_disenos_aleatorios_state)
-        self.disenos_aleatorios_checkbox.stateChanged.connect(self.toggle_style_button_visibility)
-        self.contador_checkbox_layout.addWidget(self.disenos_aleatorios_checkbox)
+        # >>> ELIMINAR EL CHECKBOX DE DISEÑOS ALEATORIOS <<<
+        # self.disenos_aleatorios_checkbox = QCheckBox(obtener_traduccion('disenos_aleatorios', current_language))
+        # self.disenos_aleatorios_checkbox.setChecked(True)
+        # self.disenos_aleatorios_checkbox.stateChanged.connect(self.save_disenos_aleatorios_state)
+        # self.disenos_aleatorios_checkbox.stateChanged.connect(self.toggle_style_button_visibility)
+        # self.contador_checkbox_layout.addWidget(self.disenos_aleatorios_checkbox)
         
-        # >>> AÑADIR BOTÓN SELECCIONAR ESTILO (con traducción) <<<
-        self.select_style_btn = QPushButton(obtener_traduccion('select_style', current_language)) # Revertido a traducción
+        # >>> MODIFICAR EL BOTÓN DE SELECCIÓN DE ESTILO (siempre visible) <<<
+        self.select_style_btn = QPushButton(obtener_traduccion('select_style', current_language))
         self.select_style_btn.setToolTip(obtener_traduccion('select_style_tooltip', current_language))
         self.select_style_btn.clicked.connect(self.select_slide_style)
         self.contador_checkbox_layout.addWidget(self.select_style_btn)
@@ -2324,9 +2312,8 @@ class PowerpoineatorWidget(QWidget):
         self.load_auto_open_state()
         self.load_num_diapositivas()
         self.load_format_settings()  # Cargar configuraciones de formato
-        self.load_disenos_aleatorios_state()  # Cargar configuración de diseños aleatorios
-        self.load_pdf_path()
-        self.load_log_visibility_state()
+        self.load_selected_style() 
+        self.update_style_label()
         # Actualizar contador
         self.actualizar_contador()
         
@@ -2638,9 +2625,6 @@ class PowerpoineatorWidget(QWidget):
         self.content_italic_checkbox.setEnabled(False)
         self.content_underline_checkbox.setEnabled(False)
         
-        # Deshabilitar checkbox de diseños aleatorios
-        self.disenos_aleatorios_checkbox.setEnabled(False)
-        
         # Deshabilitar botón de selección de estilo
         self.select_style_btn.setEnabled(False)
 
@@ -2765,9 +2749,6 @@ class PowerpoineatorWidget(QWidget):
         self.content_bold_checkbox.setEnabled(True)
         self.content_italic_checkbox.setEnabled(True)
         self.content_underline_checkbox.setEnabled(True)
-        
-        # Habilitar checkbox de diseños aleatorios
-        self.disenos_aleatorios_checkbox.setEnabled(True)
 
         # Habilitar botón de selección de estilo
         self.select_style_btn.setEnabled(True)
@@ -2915,7 +2896,6 @@ class PowerpoineatorWidget(QWidget):
             idioma = current_language  # Usar la variable current_language en lugar de self.parent().current_language
             instruccion_idioma = obtener_traduccion('language_instruction', idioma)
             selected_layout_index = self.selected_layout_index # <-- Obtener el índice seleccionado
-            usa_disenos_aleatorios = self.disenos_aleatorios_checkbox.isChecked() # Obtener estado del checkbox
 
             self.worker = GenerationWorker(
                 modelo_texto,
@@ -2935,7 +2915,6 @@ class PowerpoineatorWidget(QWidget):
                 content_bold, # Pasar opción de negrita para contenido
                 content_italic, # Pasar opción de cursiva para contenido
                 content_underline, # Pasar opción de subrayado para contenido
-                usa_disenos_aleatorios, # Pasar el estado del checkbox
                 selected_layout_index=selected_layout_index # Pasar el índice seleccionado (se usará si aleatorio es False)
             )
             self.worker.start()
@@ -3742,44 +3721,6 @@ class PowerpoineatorWidget(QWidget):
         except Exception as e:
             print(f"Error al cargar las configuraciones de formato: {str(e)}")
 
-    def save_disenos_aleatorios_state(self):
-        try:
-            config = {}
-            if os.path.exists(CONFIG_FILE):
-                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-            
-            config['disenos_aleatorios'] = self.disenos_aleatorios_checkbox.isChecked()
-            
-            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-                json.dump(config, f, ensure_ascii=False, indent=4)
-                
-            # Actualizar la visibilidad del botón de estilo
-            self.toggle_style_button_visibility()
-        except Exception as e:
-            print(f"Error al guardar el estado de diseños aleatorios: {str(e)}")
-
-    def load_disenos_aleatorios_state(self):
-        try:
-            checked_state = True # Default a True
-            if os.path.exists(CONFIG_FILE):
-                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    # Obtener el estado guardado, si no existe, usar True
-                    checked_state = config.get('disenos_aleatorios', True)
-
-            self.disenos_aleatorios_checkbox.setChecked(checked_state)
-
-            # >>> LLAMAR A LA FUNCIÓN PARA AJUSTAR VISIBILIDAD INICIAL <<<
-            self.toggle_style_button_visibility()
-            # -----------------------------------------------------------
-
-        except Exception as e:
-            print(f"Error al cargar el estado de diseños aleatorios: {str(e)}")
-            # Aplicar estado por defecto y actualizar visibilidad en caso de error
-            self.disenos_aleatorios_checkbox.setChecked(True)
-            self.toggle_style_button_visibility()
-
     # >>> NUEVA FUNCIÓN PLACEHOLDER <<<
     def select_slide_style(self):
         # --- MODIFICADO: Implementar lógica del diálogo ---
@@ -3828,19 +3769,12 @@ class PowerpoineatorWidget(QWidget):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
                     # Obtener el índice guardado, usar 1 (Formal) si no existe
-                    self.selected_layout_index = config.get('selected_layout_index', 1)
+                    self.selected_layout_index = config.get('selected_layout_index', 0)
             else:
                 self.selected_layout_index = 1 # Default si no existe config.json
         except Exception as e:
             print(f"Error al cargar el índice de estilo seleccionado: {str(e)}")
             self.selected_layout_index = 1 # Default en caso de error
-
-    # >>> AÑADIR NUEVA FUNCIÓN <<<
-    def toggle_style_button_visibility(self):
-        """Muestra u oculta el botón 'Seleccionar estilo' según el estado del checkbox."""
-        is_random = self.disenos_aleatorios_checkbox.isChecked()
-        self.select_style_btn.setVisible(not is_random)
-        self.current_style_label.setVisible(not is_random)
 
     # >>> AÑADIR NUEVA FUNCIÓN PARA ACTUALIZAR LA ETIQUETA <<<
     def update_style_label(self):
@@ -3848,11 +3782,12 @@ class PowerpoineatorWidget(QWidget):
         try:
             # Mapeo de índices de estilo a nombres traducidos
             style_names = {
+                0: obtener_traduccion('style_random', self.current_language),  # <-- AÑADIR ESTA LÍNEA
                 1: obtener_traduccion('style_formal', self.current_language),
                 5: obtener_traduccion('style_minimalist', self.current_language),
                 6: obtener_traduccion('style_free', self.current_language),
-                # 3: obtener_traduccion('style_comparison', self.current_language),
-                # 8: obtener_traduccion('style_visual', self.current_language),
+                3: obtener_traduccion('style_comparison', self.current_language),
+                8: obtener_traduccion('style_visual', self.current_language),
             }
             
             # Obtener el nombre del estilo según el índice seleccionado
