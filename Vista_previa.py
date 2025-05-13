@@ -2204,83 +2204,90 @@ class VentanaVistaPrevia(QWidget):
             if background_image_shape:
                 # Es un diseño especial con imagen de fondo (design3, design4 o design7)
                 print(f"Detectado diseño especial con imagen de fondo")
+
+                # --- Definir función auxiliar para detectar texto blanco ---
+                def text_is_white(shape_obj_local):
+                    if not shape_obj_local or not shape_obj_local.has_text_frame:
+                        return False
+                    text_frame = shape_obj_local.text_frame
+                    for para in text_frame.paragraphs:
+                        # Verificar color a nivel de párrafo
+                        try:
+                            if hasattr(para.font.color, 'type') and para.font.color.type == MSO_COLOR_TYPE.RGB:
+                                if para.font.color.rgb == RGBColor(255, 255, 255):
+                                    return True # Encontrado a nivel de párrafo
+                        except AttributeError:
+                            pass # Seguir a runs
+
+                        # Verificar color a nivel de runs
+                        if para.runs:
+                            for run_idx, run in enumerate(para.runs): # Iterar todos los runs
+                                try:
+                                    if hasattr(run.font.color, 'type') and run.font.color.type == MSO_COLOR_TYPE.RGB:
+                                        if run.font.color.rgb == RGBColor(255, 255, 255):
+                                            return True # Encontrado a nivel de run
+                                except AttributeError:
+                                    pass # Siguiente run
+                    return False # No se encontró texto blanco
+
+                # --- Determinar is_design7 de forma más robusta ---
+                is_design7 = False
+                if title_shape and content_shape: # Asegurarse que las shapes de título y contenido existen
+                    if text_is_white(title_shape) and text_is_white(content_shape):
+                        is_design7 = True
+                        print("INFO: 'is_design7' establecido a True (texto blanco en título y contenido).")
                 
                 # Solo reemplazar si la imagen cambió y existe
                 if os.path.exists(new_image_path) and new_image_path != original_image_path:
                     print(f"La ruta de la imagen de fondo cambió a: {new_image_path}. Reemplazando...")
                     
                     # Obtener posición y tamaño de la imagen original
-                    left, top = Inches(0), Inches(0)  # Siempre posición 0,0 para fondos
+                    left_img_bg, top_img_bg = Inches(0), Inches(0)  # Siempre posición 0,0 para fondos
                     # Obtener las dimensiones de la presentación actual
-                    width = prs.slide_width
-                    height = prs.slide_height
+                    width_img_bg = prs.slide_width
+                    height_img_bg = prs.slide_height
                     
                     # Para design7, procesar oscurecimiento de la imagen antes de reemplazar
                     if slide_index >= 0 and slide_index < len(self.all_slides_data):
-                        # Verificar si necesitamos procesar la imagen (design7)
-                        # El diseño 7 usa imágenes procesadas oscurecidas
-                        from PIL import Image, ImageEnhance
                         try:
-                            # Solo para design7 (detectamos por la transparencia y color del contenido)
-                            is_design7 = False
-                            for shape in slide.shapes:
-                                if shape.has_text_frame and shape.text_frame.paragraphs:
-                                    for para in shape.text_frame.paragraphs:
-                                        if para.runs and hasattr(para.runs[0].font.color, 'type'):
-                                            if para.runs[0].font.color.type == MSO_COLOR_TYPE.RGB:
-                                                color = para.runs[0].font.color.rgb
-                                                # Design7 usa texto blanco
-                                                if color.r == 255 and color.g == 255 and color.b == 255:
-                                                    is_design7 = True
-                                                    break
-                            
-                            if is_design7:
-                                print("Diseño 7 detectado: procesando imagen oscurecida...")
+                            if is_design7: # Usar la variable is_design7 determinada por la nueva lógica
+                                print("Diseño 7 detectado (para oscurecer imagen): procesando imagen oscurecida...")
                                 # Mismo procesamiento que en design7
-                                APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
-                                IMAGES_DIR = os.path.join(APP_DATA_DIR, 'images')
-                                if not os.path.exists(IMAGES_DIR):
-                                    os.makedirs(IMAGES_DIR, exist_ok=True)
-                                image = Image.open(new_image_path)
-                                enhancer = ImageEnhance.Brightness(image)
+                                APP_DATA_DIR_IMG = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
+                                IMAGES_DIR_IMG = os.path.join(APP_DATA_DIR_IMG, 'images')
+                                if not os.path.exists(IMAGES_DIR_IMG):
+                                    os.makedirs(IMAGES_DIR_IMG, exist_ok=True)
+                                from PIL import Image, ImageEnhance # Asegurar importación local si es necesario
+                                image_pil = Image.open(new_image_path)
+                                enhancer = ImageEnhance.Brightness(image_pil)
                                 image_darker = enhancer.enhance(0.5)
-                                darker_path = os.path.join(IMAGES_DIR, 'Slide_darker.jpg')
+                                darker_path = os.path.join(IMAGES_DIR_IMG, 'Slide_darker_edited.jpg') # Nombre diferente para evitar conflictos
                                 image_darker.save(darker_path)
                                 # Usar la imagen oscurecida en su lugar
                                 new_image_path = darker_path
-                        except Exception as e:
-                            print(f"Error al procesar imagen oscurecida: {e}")
+                        except Exception as e_img_proc:
+                            print(f"Error al procesar imagen oscurecida para design7: {e_img_proc}")
                     
                     # ---- MÉTODO MEJORADO: Crear una nueva diapositiva con el mismo diseño y contenido ----
                     try:
                         # 1. Primero, crear una copia de seguridad del contenido de texto
-                        title_text = ""
-                        content_text = ""
-                        title_shape = None
-                        content_shape = None
-                        
-                        # Buscar el título y contenido actuales
-                        for shape in slide.shapes:
-                            if shape.has_text_frame:
-                                text = shape.text_frame.text.strip()
-                                if not title_shape and text == original_data.get('titulo', '').strip():
-                                    title_shape = shape
-                                    title_text = text
-                                elif not content_shape and text == original_data.get('contenido', '').strip():
-                                    content_shape = shape
-                                    content_text = text
+                        # title_text = "" # No se usa directamente
+                        # content_text = "" # No se usa directamente
+                        # title_shape y content_shape ya están definidos y buscados antes
                         
                         # 2. Verificar qué diseño estamos usando por marcadores específicos
-                        design_number = 3  # Por defecto asumimos design3
+                        design_number = 3 # Por defecto, si no es design7 y no es claramente design4, asumimos design3
                         
-                        if is_design7:
+                        if is_design7: # Usar la variable is_design7 robusta
                             design_number = 7
                         elif title_shape and content_shape:
-                            # Verificar si es design4 (cuadro a la izquierda)
-                            if title_shape.left < prs.slide_width / 2:
+                            # design4 tiene el texto claramente en la mitad izquierda (p.ej., primer 45%)
+                            # design3 tiene el texto más cerca del centro o en la mitad derecha.
+                            if title_shape.left < (prs.slide_width * 0.45): # Umbral para design4
                                 design_number = 4
+                            # else: design_number remains 3 (cubriendo el caso de design3)
                         
-                        print(f"Detectado diseño {design_number}, recreando diapositiva con nueva imagen")
+                        print(f"INFO: Recreando diapositiva con design_number: {design_number}")
                         
                         # 3. Importar el módulo de diseños
                         from Diseños_diapositivas import Diapositivas
@@ -2410,8 +2417,13 @@ class VentanaVistaPrevia(QWidget):
                              # Para placeholders, intentamos una técnica más segura
                              try:
                                  new_pic = slide.shapes.add_picture(new_image_path, left, top, width, height)
+                                 if hasattr(pic_shape, 'name') and pic_shape.name:
+                                     try:
+                                         new_pic.name = pic_shape.name
+                                     except:
+                                         pass
                              except Exception as e_add:
-                                 print(f"ERROR: No se pudo añadir la nueva imagen: {e_add}")
+                                 print(f"ERROR: No se pudo añadir la nueva imagen sobre el placeholder: {e_add}")
                                  QMessageBox.warning(self, "Error Imagen", f"No se pudo reemplazar la imagen: {e_add}")
                     elif not os.path.exists(new_image_path):
                         print(f"Error: La nueva imagen no existe en la ruta: {new_image_path}")

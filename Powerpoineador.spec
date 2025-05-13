@@ -1,15 +1,21 @@
 # -*- mode: python ; coding: utf-8 -*-
-
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
+import sys
 
+# Recoger datos para replicate
 replicate_datas = collect_data_files('replicate')
 replicate_hidden_imports = collect_submodules('replicate')
 replicate_metadata = copy_metadata('replicate')
+
+# Determinar configuración específica de plataforma
+is_mac = sys.platform == 'darwin'
+icon_file = 'iconos/icon.icns' if is_mac else 'iconos/icon.ico'
 
 a = Analysis(
     [
         'Powerpoineador.py',
         'Cifrado.py',
+        'Plantillas.py',
         'Diseños_diapositivas.py',
         'apis/Replicate.py',
         'apis/xAI.py',
@@ -62,6 +68,10 @@ a = Analysis(
         'replicate.stream',
         'deep_translator',
         'deep_translator.google_trans',
+        'PySide6',
+        'PySide6.QtCore',
+        'PySide6.QtGui',
+        'PySide6.QtWidgets',
     ] + replicate_hidden_imports,
     hookspath=[],
     hooksconfig={},
@@ -72,24 +82,78 @@ a = Analysis(
 
 pyz = PYZ(a.pure)
 
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.datas,
-    [],
+# Configuración común para EXE
+exe_args = dict(
+    pyz=pyz,
+    a_scripts=a.scripts,
+    exclude_binaries=True,
     name='Powerpoineador',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
     console=False,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    icon='iconos/icon.ico',
+    icon=icon_file,
 )
+
+# Configuración específica para cada plataforma
+if is_mac:
+    exe = EXE(
+        pyz,
+        a.scripts,
+        [],
+        exclude_binaries=True,
+        name='Powerpoineador',
+        debug=False,
+        bootloader_ignore_signals=False,
+        strip=False,
+        upx=True,
+        upx_exclude=[],
+        console=False,
+        icon=icon_file,
+        target_arch=None,
+    )
+    
+    # Añadir la configuración de BUNDLE para macOS
+    app = BUNDLE(
+        exe,
+        a.binaries,
+        a.zipfiles,
+        a.datas,
+        name='Powerpoineador.app',
+        icon=icon_file,
+        bundle_identifier='com.powerpoineador.app',
+        info_plist={
+            'NSHighResolutionCapable': 'True',
+            'CFBundleShortVersionString': '1.0.0',
+            'CFBundleVersion': '1.0.0',
+            'NSHumanReadableCopyright': '© 2025 Powerpoineador',
+            'NSPrincipalClass': 'NSApplication',
+            'NSAppleScriptEnabled': False,
+            'CFBundleDisplayName': 'Powerpoineador',
+            'CFBundleName': 'Powerpoineador',
+        },
+    )
+else:
+    # Configuración para Windows
+    exe = EXE(
+        pyz,
+        a.scripts,
+        a.binaries,
+        a.datas,
+        [],
+        name='Powerpoineador',
+        debug=False,
+        bootloader_ignore_signals=False,
+        strip=False,
+        upx=True,
+        upx_exclude=[],
+        runtime_tmpdir=None,
+        console=False,
+        disable_windowed_traceback=False,
+        argv_emulation=False,
+        target_arch=None,
+        codesign_identity=None,
+        entitlements_file=None,
+        icon=icon_file,
+    )
