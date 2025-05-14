@@ -1523,7 +1523,7 @@ traducciones = {
         'language_option_ru': '俄语',
         'language_option_cn': '中國人',
         'language_option_jp': '日本語',
-        'language_option_cn': '韓國人',
+        'language_option_kr': '韓國人',
         'language_option_ar': '阿拉伯',
         'language_option_tl': '菲律賓',
         'edit_slide': '编辑幻灯片',

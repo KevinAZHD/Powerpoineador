@@ -4,7 +4,7 @@ from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QAction
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
     QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar,
-    QMenu, QSizePolicy
+    QMenu, QSizePolicy, QGridLayout
     )
 from Version_checker import obtener_url_descarga, obtener_ultima_version, obtener_version_actual
 from apis.Replicate import ReplicateAPIKeyWindow
@@ -1909,41 +1909,98 @@ class PowerpoineatorWidget(QWidget):
         
         model_layout = QHBoxLayout()
 
-        texto_layout = QVBoxLayout()
-        self.texto_combo = QComboBox()
-        self.texto_combo.currentTextChanged.connect(self.on_texto_combo_changed)
-        self.texto_label = QLabel(obtener_traduccion('texto_modelo', current_language))
-        texto_layout.addWidget(self.texto_label)
-        texto_layout.addWidget(self.texto_combo)
-        model_layout.addLayout(texto_layout)
+        # Verificar si estamos en macOS para ajustar el layout
+        is_macos = sys.platform == 'darwin'
 
-        imagen_layout = QVBoxLayout()
-        imagen_combo_layout = QHBoxLayout()
-        self.imagen_combo = QComboBox()
-        self.imagen_combo.currentTextChanged.connect(self.on_imagen_combo_changed)
-        self.imagen_label = QLabel(obtener_traduccion('imagen_modelo', current_language))
-        imagen_layout.addWidget(self.imagen_label)
-        imagen_combo_layout.addWidget(self.imagen_combo)
+        if is_macos:
+            # Para macOS, usar un layout de grid para alinear mejor las etiquetas y comboboxes
+            model_grid = QGridLayout()
+            
+            # Primera columna: Modelo de texto
+            self.texto_label = QLabel(obtener_traduccion('texto_modelo', current_language))
+            model_grid.addWidget(self.texto_label, 0, 0)
+            
+            self.texto_combo = QComboBox()
+            self.texto_combo.currentTextChanged.connect(self.on_texto_combo_changed)
+            model_grid.addWidget(self.texto_combo, 1, 0)
+            
+            # Segunda columna: Modelo de imagen
+            self.imagen_label = QLabel(obtener_traduccion('imagen_modelo', current_language))
+            model_grid.addWidget(self.imagen_label, 0, 1)
+            
+            # Crear el combobox de imagen directamente sin layout adicional
+            self.imagen_combo = QComboBox()
+            self.imagen_combo.currentTextChanged.connect(self.on_imagen_combo_changed)
+            model_grid.addWidget(self.imagen_combo, 1, 1)
+            
+            # Crear un layout separado solo para los botones
+            botones_layout = QHBoxLayout()
+            botones_layout.setContentsMargins(0, 0, 0, 0)
+            botones_layout.setSpacing(5)  # Aumentar espacio entre botones
+            
+            self.cargar_imagen_btn = QPushButton('+')
+            self.cargar_imagen_btn.setToolTip('Cargar imagen personalizada')
+            self.cargar_imagen_btn.setFixedSize(30, 24)  # Aumentar tamaño del botón +
+            self.cargar_imagen_btn.clicked.connect(self.cargar_imagen_personalizada)
+            self.cargar_imagen_btn.hide()
+            
+            self.ver_imagen_btn = QPushButton('Revisar')
+            self.ver_imagen_btn.setToolTip('Ver imagen seleccionada')
+            self.ver_imagen_btn.setFixedSize(70, 24)  # Aumentar ancho para que quepa todo el texto
+            self.ver_imagen_btn.clicked.connect(self.ver_imagen_personalizada)
+            self.ver_imagen_btn.hide()
+            
+            # Añadir los botones en una tercera columna SIN verificar visibilidad
+            botones_layout.addWidget(self.cargar_imagen_btn)
+            botones_layout.addWidget(self.ver_imagen_btn)
+            botones_container = QWidget()
+            botones_container.setLayout(botones_layout)
+            model_grid.addWidget(botones_container, 1, 2)
+            
+            # Establecer las columnas para que tengan el mismo ancho
+            model_grid.setColumnStretch(0, 1)
+            model_grid.setColumnStretch(1, 1)
+            model_grid.setColumnStretch(2, 0)
+            
+            # Añadir el grid al layout principal
+            left_layout.addLayout(model_grid)
+        else:
+            # Código original para otras plataformas
+            texto_layout = QVBoxLayout()
+            self.texto_combo = QComboBox()
+            self.texto_combo.currentTextChanged.connect(self.on_texto_combo_changed)
+            self.texto_label = QLabel(obtener_traduccion('texto_modelo', current_language))
+            texto_layout.addWidget(self.texto_label)
+            texto_layout.addWidget(self.texto_combo)
+            model_layout.addLayout(texto_layout)
+
+            imagen_layout = QVBoxLayout()
+            imagen_combo_layout = QHBoxLayout()
+            self.imagen_combo = QComboBox()
+            self.imagen_combo.currentTextChanged.connect(self.on_imagen_combo_changed)
+            self.imagen_label = QLabel(obtener_traduccion('imagen_modelo', current_language))
+            imagen_layout.addWidget(self.imagen_label)
+            imagen_combo_layout.addWidget(self.imagen_combo)
+            
+            self.cargar_imagen_btn = QPushButton('+')
+            self.cargar_imagen_btn.setToolTip('Cargar imagen personalizada')
+            self.cargar_imagen_btn.setFixedSize(30, 24)  # Aumentar tamaño del botón +
+            self.cargar_imagen_btn.clicked.connect(self.cargar_imagen_personalizada)
+            self.cargar_imagen_btn.hide()
+            imagen_combo_layout.addWidget(self.cargar_imagen_btn)
+
+            self.ver_imagen_btn = QPushButton('Revisar')
+            self.ver_imagen_btn.setToolTip('Ver imagen seleccionada')
+            self.ver_imagen_btn.setFixedSize(70, 24)  # Aumentar ancho para que quepa todo el texto
+            self.ver_imagen_btn.clicked.connect(self.ver_imagen_personalizada)
+            self.ver_imagen_btn.hide()
+            imagen_combo_layout.addWidget(self.ver_imagen_btn)
+            
+            imagen_layout.addLayout(imagen_combo_layout)
+            model_layout.addLayout(imagen_layout)
+
+            left_layout.addLayout(model_layout)
         
-        self.cargar_imagen_btn = QPushButton('+')
-        self.cargar_imagen_btn.setToolTip('Cargar imagen personalizada')
-        self.cargar_imagen_btn.setFixedSize(24, 22.9)
-        self.cargar_imagen_btn.clicked.connect(self.cargar_imagen_personalizada)
-        self.cargar_imagen_btn.hide()
-        imagen_combo_layout.addWidget(self.cargar_imagen_btn)
-
-        self.ver_imagen_btn = QPushButton('Revisar')
-        self.ver_imagen_btn.setToolTip('Ver imagen seleccionada')
-        self.ver_imagen_btn.setFixedSize(50, 22.9)
-        self.ver_imagen_btn.clicked.connect(self.ver_imagen_personalizada)
-        self.ver_imagen_btn.hide()
-        imagen_combo_layout.addWidget(self.ver_imagen_btn)
-        
-        imagen_layout.addLayout(imagen_combo_layout)
-        model_layout.addLayout(imagen_layout)
-
-        left_layout.addLayout(model_layout)
-
         # Crear layout para descripción y contador
         descripcion_y_contador_layout = QHBoxLayout()
         self.descripcion_label = QLabel(obtener_traduccion('descripcion_presentacion', current_language))
@@ -3034,7 +3091,10 @@ class PowerpoineatorWidget(QWidget):
     def ver_imagen_personalizada(self):
         if hasattr(self, 'imagen_personalizada') and self.imagen_personalizada and os.path.exists(self.imagen_personalizada):
             try:
-                os.startfile(self.imagen_personalizada)
+                # Usar QDesktopServices.openUrl para compatibilidad multiplataforma
+                from PySide6.QtGui import QDesktopServices
+                from PySide6.QtCore import QUrl
+                QDesktopServices.openUrl(QUrl.fromLocalFile(self.imagen_personalizada))
             except Exception as e:
                 QMessageBox.critical(self, 'Error', f'Error al abrir la imagen: {str(e)}')
         else:
