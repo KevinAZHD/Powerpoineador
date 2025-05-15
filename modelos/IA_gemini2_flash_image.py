@@ -27,7 +27,7 @@ def generar_imagen(section, content, nuevo_string, signals=None):
         
         # Ejecutar el modelo para obtener la imagen
         response = client.models.generate_content(
-            model="gemini-2.0-flash-exp-image-generation",
+            model="gemini-2.0-flash-preview-image-generation",
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=2,

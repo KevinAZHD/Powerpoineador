@@ -44,7 +44,7 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
         )
         
         # Configurar el modelo y contenido
-        model = "gemini-2.5-pro-exp-03-25"
+        model = "gemini-2.0-flash"
         contents = [
             types.Content(
                 role="user",

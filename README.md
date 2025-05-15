@@ -38,7 +38,8 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 
 ### Modelos de Texto:
 
-- **gemini-2.5-pro-exp-03-25** - Nuevo modelo de Google optimizado para velocidad.
+- **gemini-2.5-flash-preview-04-17** - Nuevo modelo de Google optimizado para pensamiento adaptativo y rentabilidad.
+- **gemini-2.0-flash** - Modelo de Google optimizado para funciones y velocidad de nueva generación.
 - **gemini-2.0-flash-thinking-exp-01-21** - Modelo razonador de Google con alta estructuración.
 - **deepseek-r1** - Modelo chino optimizado para razonamiento y estructuración lógica.
 - **claude-3.7-sonnet** - Nuevo modelo de Anthropic, el más inteligente y con mejor capacidad de razonamiento.
@@ -54,7 +55,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 
 ### Modelos de Imagen:
 
-- **gemini-2.0-flash-exp-image-generation** - Modelo de Google para la generación de imágenes estándar.
+- **gemini-2.0-flash-preview-image-generation** - Modelo de Google para la generación de imágenes estándar.
 - **flux-schnell** - Modelo rápido con buena calidad.
 - **imagen-3** - Modelo de Google con la mejor calidad de imagen.
 - **imagen-3-fast** - Modelo de Google rápido y económico.

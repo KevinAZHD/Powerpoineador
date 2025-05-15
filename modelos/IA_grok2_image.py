@@ -28,8 +28,8 @@ def generar_imagen(section, content, nuevo_string, signals=None):
         "response_format": "url"
     }
     
-    max_retries = 3
-    retry_delay = 2  # seconds
+    max_retries = 10
+    retry_delay = 5
     retries = 0
 
     while retries < max_retries:

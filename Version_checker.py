@@ -45,6 +45,13 @@ def obtener_url_descarga():
         return f"https://github.com/KevinAZHD/Powerpoineador/releases/tag/{ultima_version}"
     return "https://github.com/KevinAZHD/Powerpoineador/releases"
 
+# NUEVA FUNCIÓN: Función para obtener la URL de descarga del ejecutable de la última versión
+def obtener_url_descarga_exe(ultima_version_tag):
+    if ultima_version_tag:
+        # Asegúrate que ultima_version_tag es el tag correcto, ej: "v0.2.1b"
+        return f"https://github.com/KevinAZHD/Powerpoineador/releases/download/{ultima_version_tag}/Powerpoineador.exe"
+    return None
+
 # Función para obtener la versión actual
 def obtener_version_actual():
     return VERSION_ACTUAL

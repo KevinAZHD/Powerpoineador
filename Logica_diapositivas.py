@@ -79,8 +79,11 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         elif modelo == 'grok-3-mini-beta':
             from modelos.IA_grok3_mini import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
-        elif modelo == 'gemini-2.5-pro-exp-03-25':
-            from modelos.IA_gemini2_pro import intentar_obtener_respuesta
+        elif modelo == 'gemini-2.5-flash-preview-04-17':
+            from modelos.IA_gemini2_5_flash import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'gemini-2.0-flash':
+            from modelos.IA_gemini2_flash import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'gemini-2.0-flash-thinking-exp-01-21':
             from modelos.IA_gemini2_flash_thinking import intentar_obtener_respuesta
@@ -168,8 +171,11 @@ def generar_texto_ia(tipo, contenido_actual, descripcion, modelo, signals=None):
         elif modelo == 'grok-3-mini-beta':
             from modelos.IA_grok3_mini import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
-        elif modelo == 'gemini-2.5-pro-exp-03-25':
-            from modelos.IA_gemini2_pro import generar_texto_simple
+        elif modelo == 'gemini-2.5-flash-preview-04-17':
+            from modelos.IA_gemini2_5_flash import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'gemini-2.0-flash':
+            from modelos.IA_gemini2_flash import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
         elif modelo == 'gemini-2.0-flash-thinking-exp-01-21':
             from modelos.IA_gemini2_flash_thinking import generar_texto_simple
@@ -247,7 +253,7 @@ def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
             return generar_imagen_model3_4(section, content, descripcion, signals, False)
         elif modelo == 'grok-2-image-1212':
             return generar_imagen_grok(section, content, descripcion, signals, False)
-        elif modelo == 'gemini-2.0-flash-exp-image-generation':
+        elif modelo == 'gemini-2.0-flash-preview-image-generation':
             return generar_imagen_gemini_flash(section, content, descripcion, signals, False)
         else:
             return generar_imagen_flux(section, content, descripcion, None, signals, False)

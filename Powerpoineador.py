@@ -1,5 +1,5 @@
-import sys, os, requests, json, webbrowser
-from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
+import sys, os, requests, json, webbrowser, platform
+from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint
 from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QActionGroup, QTextCursor
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
@@ -308,184 +308,368 @@ class MainWindow(QMainWindow):
     # Función para configurar el menú de la aplicación
     def setup_menu(self):
         menubar = self.menuBar()
-        
-        left_menubar = QMenuBar(menubar)
-        
-        # Guardar referencia al menú Google como atributo de instancia
-        self.google_menu = left_menubar.addMenu('Google')
-        self.get_google_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_google_api', self.current_language), self)
-        self.get_google_api_action.setObjectName('get_google_api_action')
-        self.get_google_api_action.triggered.connect(lambda: webbrowser.open('https://aistudio.google.com/app/apikey'))
-        self.get_google_api_action.setEnabled(not bool(self.google_api_key))
-        self.google_menu.addAction(self.get_google_api_action)
-        
-        google_config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_google_api', self.current_language), self)
-        google_config_action.setObjectName('google_config_action')
-        google_config_action.triggered.connect(self.show_google_api_dialog)
-        self.google_menu.addAction(google_config_action)
-        
-        self.google_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_google_api', self.current_language), self)
-        self.google_delete_action.setObjectName('google_delete_action')
-        self.google_delete_action.triggered.connect(self.delete_google_api_key)
-        self.google_menu.addAction(self.google_delete_action)
-        
-        # Guardar referencia al menú Replicate como atributo de instancia
-        self.replicate_menu = left_menubar.addMenu('Replicate') 
-        self.get_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_replicate_api', self.current_language), self)
-        self.get_api_action.setObjectName('get_replicate_api_action')
-        self.get_api_action.triggered.connect(lambda: webbrowser.open('https://replicate.com/account/api-tokens'))
-        self.get_api_action.setEnabled(not bool(self.api_key))
-        self.replicate_menu.addAction(self.get_api_action)
-        
-        config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_replicate_api', self.current_language), self)
-        config_action.setObjectName('replicate_config_action')
-        config_action.triggered.connect(self.show_api_dialog)
-        self.replicate_menu.addAction(config_action)
-        
-        self.delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_replicate_api', self.current_language), self)
-        self.delete_action.setObjectName('replicate_delete_action')
-        self.delete_action.triggered.connect(self.delete_api_key)
-        self.replicate_menu.addAction(self.delete_action)
 
-        # Guardar referencia al menú xAI como atributo de instancia
-        self.grok_menu = left_menubar.addMenu('xAI')
-        self.get_grok_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_xai_api', self.current_language), self)
-        self.get_grok_api_action.setObjectName('get_xai_api_action')
-        self.get_grok_api_action.triggered.connect(lambda: webbrowser.open('https://console.x.ai/team/default/api-keys'))
-        self.get_grok_api_action.setEnabled(not bool(self.grok_api_key))
-        self.grok_menu.addAction(self.get_grok_api_action)
-        
-        grok_config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_xai_api', self.current_language), self)
-        grok_config_action.setObjectName('xai_config_action')
-        grok_config_action.triggered.connect(self.show_grok_api_dialog)
-        self.grok_menu.addAction(grok_config_action)
-        
-        self.grok_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_xai_api', self.current_language), self)
-        self.grok_delete_action.setObjectName('xai_delete_action')
-        self.grok_delete_action.triggered.connect(self.delete_grok_api_key)
-        self.grok_menu.addAction(self.grok_delete_action)
+        # Determinar si es macOS (Darwin) para aplicar configuraciones específicas
+        is_darwin = platform.system() == 'Darwin'
 
-        menubar.setCornerWidget(left_menubar, Qt.TopLeftCorner)
+        if is_darwin:
+            # Forzar la barra de menú a estar dentro de la ventana en macOS
+            menubar.setNativeMenuBar(False)
 
-        right_menubar = QMenuBar(menubar)
+            # --- Configuración para Darwin: Añadir todo directamente a menubar ---
+            # Google Menu
+            self.google_menu = menubar.addMenu('Google')
+            self.get_google_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_google_api', self.current_language), self)
+            self.get_google_api_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.get_google_api_action.setObjectName('get_google_api_action')
+            self.get_google_api_action.triggered.connect(lambda: webbrowser.open('https://aistudio.google.com/app/apikey'))
+            self.get_google_api_action.setEnabled(not bool(self.google_api_key))
+            self.google_menu.addAction(self.get_google_api_action)
+            
+            google_config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_google_api', self.current_language), self)
+            google_config_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            google_config_action.setObjectName('google_config_action')
+            google_config_action.triggered.connect(self.show_google_api_dialog)
+            self.google_menu.addAction(google_config_action)
+            
+            self.google_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_google_api', self.current_language), self)
+            self.google_delete_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.google_delete_action.setObjectName('google_delete_action')
+            self.google_delete_action.triggered.connect(self.delete_google_api_key)
+            self.google_menu.addAction(self.google_delete_action)
 
-        balance_action = QAction(QIcon(resource_path("iconos/coin.png")), '', self)
-        balance_action.setStatusTip('Consultar costos totales aproximados acumulados')
-        balance_action.triggered.connect(self.calcular_costos_totales)
-        balance_action.setEnabled(bool(self.api_key or self.grok_api_key))
-        right_menubar.addAction(balance_action)
-        self.balance_action = balance_action
+            # Replicate Menu
+            self.replicate_menu = menubar.addMenu('Replicate') 
+            self.get_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_replicate_api', self.current_language), self)
+            self.get_api_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.get_api_action.setObjectName('get_replicate_api_action')
+            self.get_api_action.triggered.connect(lambda: webbrowser.open('https://replicate.com/account/api-tokens'))
+            self.get_api_action.setEnabled(not bool(self.api_key))
+            self.replicate_menu.addAction(self.get_api_action)
+            
+            config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_replicate_api', self.current_language), self)
+            config_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            config_action.setObjectName('replicate_config_action')
+            config_action.triggered.connect(self.show_api_dialog)
+            self.replicate_menu.addAction(config_action)
+            
+            self.delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_replicate_api', self.current_language), self)
+            self.delete_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.delete_action.setObjectName('replicate_delete_action')
+            self.delete_action.triggered.connect(self.delete_api_key)
+            self.replicate_menu.addAction(self.delete_action)
 
-        donate_action = QAction(QIcon(resource_path("iconos/paypal.png")), '', self)
-        donate_action.setStatusTip('Apoyar el desarrollo con una donación')
-        donate_action.triggered.connect(lambda: webbrowser.open('https://paypal.me/KevinAZHD'))
-        right_menubar.addAction(donate_action)
-        self.paypal_action = donate_action
-        
-        github_action = QAction(QIcon(resource_path("iconos/github.png")), '', self)
-        github_action.setStatusTip('Visitar el repositorio')
-        github_action.triggered.connect(lambda: webbrowser.open('https://github.com/KevinAZHD/Powerpoineador'))
-        right_menubar.addAction(github_action)
-        self.github_action = github_action
+            # xAI Menu
+            self.grok_menu = menubar.addMenu('xAI')
+            self.get_grok_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_xai_api', self.current_language), self)
+            self.get_grok_api_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.get_grok_api_action.setObjectName('get_xai_api_action')
+            self.get_grok_api_action.triggered.connect(lambda: webbrowser.open('https://console.x.ai/team/default/api-keys'))
+            self.get_grok_api_action.setEnabled(not bool(self.grok_api_key))
+            self.grok_menu.addAction(self.get_grok_api_action)
+            
+            grok_config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_xai_api', self.current_language), self)
+            grok_config_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            grok_config_action.setObjectName('xai_config_action')
+            grok_config_action.triggered.connect(self.show_grok_api_dialog)
+            self.grok_menu.addAction(grok_config_action)
+            
+            self.grok_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_xai_api', self.current_language), self)
+            self.grok_delete_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.grok_delete_action.setObjectName('xai_delete_action')
+            self.grok_delete_action.triggered.connect(self.delete_grok_api_key)
+            self.grok_menu.addAction(self.grok_delete_action)
 
-        # Crear menú de idioma
-        self.language_menu = QMenu(self)
-        # El texto se establecerá en update_language_menu_state
-        self.language_menu_action = QAction(QIcon(resource_path("iconos/languages.png")), '', self)
-        self.language_menu_action.setMenu(self.language_menu)
+            # Acciones de la "derecha" directamente en menubar
+            balance_action = QAction(QIcon(resource_path("iconos/coin.png")), '', self)
+            balance_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            balance_action.setStatusTip('Consultar costos totales aproximados acumulados')
+            balance_action.triggered.connect(self.calcular_costos_totales)
+            balance_action.setEnabled(bool(self.api_key or self.grok_api_key))
+            menubar.addAction(balance_action)
+            self.balance_action = balance_action
 
-        # Crear grupo de acciones para exclusividad
-        self.language_group = QActionGroup(self)
-        self.language_group.setExclusive(True)
+            donate_action = QAction(QIcon(resource_path("iconos/paypal.png")), '', self)
+            donate_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            donate_action.setStatusTip('Apoyar el desarrollo con una donación')
+            donate_action.triggered.connect(lambda: webbrowser.open('https://paypal.me/KevinAZHD'))
+            menubar.addAction(donate_action)
+            self.paypal_action = donate_action
+            
+            github_action = QAction(QIcon(resource_path("iconos/github.png")), '', self)
+            github_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            github_action.setStatusTip('Visitar el repositorio')
+            github_action.triggered.connect(lambda: webbrowser.open('https://github.com/KevinAZHD/Powerpoineador'))
+            menubar.addAction(github_action)
+            self.github_action = github_action
 
-        # Acción para Español - Usar traducción
-        self.es_action = QAction(QIcon(resource_path("iconos/es.png")), obtener_traduccion('language_option_es', self.current_language), self)
-        self.es_action.setCheckable(True)
-        self.es_action.triggered.connect(lambda: self.change_language('es'))
-        self.language_menu.addAction(self.es_action)
-        self.language_group.addAction(self.es_action)
+            # Menú de Idioma directamente en menubar
+            self.language_menu = QMenu(self)
+            self.language_menu_action = QAction(QIcon(resource_path("iconos/languages.png")), '', self)
+            self.language_menu_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.language_menu_action.setMenu(self.language_menu)
 
-        # Acción para Inglés - Usar traducción
-        self.en_action = QAction(QIcon(resource_path("iconos/en.png")), obtener_traduccion('language_option_en', self.current_language), self)
-        self.en_action.setCheckable(True)
-        self.en_action.triggered.connect(lambda: self.change_language('en'))
-        self.language_menu.addAction(self.en_action)
-        self.language_group.addAction(self.en_action)
+            self.language_group = QActionGroup(self)
+            self.language_group.setExclusive(True)
 
-        # >>> AÑADIR Acción para Francés <<<
-        self.fr_action = QAction(QIcon(resource_path("iconos/fr.png")), obtener_traduccion('language_option_fr', self.current_language), self)
-        self.fr_action.setCheckable(True)
-        self.fr_action.triggered.connect(lambda: self.change_language('fr'))
-        self.language_menu.addAction(self.fr_action)
-        self.language_group.addAction(self.fr_action)
+            self.es_action = QAction(QIcon(resource_path("iconos/es.png")), obtener_traduccion('language_option_es', self.current_language), self)
+            self.es_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.es_action.setCheckable(True)
+            self.es_action.triggered.connect(lambda: self.change_language('es'))
+            self.language_menu.addAction(self.es_action)
+            self.language_group.addAction(self.es_action)
 
-        # >>> AÑADIR Acción para Portugués <<<
-        self.pt_action = QAction(QIcon(resource_path("iconos/pt.png")), obtener_traduccion('language_option_pt', self.current_language), self)
-        self.pt_action.setCheckable(True)
-        self.pt_action.triggered.connect(lambda: self.change_language('pt'))
-        self.language_menu.addAction(self.pt_action)
-        self.language_group.addAction(self.pt_action)
+            self.en_action = QAction(QIcon(resource_path("iconos/en.png")), obtener_traduccion('language_option_en', self.current_language), self)
+            self.en_action.setMenuRole(QAction.NoRole) # is_darwin es True
+            self.en_action.setCheckable(True)
+            self.en_action.triggered.connect(lambda: self.change_language('en'))
+            self.language_menu.addAction(self.en_action)
+            self.language_group.addAction(self.en_action)
+            
+            self.fr_action = QAction(QIcon(resource_path("iconos/fr.png")), obtener_traduccion('language_option_fr', self.current_language), self)
+            self.fr_action.setMenuRole(QAction.NoRole); self.fr_action.setCheckable(True)
+            self.fr_action.triggered.connect(lambda: self.change_language('fr'))
+            self.language_menu.addAction(self.fr_action); self.language_group.addAction(self.fr_action)
 
-        # >>> AÑADIR Acción para Italiano <<<
-        self.it_action = QAction(QIcon(resource_path("iconos/it.png")), obtener_traduccion('language_option_it', self.current_language), self)
-        self.it_action.setCheckable(True)
-        self.it_action.triggered.connect(lambda: self.change_language('it'))
-        self.language_menu.addAction(self.it_action)
-        self.language_group.addAction(self.it_action)
+            self.pt_action = QAction(QIcon(resource_path("iconos/pt.png")), obtener_traduccion('language_option_pt', self.current_language), self)
+            self.pt_action.setMenuRole(QAction.NoRole); self.pt_action.setCheckable(True)
+            self.pt_action.triggered.connect(lambda: self.change_language('pt'))
+            self.language_menu.addAction(self.pt_action); self.language_group.addAction(self.pt_action)
 
-        # >>> AÑADIR Acción para Alemán <<<
-        self.de_action = QAction(QIcon(resource_path("iconos/de.png")), obtener_traduccion('language_option_de', self.current_language), self)
-        self.de_action.setCheckable(True)
-        self.de_action.triggered.connect(lambda: self.change_language('de'))
-        self.language_menu.addAction(self.de_action)
-        self.language_group.addAction(self.de_action)
+            self.it_action = QAction(QIcon(resource_path("iconos/it.png")), obtener_traduccion('language_option_it', self.current_language), self)
+            self.it_action.setMenuRole(QAction.NoRole); self.it_action.setCheckable(True)
+            self.it_action.triggered.connect(lambda: self.change_language('it'))
+            self.language_menu.addAction(self.it_action); self.language_group.addAction(self.it_action)
 
-        # >>> AÑADIR Acción para Filipino <<<
-        self.tl_action = QAction(QIcon(resource_path("iconos/tl.png")), obtener_traduccion('language_option_tl', self.current_language), self)
-        self.tl_action.setCheckable(True)
-        self.tl_action.triggered.connect(lambda: self.change_language('tl'))
-        self.language_menu.addAction(self.tl_action)
-        self.language_group.addAction(self.tl_action)
+            self.de_action = QAction(QIcon(resource_path("iconos/de.png")), obtener_traduccion('language_option_de', self.current_language), self)
+            self.de_action.setMenuRole(QAction.NoRole); self.de_action.setCheckable(True)
+            self.de_action.triggered.connect(lambda: self.change_language('de'))
+            self.language_menu.addAction(self.de_action); self.language_group.addAction(self.de_action)
 
-        # >>> AÑADIR Acción para Árabe <<<
-        self.ar_action = QAction(QIcon(resource_path("iconos/ar.png")), obtener_traduccion('language_option_ar', self.current_language), self)
-        self.ar_action.setCheckable(True)
-        self.ar_action.triggered.connect(lambda: self.change_language('ar'))
-        self.language_menu.addAction(self.ar_action)
-        self.language_group.addAction(self.ar_action)
+            self.tl_action = QAction(QIcon(resource_path("iconos/tl.png")), obtener_traduccion('language_option_tl', self.current_language), self)
+            self.tl_action.setMenuRole(QAction.NoRole); self.tl_action.setCheckable(True)
+            self.tl_action.triggered.connect(lambda: self.change_language('tl'))
+            self.language_menu.addAction(self.tl_action); self.language_group.addAction(self.tl_action)
 
-        # >>> AÑADIR Acción para Ruso <<<
-        self.ru_action = QAction(QIcon(resource_path("iconos/ru.png")), obtener_traduccion('language_option_ru', self.current_language), self)
-        self.ru_action.setCheckable(True)
-        self.ru_action.triggered.connect(lambda: self.change_language('ru'))
-        self.language_menu.addAction(self.ru_action)
-        self.language_group.addAction(self.ru_action)
+            self.ar_action = QAction(QIcon(resource_path("iconos/ar.png")), obtener_traduccion('language_option_ar', self.current_language), self)
+            self.ar_action.setMenuRole(QAction.NoRole); self.ar_action.setCheckable(True)
+            self.ar_action.triggered.connect(lambda: self.change_language('ar'))
+            self.language_menu.addAction(self.ar_action); self.language_group.addAction(self.ar_action)
 
-        # >>> AÑADIR Acción para Chino <<<
-        self.cn_action = QAction(QIcon(resource_path("iconos/cn.png")), obtener_traduccion('language_option_cn', self.current_language), self)
-        self.cn_action.setCheckable(True)
-        self.cn_action.triggered.connect(lambda: self.change_language('cn'))
-        self.language_menu.addAction(self.cn_action)
-        self.language_group.addAction(self.cn_action)
+            self.ru_action = QAction(QIcon(resource_path("iconos/ru.png")), obtener_traduccion('language_option_ru', self.current_language), self)
+            self.ru_action.setMenuRole(QAction.NoRole); self.ru_action.setCheckable(True)
+            self.ru_action.triggered.connect(lambda: self.change_language('ru'))
+            self.language_menu.addAction(self.ru_action); self.language_group.addAction(self.ru_action)
 
-        # >>> AÑADIR Acción para Japonés <<<
-        self.jp_action = QAction(QIcon(resource_path("iconos/jp.png")), obtener_traduccion('language_option_jp', self.current_language), self)
-        self.jp_action.setCheckable(True)
-        self.jp_action.triggered.connect(lambda: self.change_language('jp'))
-        self.language_menu.addAction(self.jp_action)
-        self.language_group.addAction(self.jp_action)
+            self.cn_action = QAction(QIcon(resource_path("iconos/cn.png")), obtener_traduccion('language_option_cn', self.current_language), self)
+            self.cn_action.setMenuRole(QAction.NoRole); self.cn_action.setCheckable(True)
+            self.cn_action.triggered.connect(lambda: self.change_language('cn'))
+            self.language_menu.addAction(self.cn_action); self.language_group.addAction(self.cn_action)
 
-        # >>> AÑADIR Acción para Coreano <<<
-        self.kr_action = QAction(QIcon(resource_path("iconos/kr.png")), obtener_traduccion('language_option_kr', self.current_language), self)
-        self.kr_action.setCheckable(True)
-        self.kr_action.triggered.connect(lambda: self.change_language('kr'))
-        self.language_menu.addAction(self.kr_action)
-        self.language_group.addAction(self.kr_action)
+            self.jp_action = QAction(QIcon(resource_path("iconos/jp.png")), obtener_traduccion('language_option_jp', self.current_language), self)
+            self.jp_action.setMenuRole(QAction.NoRole); self.jp_action.setCheckable(True)
+            self.jp_action.triggered.connect(lambda: self.change_language('jp'))
+            self.language_menu.addAction(self.jp_action); self.language_group.addAction(self.jp_action)
 
-        # Añadir el menú a la barra derecha
-        right_menubar.addAction(self.language_menu_action)
+            self.kr_action = QAction(QIcon(resource_path("iconos/kr.png")), obtener_traduccion('language_option_kr', self.current_language), self)
+            self.kr_action.setMenuRole(QAction.NoRole); self.kr_action.setCheckable(True)
+            self.kr_action.triggered.connect(lambda: self.change_language('kr'))
+            self.language_menu.addAction(self.kr_action); self.language_group.addAction(self.kr_action)
+            
+            menubar.addAction(self.language_menu_action)
 
-        menubar.setCornerWidget(right_menubar, Qt.TopRightCorner)
+        else:
+            # --- Configuración para otras plataformas (original con left/right menubars) ---
+            if is_darwin: # Esta condición es redundante aquí, ya que estamos en el 'else'
+                menubar.setNativeMenuBar(False) # Ya estaba en el código original con la condición
+
+            left_menubar = QMenuBar(menubar)
+            
+            # Google Menu
+            self.google_menu = left_menubar.addMenu('Google')
+            self.get_google_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_google_api', self.current_language), self)
+            if is_darwin: self.get_google_api_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            self.get_google_api_action.setObjectName('get_google_api_action')
+            self.get_google_api_action.triggered.connect(lambda: webbrowser.open('https://aistudio.google.com/app/apikey'))
+            self.get_google_api_action.setEnabled(not bool(self.google_api_key))
+            self.google_menu.addAction(self.get_google_api_action)
+            
+            google_config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_google_api', self.current_language), self)
+            if is_darwin: google_config_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            google_config_action.setObjectName('google_config_action')
+            google_config_action.triggered.connect(self.show_google_api_dialog)
+            self.google_menu.addAction(google_config_action)
+            
+            self.google_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_google_api', self.current_language), self)
+            if is_darwin: self.google_delete_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            self.google_delete_action.setObjectName('google_delete_action')
+            self.google_delete_action.triggered.connect(self.delete_google_api_key)
+            self.google_menu.addAction(self.google_delete_action)
+            
+            # Replicate Menu
+            self.replicate_menu = left_menubar.addMenu('Replicate') 
+            self.get_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_replicate_api', self.current_language), self)
+            if is_darwin: self.get_api_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            self.get_api_action.setObjectName('get_replicate_api_action')
+            self.get_api_action.triggered.connect(lambda: webbrowser.open('https://replicate.com/account/api-tokens'))
+            self.get_api_action.setEnabled(not bool(self.api_key))
+            self.replicate_menu.addAction(self.get_api_action)
+            
+            config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_replicate_api', self.current_language), self)
+            if is_darwin: config_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            config_action.setObjectName('replicate_config_action')
+            config_action.triggered.connect(self.show_api_dialog)
+            self.replicate_menu.addAction(config_action)
+            
+            self.delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_replicate_api', self.current_language), self)
+            if is_darwin: self.delete_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            self.delete_action.setObjectName('replicate_delete_action')
+            self.delete_action.triggered.connect(self.delete_api_key)
+            self.replicate_menu.addAction(self.delete_action)
+
+            # xAI Menu
+            self.grok_menu = left_menubar.addMenu('xAI')
+            self.get_grok_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_xai_api', self.current_language), self)
+            if is_darwin: self.get_grok_api_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            self.get_grok_api_action.setObjectName('get_xai_api_action')
+            self.get_grok_api_action.triggered.connect(lambda: webbrowser.open('https://console.x.ai/team/default/api-keys'))
+            self.get_grok_api_action.setEnabled(not bool(self.grok_api_key))
+            self.grok_menu.addAction(self.get_grok_api_action)
+            
+            grok_config_action = QAction(QIcon(resource_path("iconos/conf.png")), obtener_traduccion('configurar_xai_api', self.current_language), self)
+            if is_darwin: grok_config_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            grok_config_action.setObjectName('xai_config_action')
+            grok_config_action.triggered.connect(self.show_grok_api_dialog)
+            self.grok_menu.addAction(grok_config_action)
+            
+            self.grok_delete_action = QAction(QIcon(resource_path("iconos/delete.png")), obtener_traduccion('borrar_xai_api', self.current_language), self)
+            if is_darwin: self.grok_delete_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            self.grok_delete_action.setObjectName('xai_delete_action')
+            self.grok_delete_action.triggered.connect(self.delete_grok_api_key)
+            self.grok_menu.addAction(self.grok_delete_action)
+
+            menubar.setCornerWidget(left_menubar, Qt.TopLeftCorner)
+
+            right_menubar = QMenuBar(menubar)
+
+            balance_action = QAction(QIcon(resource_path("iconos/coin.png")), '', self)
+            if is_darwin: balance_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            balance_action.setStatusTip('Consultar costos totales aproximados acumulados')
+            balance_action.triggered.connect(self.calcular_costos_totales)
+            balance_action.setEnabled(bool(self.api_key or self.grok_api_key))
+            right_menubar.addAction(balance_action)
+            self.balance_action = balance_action
+
+            donate_action = QAction(QIcon(resource_path("iconos/paypal.png")), '', self)
+            if is_darwin: donate_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            donate_action.setStatusTip('Apoyar el desarrollo con una donación')
+            donate_action.triggered.connect(lambda: webbrowser.open('https://paypal.me/KevinAZHD'))
+            right_menubar.addAction(donate_action)
+            self.paypal_action = donate_action
+            
+            github_action = QAction(QIcon(resource_path("iconos/github.png")), '', self)
+            if is_darwin: github_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            github_action.setStatusTip('Visitar el repositorio')
+            github_action.triggered.connect(lambda: webbrowser.open('https://github.com/KevinAZHD/Powerpoineador'))
+            right_menubar.addAction(github_action)
+            self.github_action = github_action
+
+            self.language_menu = QMenu(self)
+            self.language_menu_action = QAction(QIcon(resource_path("iconos/languages.png")), '', self)
+            if is_darwin: self.language_menu_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            self.language_menu_action.setMenu(self.language_menu)
+
+            self.language_group = QActionGroup(self)
+            self.language_group.setExclusive(True)
+
+            self.es_action = QAction(QIcon(resource_path("iconos/es.png")), obtener_traduccion('language_option_es', self.current_language), self)
+            if is_darwin: self.es_action.setMenuRole(QAction.NoRole) # is_darwin es False aquí
+            self.es_action.setCheckable(True)
+            # ... (resto de la configuración y adición de acciones de idioma a self.language_menu y self.language_group) ...
+            # Copiar el bloque completo de acciones de idioma como está en el original.
+            self.es_action.triggered.connect(lambda: self.change_language('es'))
+            self.language_menu.addAction(self.es_action)
+            self.language_group.addAction(self.es_action)
+
+            self.en_action = QAction(QIcon(resource_path("iconos/en.png")), obtener_traduccion('language_option_en', self.current_language), self)
+            if is_darwin: self.en_action.setMenuRole(QAction.NoRole)
+            self.en_action.setCheckable(True)
+            self.en_action.triggered.connect(lambda: self.change_language('en'))
+            self.language_menu.addAction(self.en_action)
+            self.language_group.addAction(self.en_action)
+
+            self.fr_action = QAction(QIcon(resource_path("iconos/fr.png")), obtener_traduccion('language_option_fr', self.current_language), self)
+            if is_darwin: self.fr_action.setMenuRole(QAction.NoRole)
+            self.fr_action.setCheckable(True)
+            self.fr_action.triggered.connect(lambda: self.change_language('fr'))
+            self.language_menu.addAction(self.fr_action)
+            self.language_group.addAction(self.fr_action)
+
+            self.pt_action = QAction(QIcon(resource_path("iconos/pt.png")), obtener_traduccion('language_option_pt', self.current_language), self)
+            if is_darwin: self.pt_action.setMenuRole(QAction.NoRole)
+            self.pt_action.setCheckable(True)
+            self.pt_action.triggered.connect(lambda: self.change_language('pt'))
+            self.language_menu.addAction(self.pt_action)
+            self.language_group.addAction(self.pt_action)
+
+            self.it_action = QAction(QIcon(resource_path("iconos/it.png")), obtener_traduccion('language_option_it', self.current_language), self)
+            if is_darwin: self.it_action.setMenuRole(QAction.NoRole)
+            self.it_action.setCheckable(True)
+            self.it_action.triggered.connect(lambda: self.change_language('it'))
+            self.language_menu.addAction(self.it_action)
+            self.language_group.addAction(self.it_action)
+
+            self.de_action = QAction(QIcon(resource_path("iconos/de.png")), obtener_traduccion('language_option_de', self.current_language), self)
+            if is_darwin: self.de_action.setMenuRole(QAction.NoRole)
+            self.de_action.setCheckable(True)
+            self.de_action.triggered.connect(lambda: self.change_language('de'))
+            self.language_menu.addAction(self.de_action)
+            self.language_group.addAction(self.de_action)
+
+            self.tl_action = QAction(QIcon(resource_path("iconos/tl.png")), obtener_traduccion('language_option_tl', self.current_language), self)
+            if is_darwin: self.tl_action.setMenuRole(QAction.NoRole)
+            self.tl_action.setCheckable(True)
+            self.tl_action.triggered.connect(lambda: self.change_language('tl'))
+            self.language_menu.addAction(self.tl_action)
+            self.language_group.addAction(self.tl_action)
+
+            self.ar_action = QAction(QIcon(resource_path("iconos/ar.png")), obtener_traduccion('language_option_ar', self.current_language), self)
+            if is_darwin: self.ar_action.setMenuRole(QAction.NoRole)
+            self.ar_action.setCheckable(True)
+            self.ar_action.triggered.connect(lambda: self.change_language('ar'))
+            self.language_menu.addAction(self.ar_action)
+            self.language_group.addAction(self.ar_action)
+
+            self.ru_action = QAction(QIcon(resource_path("iconos/ru.png")), obtener_traduccion('language_option_ru', self.current_language), self)
+            if is_darwin: self.ru_action.setMenuRole(QAction.NoRole)
+            self.ru_action.setCheckable(True)
+            self.ru_action.triggered.connect(lambda: self.change_language('ru'))
+            self.language_menu.addAction(self.ru_action)
+            self.language_group.addAction(self.ru_action)
+
+            self.cn_action = QAction(QIcon(resource_path("iconos/cn.png")), obtener_traduccion('language_option_cn', self.current_language), self)
+            if is_darwin: self.cn_action.setMenuRole(QAction.NoRole)
+            self.cn_action.setCheckable(True)
+            self.cn_action.triggered.connect(lambda: self.change_language('cn'))
+            self.language_menu.addAction(self.cn_action)
+            self.language_group.addAction(self.cn_action)
+
+            self.jp_action = QAction(QIcon(resource_path("iconos/jp.png")), obtener_traduccion('language_option_jp', self.current_language), self)
+            if is_darwin: self.jp_action.setMenuRole(QAction.NoRole)
+            self.jp_action.setCheckable(True)
+            self.jp_action.triggered.connect(lambda: self.change_language('jp'))
+            self.language_menu.addAction(self.jp_action)
+            self.language_group.addAction(self.jp_action)
+
+            self.kr_action = QAction(QIcon(resource_path("iconos/kr.png")), obtener_traduccion('language_option_kr', self.current_language), self)
+            if is_darwin: self.kr_action.setMenuRole(QAction.NoRole)
+            self.kr_action.setCheckable(True)
+            self.kr_action.triggered.connect(lambda: self.change_language('kr'))
+            self.language_menu.addAction(self.kr_action)
+            self.language_group.addAction(self.kr_action)
+            
+            right_menubar.addAction(self.language_menu_action)
+            menubar.setCornerWidget(right_menubar, Qt.TopRightCorner)
 
         # >>> LLAMAR después de configurar las acciones <<<
         self.update_language_menu_state()
@@ -2318,10 +2502,11 @@ class PowerpoineatorWidget(QWidget):
         self.imagen_combo.clear()
 
         if hasattr(self.parent(), 'google_api_key') and self.parent().google_api_key and self.parent().validate_google_api():
-            self.texto_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.5-pro-exp-03-25')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.5-flash-preview-04-17')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.0-flash')
             self.texto_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.0-flash-thinking-exp-01-21')
             
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.0-flash-exp-image-generation')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.0-flash-preview-image-generation')
             
             if not (hasattr(self.parent(), 'api_key') and self.parent().api_key) and not (hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key):
                 self.imagen_combo.setEnabled(True)
@@ -3912,19 +4097,64 @@ if __name__ == "__main__":
                 msg.button(QMessageBox.Yes).setText(obtener_traduccion('yes', window.current_language))
                 msg.button(QMessageBox.No).setText(obtener_traduccion('no', window.current_language))
                 
-                # Ajustar tamaño y centrar correctamente
+                # Ajustar tamaño y centrar correctamente en la pantalla
                 msg.adjustSize()
-                msg_pos = window.geometry().center() - msg.rect().center()
-                msg.move(msg_pos)
+                
+                # Centrar en la pantalla principal en lugar de relativo a la ventana
+                screen_geometry = QApplication.primaryScreen().geometry()
+                x = (screen_geometry.width() - msg.width()) // 2
+                y = (screen_geometry.height() - msg.height()) // 2
+                msg.move(QPoint(x, y))
                 
                 # Asegurar que la interfaz esté completamente actualizada antes de mostrar el diálogo
                 app.processEvents()
                 
                 if msg.exec() == QMessageBox.Yes:
-                    webbrowser.open(obtener_url_descarga())
-                    window.close()
-                    app.quit()
-                    sys.exit()
+                    # ---------- INICIO DE LA NUEVA LÓGICA DE ACTUALIZACIÓN ----------
+                    # Comprobar si es Windows y está compilado con PyInstaller
+                    is_windows = sys.platform == "win32"
+                    is_frozen = getattr(sys, 'frozen', False)
+
+                    if is_windows and is_frozen:
+                        try:
+                            from Updater import iniciar_actualizacion_automatica
+                            from Version_checker import obtener_url_descarga_exe # Importar la nueva función
+
+                            url_exe_descarga = obtener_url_descarga_exe(ultima_version)
+
+                            iniciar_actualizacion_automatica(
+                                ultima_version, # Pasar el tag de la última versión
+                                window,  # Ventana principal como padre para los diálogos
+                                app,     # Instancia de QApplication
+                                obtener_traduccion, # Tu función de traducción
+                                window.current_language,
+                                url_exe_descarga,
+                                APP_DATA_DIR  # <--- AÑADIR APP_DATA_DIR aquí
+                            )
+                            # Nota: iniciar_actualizacion_automatica se encargará de cerrar la app si la actualización procede.
+                        except ImportError:
+                            QMessageBox.critical(window, 
+                                                 obtener_traduccion('error_title', window.current_language), 
+                                                 obtener_traduccion('updater_module_not_found_error', window.current_language))
+                            webbrowser.open(obtener_url_descarga()) # Fallback al método antiguo
+                            window.close()
+                            app.quit()
+                            # sys.exit() # app.quit() debería ser suficiente
+                        except Exception as e_update:
+                            QMessageBox.critical(window, 
+                                                 obtener_traduccion('update_error_title', window.current_language),
+                                                 f"{obtener_traduccion('unexpected_update_error_message', window.current_language)}: {str(e_update)}")
+                            webbrowser.open(obtener_url_descarga()) # Fallback
+                            window.close()
+                            app.quit()
+                            # sys.exit()
+                    else:
+                        # Si no es Windows compilado, o si la condición no se cumple, usar el método antiguo
+                        webbrowser.open(obtener_url_descarga())
+                        window.close()
+                        app.quit()
+                        sys.exit() # <--- DESCOMENTAR ESTA LÍNEA
+                    # ---------- FIN DE LA NUEVA LÓGICA DE ACTUALIZACIÓN ----------
         else:
             QTimer.singleShot(100, check_and_show_main_window)
     
