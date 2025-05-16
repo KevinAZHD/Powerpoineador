@@ -1,4 +1,4 @@
-import os
+import os, sys
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QListWidget, QDialogButtonBox, QLabel, QListWidgetItem, QSplitter
 )
@@ -8,7 +8,12 @@ from Traducciones import obtener_traduccion
 
 # Función para obtener la ruta de un recurso (copiada de Powerpoineador.py por si acaso)
 def resource_path(relative_path):
-    base_path = os.path.abspath(".")
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
     return os.path.join(base_path, relative_path)
 
 class StyleSelectionDialog(QDialog):
