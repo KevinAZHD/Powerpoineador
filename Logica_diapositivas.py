@@ -15,6 +15,8 @@ from modelos.IA_sana_sprint import generar_imagen as generar_imagen_sana_sprint
 from modelos.IA_model3_4 import generar_imagen as generar_imagen_model3_4
 from modelos.IA_grok2_image import generar_imagen as generar_imagen_grok
 from modelos.IA_gemini2_flash_image import generar_imagen as generar_imagen_gemini_flash
+from modelos.IA_dall_e_2 import generar_imagen as generar_imagen_dalle2
+from modelos.IA_dall_e_3 import generar_imagen as generar_imagen_dalle3
 from Traducciones import obtener_traduccion
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
@@ -255,6 +257,10 @@ def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
             return generar_imagen_grok(section, content, descripcion, signals, False)
         elif modelo == 'gemini-2.0-flash-preview-image-generation':
             return generar_imagen_gemini_flash(section, content, descripcion, signals, False)
+        elif modelo == 'dall-e-3 [$0.12]':
+            return generar_imagen_dalle3(section, content, descripcion, signals, False)
+        elif modelo == 'dall-e-2 [$0.02]':
+            return generar_imagen_dalle2(section, content, descripcion, signals, False)
         else:
             return generar_imagen_flux(section, content, descripcion, None, signals, False)
     except Exception as e:
@@ -837,6 +843,62 @@ def generar_imagen_gemini_flash(section, content, descripcion, signals=None, pri
         
         # Importar la función original
         from modelos.IA_gemini2_flash_image import generar_imagen
+        return generar_imagen(section, content, descripcion)
+    except Exception as e:
+        raise RuntimeError(obtener_traduccion('error_generar_imagen', current_language).format(error=str(e)))
+
+# Función para generar una imagen con el modelo Dall-e-2
+def generar_imagen_dalle2(section, content, descripcion, signals=None, print_log=True):
+    # Función interna para manejar logs
+    def log_message(msg):
+        print(msg)
+        if signals:
+            signals.update_log.emit(str(msg))
+    
+    # Obtener el idioma actual
+    current_language = 'es'
+    if signals and hasattr(signals, 'current_language'):
+        current_language = signals.current_language
+    elif signals and hasattr(signals, 'parent') and hasattr(signals.parent, 'current_language'):
+        current_language = signals.parent.current_language
+    elif signals and hasattr(signals, 'parent') and hasattr(signals.parent, 'parent') and hasattr(signals.parent.parent, 'current_language'):
+        current_language = signals.parent.parent.current_language
+
+    try:
+        # Imprimir mensaje solo si se solicita
+        if print_log:
+            log_message(f"{obtener_traduccion('intentando_generar_imagen', current_language)} (Dalle2)")
+        
+        # Importar la función original
+        from modelos.IA_dall_e_2 import generar_imagen
+        return generar_imagen(section, content, descripcion)
+    except Exception as e:
+        raise RuntimeError(obtener_traduccion('error_generar_imagen', current_language).format(error=str(e)))
+
+# Función para generar una imagen con el modelo Dall-e-3
+def generar_imagen_dalle3(section, content, descripcion, signals=None, print_log=True):
+    # Función interna para manejar logs
+    def log_message(msg):
+        print(msg)
+        if signals:
+            signals.update_log.emit(str(msg))
+    
+    # Obtener el idioma actual
+    current_language = 'es'
+    if signals and hasattr(signals, 'current_language'):
+        current_language = signals.current_language
+    elif signals and hasattr(signals, 'parent') and hasattr(signals.parent, 'current_language'):
+        current_language = signals.parent.current_language
+    elif signals and hasattr(signals, 'parent') and hasattr(signals.parent, 'parent') and hasattr(signals.parent.parent, 'current_language'):
+        current_language = signals.parent.parent.current_language
+
+    try:
+        # Imprimir mensaje solo si se solicita
+        if print_log:
+            log_message(f"{obtener_traduccion('intentando_generar_imagen', current_language)} (Dalle3)")
+        
+        # Importar la función original
+        from modelos.IA_dall_e_3 import generar_imagen
         return generar_imagen(section, content, descripcion)
     except Exception as e:
         raise RuntimeError(obtener_traduccion('error_generar_imagen', current_language).format(error=str(e)))

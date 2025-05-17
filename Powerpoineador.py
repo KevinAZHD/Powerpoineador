@@ -2524,6 +2524,8 @@ class PowerpoineatorWidget(QWidget):
             
             self.imagen_combo.setEnabled(True)
             self.imagen_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'dall-e-3 [$0.12]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'dall-e-2 [$0.02]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell [$0.003]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 [$0.05]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast [$0.025]')
@@ -3427,8 +3429,9 @@ class PowerpoineatorWidget(QWidget):
             
             if modelo_imagen:
                 precio_imagen = self.extraer_precio_modelo(modelo_imagen)
-                if hasattr(self, 'log_window') and self.log_window:
-                    num_imagenes = self.log_window.total_images
+                # Eliminar la siguiente línea, ya que num_imagenes se pasará correctamente
+                # if hasattr(self, 'log_window') and self.log_window:
+                #     num_imagenes = self.log_window.total_images
                 config['costos_totales']['imagen'] += precio_imagen * num_imagenes
             
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
@@ -3438,7 +3441,12 @@ class PowerpoineatorWidget(QWidget):
 
     def registrar_costos_finales(self):
         self.registrar_costos(modelo_texto=self.texto_combo.currentText())
-        self.registrar_costos(modelo_imagen=self.imagen_combo.currentText(), num_imagenes=1)
+        # Usar self.total_images que se obtiene de update_log.
+        # Si self.total_images no se actualizó (por ejemplo, si no hubo mensajes de 'generando_imagen'),
+        # su valor por defecto es 0, pero update_log tiene fallbacks a 1.
+        # Para mayor seguridad, si self.total_images es 0, usar 1.
+        num_imagenes_a_registrar = self.total_images if self.total_images > 0 else 1
+        self.registrar_costos(modelo_imagen=self.imagen_combo.currentText(), num_imagenes=num_imagenes_a_registrar)
 
     def save_num_diapositivas(self):
         try:

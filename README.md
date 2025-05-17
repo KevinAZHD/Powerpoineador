@@ -56,6 +56,8 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 ### Modelos de Imagen:
 
 - **gemini-2.0-flash-preview-image-generation** - Modelo de Google para la generación de imágenes estándar.
+- **dall-e-3** - Modelo de OpenAI capacitado para crear imágenes y arte realista.
+- **dall-e-2** - Modelo económico de OpenAI clásico y original.
 - **flux-schnell** - Modelo rápido con buena calidad.
 - **imagen-3** - Modelo de Google con la mejor calidad de imagen.
 - **imagen-3-fast** - Modelo de Google rápido y económico.
