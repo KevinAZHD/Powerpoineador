@@ -93,6 +93,18 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         elif modelo == 'deepseek-r1 [$0.007]':
             from modelos.IA_deepseek import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'gpt-4.1 [$0.0056]':
+            from modelos.IA_gpt4_1 import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'gpt-4.1-nano [$0.00028]':
+            from modelos.IA_gpt4_1_nano import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'o4-mini [$0.0028]':
+            from modelos.IA_o4_mini import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'gpt-4o-mini [$0.00042]':
+            from modelos.IA_gpt4o_mini import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
         else:
             from modelos.IA_dolphin import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
@@ -184,6 +196,18 @@ def generar_texto_ia(tipo, contenido_actual, descripcion, modelo, signals=None):
             texto_generado = generar_texto_simple(prompt, signals)
         elif modelo == 'deepseek-r1 [$0.007]':
             from modelos.IA_deepseek import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'gpt-4.1 [$0.0056]':
+            from modelos.IA_gpt4_1 import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'gpt-4.1-nano [$0.00028]':
+            from modelos.IA_gpt4_1_nano import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'o4-mini [$0.0028]':
+            from modelos.IA_o4_mini import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'gpt-4o-mini [$0.00042]':
+            from modelos.IA_gpt4o_mini import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
         else:
             from modelos.IA_dolphin import generar_texto_simple

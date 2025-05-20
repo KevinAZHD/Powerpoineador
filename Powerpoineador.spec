@@ -17,6 +17,7 @@ a = Analysis(
         'Cifrado.py',
         'Plantillas.py',
         'Updater.py',
+        'Temas.py',
         'Diseños_diapositivas.py',
         'apis/Google.py',
         'apis/Replicate.py',

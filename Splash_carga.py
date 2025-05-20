@@ -1,7 +1,7 @@
 import sys, os, threading, json
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QApplication
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QIcon, QPixmap, QGuiApplication, QPalette, QColor
 from Version_checker import hay_actualizacion_disponible, obtener_version_actual
 from Traducciones import obtener_traduccion
 
@@ -15,7 +15,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # Obtener la ruta al archivo de configuración
-def get_config_file():
+def get_config_file_path():
     if sys.platform == 'win32':
         APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), 'Powerpoineador')
     elif sys.platform == 'darwin':
@@ -23,26 +23,42 @@ def get_config_file():
     else:
         APP_DATA_DIR = os.path.join(os.path.expanduser('~'), '.Powerpoineador')
     
+    if not os.path.exists(APP_DATA_DIR):
+        try:
+            os.makedirs(APP_DATA_DIR)
+        except OSError as e:
+            print(f"Error al crear el directorio de datos de la aplicación: {e}")
+            # Considerar un manejo de error más robusto o un fallback
+            # Por ahora, si no se puede crear, no se podrá leer/escribir config.
+            return None 
+            
     return os.path.join(APP_DATA_DIR, 'config.json')
 
-# Función para cargar el idioma desde la configuración
-def load_language_from_config():
-    try:
-        config_file = get_config_file()
-        if os.path.exists(config_file):
+# Función para cargar la configuración (idioma y tema)
+def load_config():
+    config_data = {'language': 'es', 'theme_preference': 'system'} # Valores por defecto
+    config_file = get_config_file_path()
+    
+    if config_file and os.path.exists(config_file):
+        try:
             with open(config_file, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                return config.get('language', 'es')
-    except Exception as e:
-        print(f"Error al cargar el idioma: {str(e)}")
-    return 'es'  # Idioma predeterminado si no se puede cargar
+                loaded_config = json.load(f)
+                config_data['language'] = loaded_config.get('language', 'es')
+                config_data['theme_preference'] = loaded_config.get('theme_preference', 'system')
+        except Exception as e:
+            print(f"Error al cargar la configuración: {str(e)}")
+    return config_data
 
 # Clase para mostrar el splash de carga
 class SplashScreen(QWidget):
     def __init__(self):
         super().__init__()
         self.hay_actualizacion = False
-        self.current_language = load_language_from_config()
+        
+        config = load_config()
+        self.current_language = config['language']
+        self.theme_preference = config['theme_preference']
+        
         self.check_thread = threading.Thread(target=self.check_version)
         self.check_thread.start()
         
@@ -73,19 +89,12 @@ class SplashScreen(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         
         # Configurar el contenedor
-        container = QWidget()
-        container.setObjectName("container")
-        container.setStyleSheet("""
-            QWidget#container {
-                background-color: rgba(255, 255, 255, 255);
-                border-radius: 20px;
-                border: 2px solid #e0e0e0;
-            }
-        """)
-        container.setCursor(Qt.ArrowCursor)
+        self.container = QWidget()
+        self.container.setObjectName("container")
+        self.container.setCursor(Qt.ArrowCursor)
         
         # Configurar el layout del contenido
-        content_layout = QVBoxLayout(container)
+        content_layout = QVBoxLayout(self.container)
         content_layout.setSpacing(20)
         content_layout.setContentsMargins(50, 50, 50, 50)
         
@@ -98,8 +107,8 @@ class SplashScreen(QWidget):
             content_layout.addWidget(icon_label, alignment=Qt.AlignCenter)
         
         # Añadir título del programa con estilo similar a PowerPoint
-        title_label = QLabel(obtener_traduccion('app_title', self.current_language))
-        title_label.setStyleSheet("""
+        self.title_label = QLabel(obtener_traduccion('app_title', self.current_language))
+        self.title_label.setStyleSheet("""
             QLabel {
                 color: #D83B01;
                 font-size: 32px;
@@ -107,21 +116,24 @@ class SplashScreen(QWidget):
                 font-family: 'Segoe UI', Arial, sans-serif;
             }
         """)
-        content_layout.addWidget(title_label, alignment=Qt.AlignCenter)
+        content_layout.addWidget(self.title_label, alignment=Qt.AlignCenter)
 
         # Añadir versión del programa
-        version_label = QLabel(f"{obtener_version_actual()}")
-        version_label.setStyleSheet("""
+        self.version_label = QLabel(f"{obtener_version_actual()}")
+        self.version_label.setStyleSheet("""
             QLabel {
                 color: #666666;
                 font-size: 16px;
                 font-family: 'Segoe UI', Arial, sans-serif;
             }
         """)
-        content_layout.addWidget(version_label, alignment=Qt.AlignCenter)
+        content_layout.addWidget(self.version_label, alignment=Qt.AlignCenter)
         
-        main_layout.addWidget(container)
+        main_layout.addWidget(self.container)
         self.setLayout(main_layout)
+
+        # Aplicar tema ANTES de centrar y mostrar
+        self.apply_splash_theme()
 
         # Centrar la ventana en la pantalla
         screen = QApplication.primaryScreen().availableGeometry()
@@ -129,6 +141,76 @@ class SplashScreen(QWidget):
             screen.center().x() - self.width() // 2,
             screen.center().y() - self.height() // 2
         )
+
+    def apply_splash_theme(self):
+        effective_theme = self.theme_preference
+        if self.theme_preference == 'system':
+            # Obtener el tema del sistema operativo
+            # Esto necesita que QApplication ya esté instanciada
+            # Se llamará desde el if __name__ == "__main__" después de crear app
+            # Por ahora, si es system, asumimos claro para el splash inicial
+            # o podemos intentar obtenerlo si QGuiApplication está disponible
+            try:
+                app_instance = QApplication.instance()
+                if app_instance:
+                    color_scheme = QGuiApplication.styleHints().colorScheme()
+                    if color_scheme == Qt.ColorScheme.Dark:
+                        effective_theme = 'dark'
+                    else:
+                        effective_theme = 'light'
+                else:
+                    # Si QApplication no está lista, usar un default (ej. claro)
+                    effective_theme = 'light' 
+            except Exception as e:
+                print(f"Error detectando tema del sistema para splash: {e}")
+                effective_theme = 'light' # Fallback
+
+        if effective_theme == 'dark':
+            self.container.setStyleSheet("""
+                QWidget#container {
+                    background-color: rgba(35, 35, 35, 255); /* Negro/Gris oscuro */
+                    border-radius: 20px;
+                    border: 2px solid #555555; /* Borde oscuro */
+                }
+            """)
+            self.title_label.setStyleSheet("""
+                QLabel {
+                    color: #E0E0E0; /* Color de texto claro para tema oscuro */
+                    font-size: 32px;
+                    font-weight: bold;
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                }
+            """)
+            self.version_label.setStyleSheet("""
+                QLabel {
+                    color: #AAAAAA; /* Color de texto gris claro para tema oscuro */
+                    font-size: 16px;
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                }
+            """)
+        else: # Tema claro o default
+            self.container.setStyleSheet("""
+                QWidget#container {
+                    background-color: rgba(255, 255, 255, 255);
+                    border-radius: 20px;
+                    border: 2px solid #e0e0e0;
+                }
+            """)
+            self.title_label.setStyleSheet("""
+                QLabel {
+                    color: #D83B01;
+                    font-size: 32px;
+                    font-weight: bold;
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                }
+            """)
+            self.version_label.setStyleSheet("""
+                QLabel {
+                    color: #666666;
+                    font-size: 16px;
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                }
+            """)
 
     # Función para verificar si hay una actualización disponible
     def check_version(self):

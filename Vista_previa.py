@@ -52,6 +52,27 @@ class EditSlideDialog(QDialog):
         main_dialog_layout.setContentsMargins(5, 5, 5, 5) # Márgenes pequeños
         main_dialog_layout.setSpacing(10) # Espacio entre botones y contenido
 
+        # --- Contenedor para botón de navegación izquierdo con marco ---
+        self.left_nav_container = QPushButton()  # Cambiar de QFrame a QPushButton y hacerlo atributo de instancia
+        self.left_nav_container.setStyleSheet("""
+            QPushButton {
+                border: 1px solid gray;
+                border-radius: 3px;
+                background-color: transparent;
+            }
+            QPushButton:hover {
+                background-color: rgba(128, 128, 128, 30);
+            }
+            QPushButton:pressed {
+                background-color: rgba(128, 128, 128, 60);
+            }
+        """)
+        self.left_nav_container.setCursor(Qt.PointingHandCursor)
+        self.left_nav_container.clicked.connect(self.navigate_previous_slide)  # Misma función que el botón interno
+        self.left_nav_container.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding) # <-- LÍNEA CORRECTA
+        left_nav_layout = QVBoxLayout(self.left_nav_container)
+        left_nav_layout.setContentsMargins(0, 0, 0, 0) # Modificar márgenes
+        
         # --- Botón de Navegación Izquierdo --- 
         self.prev_slide_button = QPushButton()
         left_icon_path = resource_path("iconos/left.png")
@@ -59,13 +80,18 @@ class EditSlideDialog(QDialog):
             self.prev_slide_button.setIcon(QIcon(left_icon_path))
         else:
             self.prev_slide_button.setText("<")
-        self.prev_slide_button.setIconSize(QSize(32, 32))
-        self.prev_slide_button.setFixedSize(QSize(40, 40))
+        self.prev_slide_button.setIconSize(QSize(48, 48))  # Aumentado de 32x32 a 48x48
+        self.prev_slide_button.setFixedSize(QSize(60, 60))  # Aumentado de 40x40 a 60x60
         self.prev_slide_button.setToolTip(obtener_traduccion('slide_previous', self.current_language))
         self.prev_slide_button.clicked.connect(self.navigate_previous_slide)
         self.prev_slide_button.setStyleSheet("QPushButton { border: none; background-color: transparent; }")
         self.prev_slide_button.setCursor(Qt.PointingHandCursor)
-        main_dialog_layout.addWidget(self.prev_slide_button, 0, Qt.AlignVCenter)
+        left_nav_layout.addStretch(1) # Añadir espaciador flexible arriba
+        left_nav_layout.addWidget(self.prev_slide_button, 0, Qt.AlignCenter)
+        left_nav_layout.addStretch(1) # Añadir espaciador flexible abajo
+        
+        # Añadir el contenedor con marco al layout principal
+        main_dialog_layout.addWidget(self.left_nav_container)
 
         # --- Contenedor Central Vertical (Contenido del diálogo original) ---
         central_widget = QWidget()
@@ -81,8 +107,8 @@ class EditSlideDialog(QDialog):
             self.generate_ai_title_button.setIcon(QIcon(ai_title_icon_path))
         else:
             self.generate_ai_title_button.setText("IA")
-        self.generate_ai_title_button.setIconSize(QSize(24, 24))
-        self.generate_ai_title_button.setFixedSize(QSize(32, 32))
+        self.generate_ai_title_button.setIconSize(QSize(24, 24)) # Restaurado al tamaño original
+        self.generate_ai_title_button.setFixedSize(QSize(32, 32)) # Restaurado al tamaño original
         self.generate_ai_title_button.setToolTip(obtener_traduccion('generate_ai_title', self.current_language))
         self.generate_ai_title_button.clicked.connect(self.generate_new_ai_title)
         
@@ -237,8 +263,8 @@ class EditSlideDialog(QDialog):
         browse_button.clicked.connect(self.browse_new_image)
         
         self.generate_ai_button = QPushButton(QIcon(resource_path("iconos/editar_foto.png")), "") 
-        self.generate_ai_button.setIconSize(QSize(24, 24))
-        self.generate_ai_button.setFixedSize(QSize(32, 32))
+        self.generate_ai_button.setIconSize(QSize(24, 24)) # Restaurado al tamaño original
+        self.generate_ai_button.setFixedSize(QSize(32, 32)) # Restaurado al tamaño original
         self.generate_ai_button.setToolTip(obtener_traduccion('generate_ai_image', self.current_language))
         self.generate_ai_button.clicked.connect(self.generate_new_ai_image)
         
@@ -264,6 +290,27 @@ class EditSlideDialog(QDialog):
         # --- Añadir widget central al layout principal --- 
         main_dialog_layout.addWidget(central_widget, 1) # Darle más espacio horizontal que a los botones
 
+        # --- Contenedor para botón de navegación derecho con marco ---
+        self.right_nav_container = QPushButton()  # Cambiar de QFrame a QPushButton y hacerlo atributo de instancia
+        self.right_nav_container.setStyleSheet("""
+            QPushButton {
+                border: 1px solid gray;
+                border-radius: 3px;
+                background-color: transparent;
+            }
+            QPushButton:hover {
+                background-color: rgba(128, 128, 128, 30);
+            }
+            QPushButton:pressed {
+                background-color: rgba(128, 128, 128, 60);
+            }
+        """)
+        self.right_nav_container.setCursor(Qt.PointingHandCursor)
+        self.right_nav_container.clicked.connect(self.navigate_next_slide)  # Misma función que el botón interno
+        self.right_nav_container.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding) # <-- AÑADIR ESTA LÍNEA
+        right_nav_layout = QVBoxLayout(self.right_nav_container)
+        right_nav_layout.setContentsMargins(0, 0, 0, 0) # Modificar márgenes
+
         # --- Botón de Navegación Derecho --- 
         self.next_slide_button = QPushButton()
         right_icon_path = resource_path("iconos/right.png")
@@ -271,13 +318,18 @@ class EditSlideDialog(QDialog):
             self.next_slide_button.setIcon(QIcon(right_icon_path))
         else:
             self.next_slide_button.setText(">")
-        self.next_slide_button.setIconSize(QSize(32, 32))
-        self.next_slide_button.setFixedSize(QSize(40, 40))
+        self.next_slide_button.setIconSize(QSize(48, 48))  # Aumentado de 32x32 a 48x48
+        self.next_slide_button.setFixedSize(QSize(60, 60))  # Aumentado de 40x40 a 60x60
         self.next_slide_button.setToolTip(obtener_traduccion('slide_next', self.current_language))
         self.next_slide_button.clicked.connect(self.navigate_next_slide)
         self.next_slide_button.setStyleSheet("QPushButton { border: none; background-color: transparent; }")
         self.next_slide_button.setCursor(Qt.PointingHandCursor)
-        main_dialog_layout.addWidget(self.next_slide_button, 0, Qt.AlignVCenter)
+        right_nav_layout.addStretch(1) # Añadir espaciador flexible arriba
+        right_nav_layout.addWidget(self.next_slide_button, 0, Qt.AlignCenter)
+        right_nav_layout.addStretch(1) # Añadir espaciador flexible abajo
+        
+        # Añadir el contenedor con marco al layout principal
+        main_dialog_layout.addWidget(self.right_nav_container)
 
         # --- Inicialización Final --- 
         self.load_format_settings() # Cargar configuración de formato primero
@@ -366,14 +418,35 @@ class EditSlideDialog(QDialog):
         self.content_italic_check.blockSignals(False)
         self.content_underline_check.blockSignals(False)
 
+        # Aplicar la fuente al QComboBox visible (después de establecer el texto)
+        self._update_combobox_font_preview(self.title_font_combo, self.title_font_combo.currentText())
+        self._update_combobox_font_preview(self.content_font_combo, self.content_font_combo.currentText())
+
+    def _update_combobox_font_preview(self, combobox, font_name):
+        """Actualiza la fuente del texto visible del QComboBox."""
+        if font_name in self.system_fonts:
+            font = QFont(font_name)
+            # Podrías ajustar el tamaño si es necesario para la previsualización, ej: font.setPointSize(10)
+            combobox.setFont(font)
+        else:
+            # Fallback a una fuente por defecto si la fuente no está disponible
+            combobox.setFont(QFont("Arial", QApplication.font().pointSize()))
+
     # >>> NUEVO: Métodos para manejar cambios en los controles de formato <<<
-    def on_title_font_changed(self, font):
-        self.current_format_settings['title_font_name'] = font
-        self.update_preview_temporarily()
+    def on_title_font_changed(self, font_name):
+        if font_name not in self.system_fonts:
+            print(f"Advertencia: La fuente de título '{font_name}' no está en las fuentes del sistema.")
+            # Opcional: podrías revertir a una fuente por defecto o no hacer nada
+        
+        self.current_format_settings['title_font_name'] = font_name
+        self._update_preview_temporarily()
+        self._update_format_changed_state()
+        self._update_combobox_font_preview(self.title_font_combo, font_name)
         
     def on_title_size_changed(self, value):
         self.current_format_settings['title_font_size'] = value
-        self.update_preview_temporarily()
+        self._update_preview_temporarily()
+        self._update_format_changed_state()
         
     def on_title_style_changed(self):
         self.current_format_settings['title_bold'] = self.title_bold_check.isChecked()
@@ -381,13 +454,20 @@ class EditSlideDialog(QDialog):
         self.current_format_settings['title_underline'] = self.title_underline_check.isChecked()
         self.update_preview_temporarily()
         
-    def on_content_font_changed(self, font):
-        self.current_format_settings['content_font_name'] = font
-        self.update_preview_temporarily()
+    def on_content_font_changed(self, font_name):
+        if font_name not in self.system_fonts:
+            print(f"Advertencia: La fuente de contenido '{font_name}' no está en las fuentes del sistema.")
+            # Opcional: podrías revertir a una fuente por defecto o no hacer nada
+        
+        self.current_format_settings['content_font_name'] = font_name
+        self._update_preview_temporarily()
+        self._update_format_changed_state()
+        self._update_combobox_font_preview(self.content_font_combo, font_name)
         
     def on_content_size_changed(self, value):
         self.current_format_settings['content_font_size'] = value
-        self.update_preview_temporarily()
+        self._update_preview_temporarily()
+        self._update_format_changed_state()
         
     def on_content_style_changed(self):
         self.current_format_settings['content_bold'] = self.content_bold_check.isChecked()
@@ -429,13 +509,25 @@ class EditSlideDialog(QDialog):
         if not self.parent_widget or not hasattr(self.parent_widget, 'all_slides_data') or not self.parent_widget.all_slides_data:
             self.prev_slide_button.setEnabled(False)
             self.next_slide_button.setEnabled(False)
+            if hasattr(self, 'left_nav_container'): # Comprobar si el atributo existe
+                self.left_nav_container.setEnabled(False)
+            if hasattr(self, 'right_nav_container'): # Comprobar si el atributo existe
+                self.right_nav_container.setEnabled(False)
             return
         
         current_index = self.parent_widget.current_slide_index
         total_slides = len(self.parent_widget.all_slides_data)
         
-        self.prev_slide_button.setEnabled(current_index > 0)
-        self.next_slide_button.setEnabled(current_index < total_slides - 1)
+        can_go_previous = current_index > 0
+        can_go_next = current_index < total_slides - 1
+
+        self.prev_slide_button.setEnabled(can_go_previous)
+        if hasattr(self, 'left_nav_container'): # Comprobar si el atributo existe
+            self.left_nav_container.setEnabled(can_go_previous)
+        
+        self.next_slide_button.setEnabled(can_go_next)
+        if hasattr(self, 'right_nav_container'): # Comprobar si el atributo existe
+            self.right_nav_container.setEnabled(can_go_next)
 
     # >>> NUEVO: Navegar a la diapositiva anterior <<< 
     def navigate_previous_slide(self):
@@ -1093,21 +1185,15 @@ class VentanaVistaPrevia(QWidget):
                  title_bold=False, title_italic=False, title_underline=False, 
                  content_bold=False, content_italic=False, content_underline=False):
         super().__init__(parent)
-        # --- MODIFICADO: Usar initial_language directamente ---
+        
+        # --- MODIFICADO: Determinar idioma de manera más robusta ---
+        # Usar el idioma proporcionado como parámetro como primera opción
         self.current_language = initial_language
-        # --- ELIMINADO: Lógica de búsqueda en padre/abuelo ---
-        # self.current_language = 'es' # Default inicial
-        # # Obtener el idioma del padre si está disponible
-        # if parent and hasattr(parent, 'current_language'):
-        #     self.current_language = parent.current_language
-        # elif parent and hasattr(parent, 'parent') and parent.parent and hasattr(parent.parent, 'current_language'):
-        #      # Intentar obtener del "abuelo" si el padre directo no lo tiene (caso común en anidamiento)
-        #     self.current_language = parent.parent.current_language
-        # -------------------------------------------------------
-
+        # ------------------------------------------------------
+        
         self.pptx_path = None # Ruta al archivo PPTX generado
         
-        # --- NUEVO: Almacenar configuración de formato global ---
+        # Mantener referencias a la configuración de formato
         self.title_font_name = title_font_name
         self.content_font_name = content_font_name
         self.title_font_size = title_font_size
@@ -1140,6 +1226,9 @@ class VentanaVistaPrevia(QWidget):
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
+        # Inicializar con estilo de borde por defecto (tema claro)
+        self.actualizar_borde_tema('light')
         
         # Widget contenedor para la diapositiva actual
         self.contenedor = QWidget()
@@ -1512,7 +1601,7 @@ class VentanaVistaPrevia(QWidget):
             
             # Crear frame para la diapositiva
             slide_frame = QFrame()
-            # slide_frame.setFrameStyle(QFrame.Box) # Opcional: quitar si no se desea borde
+            slide_frame.setFrameStyle(QFrame.Box | QFrame.Plain) # Agregar borde tipo Box
             slide_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             slide_layout = QVBoxLayout()
             slide_layout.setSpacing(8) # Mantener espaciado actual o ajustar
@@ -2566,3 +2655,14 @@ class VentanaVistaPrevia(QWidget):
             
             # Actualizar botones de navegación
             self.actualizar_botones_navegacion() 
+
+    # --- MÉTODO NUEVO: Actualizar el borde según el tema ---
+    def actualizar_borde_tema(self, tema_nombre):
+        """Actualiza el estilo del borde de la vista previa según el tema."""
+        if tema_nombre == 'dark':
+            # Borde más oscuro para el tema oscuro
+            self.scroll.setStyleSheet("QScrollArea { border: 1px solid #555555; border-radius: 2px; }")
+        else:
+            # Borde gris claro para el tema claro
+            self.scroll.setStyleSheet("QScrollArea { border: 1px solid #cccccc; border-radius: 2px; }")
+    # --- FIN MÉTODO NUEVO ---

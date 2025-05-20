@@ -206,6 +206,10 @@ traducciones = {
         'downloading_update_message': 'Descargando actualización. Espere...',
         'downloading_update_title': 'Descargando nueva versión',
         'download_error_title': 'Error en la descarga',
+        'system_theme_action_text': 'Sistema',
+        'light_theme_action_text': 'Claro',
+        'dark_theme_action_text': 'Oscuro',
+        'appearance_menu_title': 'Apariencia',
     },
     'en': {
         'auto_open': 'Automatically open presentation',
@@ -413,7 +417,10 @@ traducciones = {
         'downloading_update_message': 'Downloading update. Please wait...',
         'downloading_update_title': 'Downloading new version',
         'download_error_title': 'Download error',
-        
+        'appearance_menu_title': 'Appearance',
+        'system_theme_action_text': 'System',
+        'light_theme_action_text': 'Light',
+        'dark_theme_action_text': 'Dark',
     },
     'fr': {
         'auto_open': 'Ouvrir automatiquement la présentation',
@@ -621,7 +628,10 @@ traducciones = {
         'downloading_update_message': 'Téléchargement de la mise à jour. Veuillez patienter...',
         'downloading_update_title': 'Téléchargement de la nouvelle version',
         'download_error_title': 'Erreur de téléchargement',
-        
+        'appearance_menu_title': 'Apparence',
+        'system_theme_action_text': 'Système',
+        'light_theme_action_text': 'Clair',
+        'dark_theme_action_text': 'Sombre',
     },
     'pt': {
         'auto_open': 'Abrir apresentação automaticamente',
@@ -829,6 +839,10 @@ traducciones = {
         'downloading_update_message': 'A descarregar atualização. Espere...',
         'downloading_update_title': 'A descarregar nova versão',
         'download_error_title': 'Erro de download',
+        'appearance_menu_title': 'Apariência',
+        'system_theme_action_text': 'Sistema',
+        'light_theme_action_text': 'Claro',
+        'dark_theme_action_text': 'Escuro',
     },
     'it': {
         'auto_open': 'Apri presentazione automaticamente',
@@ -1036,6 +1050,10 @@ traducciones = {
         'downloading_update_message': "Download dell'aggiornamento. Attendi...",
         'downloading_update_title': "Download nuova versione",
         'download_error_title': "Errore di download",
+        'appearance_menu_title': 'Aparienza',
+        'system_theme_action_text': 'Sistema',
+        'light_theme_action_text': 'Chiaro',
+        'dark_theme_action_text': 'Scuro',
     },
     'de': {
         'auto_open': 'Präsentation automatisch öffnen',
@@ -1243,6 +1261,10 @@ traducciones = {
         'downloading_update_message': 'Update wird heruntergeladen. Bitte warten...',
         'downloading_update_title': 'Neue Version herunterladen',
         'download_error_title': 'Download-Fehler',
+        'appearance_menu_title': 'Aussehen',
+        'system_theme_action_text': 'System',
+        'light_theme_action_text': 'Klar',
+        'dark_theme_action_text': 'Dunkel',
     },
     'ru': {
         'auto_open': 'Автоматически открывать презентацию',
@@ -1450,6 +1472,10 @@ traducciones = {
         'downloading_update_message': 'Скачивание обновления. Подождите...',
         'downloading_update_title': 'Скачивание новой версии',
         'download_error_title': 'Ошибка скачивания',
+        'appearance_menu_title': 'Внешний вид',
+        'system_theme_action_text': 'Система',
+        'light_theme_action_text': 'Светлая',
+        'dark_theme_action_text': 'Темная',
     },
     'cn': {
         'auto_open': '自动打开演示文稿',
@@ -1657,6 +1683,10 @@ traducciones = {
         'downloading_update_message': '正在下载更新。请稍候...',
         'downloading_update_title': '下载新版本',
         'download_error_title': '下载错误',
+        'appearance_menu_title': '外观',
+        'system_theme_action_text': '系统',
+        'light_theme_action_text': '亮',
+        'dark_theme_action_text': '暗',
     },
     'jp': {
         'auto_open': '自動的にプレゼンテーションを開く',
@@ -1864,6 +1894,10 @@ traducciones = {
         'downloading_update_message': 'アップデートをダウンロード中です。お待ちください...',
         'downloading_update_title': '新しいバージョンをダウンロード中',
         'download_error_title': 'ダウンロードエラー',
+        'appearance_menu_title': '外観',
+        'system_theme_action_text': 'システム',
+        'light_theme_action_text': '明るい',
+        'dark_theme_action_text': '暗い',
     },
     'kr': {
         'auto_open': '프레젠테이션 자동 열기',
@@ -2071,6 +2105,10 @@ traducciones = {
         'downloading_update_message': '업데이트를 다운로드하는 중입니다. 잠시 기다려 주십시오...',
         'downloading_update_title': '새 버전 다운로드 중',
         'download_error_title': '다운로드 오류',
+        'appearance_menu_title': '외관',
+        'system_theme_action_text': '시스템',
+        'light_theme_action_text': '밝은',
+        'dark_theme_action_text': '어두운',
     },
     'ar': {
         'auto_open': 'فتح العرض التقديمي تلقائيًا',
@@ -2278,6 +2316,10 @@ traducciones = {
         'downloading_update_message': 'جاري تنزيل التحديث. يرجى الانتظار...',
         'downloading_update_title': 'جاري تنزيل إصدار جديد',
         'download_error_title': 'خطأ في التنزيل',
+        'appearance_menu_title': 'المظهر',
+        'system_theme_action_text': 'النظام',
+        'light_theme_action_text': 'فاتح',
+        'dark_theme_action_text': 'غامق',
     },
     'tl': {
         'auto_open': 'Awtomatikong buksan ang presentasyon',
@@ -2485,6 +2527,10 @@ traducciones = {
         'downloading_update_message': 'Nagda-download ng update. Pakihintay...',
         'downloading_update_title': 'Nagda-download ng bagong bersyon',
         'download_error_title': 'Error sa pag-download',
+        'appearance_menu_title': 'Mga Pagkakita',
+        'system_theme_action_text': 'Sistema',
+        'light_theme_action_text': 'Klaro',
+        'dark_theme_action_text': 'Hinayang',
     }
 }
 

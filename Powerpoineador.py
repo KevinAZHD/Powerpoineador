@@ -1,10 +1,10 @@
 import sys, os, requests, json, webbrowser, platform
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint
-from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QActionGroup, QTextCursor
+from PySide6.QtGui import QIcon, QPixmap, QAction, QFont, QFontDatabase, QActionGroup, QTextCursor, QGuiApplication
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit, QPushButton,
     QLabel, QMessageBox, QCheckBox, QMainWindow, QFileDialog, QMenuBar, QSpinBox, QProgressBar,
-    QMenu, QSizePolicy, QGridLayout
+    QMenu, QSizePolicy, QGridLayout, QStyleFactory
     )
 from Version_checker import obtener_url_descarga, obtener_ultima_version, obtener_version_actual
 from apis.Replicate import ReplicateAPIKeyWindow
@@ -14,7 +14,8 @@ from Cifrado import GestorCifrado
 from Traducciones import obtener_traduccion
 from PyPDF2 import PdfReader
 from Vista_previa import PPTX_AVAILABLE
-from Plantillas import StyleSelectionDialog # <--- AÑADIR IMPORT
+from Plantillas import StyleSelectionDialog
+from Temas import ThemeManager
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -91,6 +92,18 @@ class MainWindow(QMainWindow):
         
         self.current_language = 'es'
         self.load_language()
+        
+        # Configuración del tema de apariencia
+        self.current_app_theme = 'system' # Default antes de cargar, podría ser 'system', 'light', or 'dark'
+        self.theme_manager = ThemeManager(self)
+        self.load_app_theme_preference() # Carga la preferencia guardada
+
+        # Conectar la señal de cambio de tema del SO
+        QGuiApplication.styleHints().colorSchemeChanged.connect(self._handle_system_theme_change)
+        
+        # Aplicar tema DESPUÉS de que QApplication.setStyle se llame en if __name__ == "__main__"
+        # pero antes de setup_ui para que los menús se creen con el tema correcto.
+        # Lo moveremos a después de QApplication.setStyle. Por ahora, solo cargamos la preferencia.
         
         if self.api_key:
             os.environ["REPLICATE_API_TOKEN"] = self.api_key
@@ -478,6 +491,41 @@ class MainWindow(QMainWindow):
             
             menubar.addAction(self.language_menu_action)
 
+            # --- MENÚ DE APARIENCIA PARA DARWIN ---
+            self.appearance_menu_action = QAction(QIcon(resource_path("iconos/theme.png")), '', self) # ICONO theme.png
+            self.appearance_menu_action.setMenuRole(QAction.NoRole)
+            self.appearance_menu = QMenu(self)
+            self.appearance_menu_action.setMenu(self.appearance_menu)
+            self.appearance_menu_action.setToolTip(obtener_traduccion('appearance_menu_title', self.current_language))
+
+            self.theme_action_group = QActionGroup(self)
+            self.theme_action_group.setExclusive(True)
+
+            self.system_theme_action = QAction(QIcon(resource_path("iconos/system.png")), obtener_traduccion('system_theme_action_text', self.current_language), self) # ICONO system.png
+            self.system_theme_action.setCheckable(True)
+            self.system_theme_action.setMenuRole(QAction.NoRole)
+            self.system_theme_action.triggered.connect(lambda: self.cambiar_tema_apariencia('system'))
+            self.appearance_menu.addAction(self.system_theme_action)
+            self.theme_action_group.addAction(self.system_theme_action)
+
+            self.light_theme_action = QAction(QIcon(resource_path("iconos/light.png")), obtener_traduccion('light_theme_action_text', self.current_language), self) # ICONO light.png
+            self.light_theme_action.setCheckable(True)
+            self.light_theme_action.setMenuRole(QAction.NoRole)
+            self.light_theme_action.triggered.connect(lambda: self.cambiar_tema_apariencia('light'))
+            self.appearance_menu.addAction(self.light_theme_action)
+            self.theme_action_group.addAction(self.light_theme_action)
+
+            self.dark_theme_action = QAction(QIcon(resource_path("iconos/dark.png")), obtener_traduccion('dark_theme_action_text', self.current_language), self) # ICONO dark.png
+            self.dark_theme_action.setCheckable(True)
+            self.dark_theme_action.setMenuRole(QAction.NoRole)
+            self.dark_theme_action.triggered.connect(lambda: self.cambiar_tema_apariencia('dark'))
+            self.appearance_menu.addAction(self.dark_theme_action)
+            self.theme_action_group.addAction(self.dark_theme_action)
+            
+            menubar.addAction(self.appearance_menu_action)
+            menubar.addAction(self.language_menu_action)
+            # --- FIN MENÚ DE APARIENCIA PARA DARWIN ---
+
         else:
             # --- Configuración para otras plataformas (original con left/right menubars) ---
             if is_darwin: # Esta condición es redundante aquí, ya que estamos en el 'else'
@@ -671,8 +719,40 @@ class MainWindow(QMainWindow):
             right_menubar.addAction(self.language_menu_action)
             menubar.setCornerWidget(right_menubar, Qt.TopRightCorner)
 
+            # --- MENÚ DE APARIENCIA PARA OTRAS PLATAFORMAS (EN RIGHT_MENUBAR) ---
+            self.appearance_menu_action = QAction(QIcon(resource_path("iconos/theme.png")), '', self) # ICONO theme.png
+            self.appearance_menu = QMenu(self)
+            self.appearance_menu_action.setMenu(self.appearance_menu)
+            self.appearance_menu_action.setToolTip(obtener_traduccion('appearance_menu_title', self.current_language))
+
+            self.theme_action_group = QActionGroup(self)
+            self.theme_action_group.setExclusive(True)
+
+            self.system_theme_action = QAction(QIcon(resource_path("iconos/system.png")), obtener_traduccion('system_theme_action_text', self.current_language), self) # ICONO system.png
+            self.system_theme_action.setCheckable(True)
+            self.system_theme_action.triggered.connect(lambda: self.cambiar_tema_apariencia('system'))
+            self.appearance_menu.addAction(self.system_theme_action)
+            self.theme_action_group.addAction(self.system_theme_action)
+
+            self.light_theme_action = QAction(QIcon(resource_path("iconos/light.png")), obtener_traduccion('light_theme_action_text', self.current_language), self) # ICONO light.png
+            self.light_theme_action.setCheckable(True)
+            self.light_theme_action.triggered.connect(lambda: self.cambiar_tema_apariencia('light'))
+            self.appearance_menu.addAction(self.light_theme_action)
+            self.theme_action_group.addAction(self.light_theme_action)
+
+            self.dark_theme_action = QAction(QIcon(resource_path("iconos/dark.png")), obtener_traduccion('dark_theme_action_text', self.current_language), self) # ICONO dark.png
+            self.dark_theme_action.setCheckable(True)
+            self.dark_theme_action.triggered.connect(lambda: self.cambiar_tema_apariencia('dark'))
+            self.appearance_menu.addAction(self.dark_theme_action)
+            self.theme_action_group.addAction(self.dark_theme_action)
+            
+            right_menubar.addAction(self.appearance_menu_action) # Añadido a right_menubar
+            right_menubar.addAction(self.language_menu_action)
+            # --- FIN MENÚ DE APARIENCIA PARA OTRAS PLATAFORMAS ---
+
         # >>> LLAMAR después de configurar las acciones <<<
         self.update_language_menu_state()
+        self.update_theme_menu_state() # <--- LLAMAR PARA ACTUALIZAR ESTADO DEL MENÚ DE TEMA
 
     # Función para establecer la clave API de Replicate
     def set_api_key(self, api_key):
@@ -1027,6 +1107,11 @@ class MainWindow(QMainWindow):
             self.github_action.setEnabled(False)
             self.language_menu_action.setEnabled(False) # <-- Deshabilitar el nuevo menú
             self.paypal_action.setEnabled(False)
+            self.appearance_menu_action.setEnabled(False) # <-- AÑADIR ESTA LÍNEA
+            
+            # Actualizar estilo de checkboxes en modo claro
+            if hasattr(self, 'theme_manager'):
+                self.theme_manager.set_generating_state(True)
         except Exception as e:
             print(f"Error al deshabilitar menús: {str(e)}")
 
@@ -1043,6 +1128,11 @@ class MainWindow(QMainWindow):
             self.github_action.setEnabled(True)
             self.language_menu_action.setEnabled(True) # <-- Habilitar el nuevo menú
             self.paypal_action.setEnabled(True)
+            self.appearance_menu_action.setEnabled(True) # <-- AÑADIR ESTA LÍNEA
+            
+            # Restaurar estilo normal de checkboxes
+            if hasattr(self, 'theme_manager'):
+                self.theme_manager.set_generating_state(False)
         except Exception as e:
             print(f"Error al habilitar menús: {str(e)}")
 
@@ -1230,7 +1320,12 @@ class MainWindow(QMainWindow):
             # >>> AÑADIR Deshabilitar botón de selección de estilo <<<
             if hasattr(self.widget, 'select_style_btn'):
                 self.widget.select_style_btn.setEnabled(False)
-    
+                
+            # >>> AÑADIR Ocultar etiqueta de estilo actual <<<
+            if hasattr(self.widget, 'current_style_label'):
+                self.widget.current_style_label.setText("")
+                self.widget.current_style_label.hide()
+
     # Función para habilitar la funcionalidad de la aplicación
     def enable_functionality(self):
         if hasattr(self, 'balance_action'):
@@ -1385,6 +1480,11 @@ class MainWindow(QMainWindow):
             # >>> AÑADIR Habilitar botón de selección de estilo <<<
             if hasattr(self.widget, 'select_style_btn'):
                 self.widget.select_style_btn.setEnabled(True)
+                
+            # >>> AÑADIR Mostrar etiqueta de estilo actual <<<
+            if hasattr(self.widget, 'current_style_label'):
+                self.widget.current_style_label.show()
+                self.widget.update_style_label() # Actualizar el texto
 
     # Función para manejar el evento de cierre de la ventana
     def closeEvent(self, event):
@@ -1670,6 +1770,19 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 print(f"Error al actualizar menús: {str(e)}")
 
+            # Actualizar textos del menú de apariencia directamente
+            if hasattr(self, 'system_theme_action'):
+                self.system_theme_action.setText(obtener_traduccion('system_theme_action_text', language_code))
+            if hasattr(self, 'light_theme_action'):
+                self.light_theme_action.setText(obtener_traduccion('light_theme_action_text', language_code))
+            if hasattr(self, 'dark_theme_action'):
+                self.dark_theme_action.setText(obtener_traduccion('dark_theme_action_text', language_code))
+            if hasattr(self, 'appearance_menu_action'): # Esta es la acción que CONTIENE el menú de apariencia
+                self.appearance_menu_action.setToolTip(obtener_traduccion('appearance_menu_title', language_code))
+                # Si el menú en sí tiene un título que se muestra (depende de la plataforma y estilo),
+                # y si self.appearance_menu es un QMenu directamente añadido a la barra, también se podría actualizar su título si es visible.
+                # Sin embargo, el QAction self.appearance_menu_action es el que tiene el tooltip y el icono visible en la barra.
+
         except Exception as e:
             print(f"Error al guardar el idioma: {str(e)}")
 
@@ -1794,6 +1907,89 @@ class MainWindow(QMainWindow):
             self.current_language = 'es' # Asegurar que el idioma actual sea válido
             self.language_menu_action.setText(obtener_traduccion('language_option_es', self.current_language))
             self.es_action.setChecked(True)
+
+    # --- INICIO NUEVAS FUNCIONES PARA TEMA ---
+    def load_app_theme_preference(self):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    self.current_app_theme = config.get('theme_preference', 'system') # Leer 'theme_preference'
+            else:
+                self.current_app_theme = 'system' # Default si no hay config
+        except Exception as e:
+            print(f"Error al cargar la preferencia de tema: {str(e)}")
+            self.current_app_theme = 'system'
+
+    def save_app_theme_preference(self):
+        try:
+            config = {}
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+            config['theme_preference'] = self.current_app_theme # Guardar como 'theme_preference'
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(config, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error al guardar la preferencia de tema: {str(e)}")
+
+    def cambiar_tema_apariencia(self, theme_choice): # theme_choice puede ser 'system', 'light', o 'dark'
+        self.current_app_theme = theme_choice # Guardamos la elección directa del usuario
+        
+        theme_to_apply = theme_choice
+        if theme_choice == 'system':
+            color_scheme = QGuiApplication.styleHints().colorScheme()
+            if color_scheme == Qt.ColorScheme.Dark:
+                theme_to_apply = 'dark'
+            else: # Incluye Qt.ColorScheme.Light y Qt.ColorScheme.Unknown (default a light)
+                theme_to_apply = 'light'
+        
+        if hasattr(self, 'theme_manager') and self.theme_manager:
+            self.theme_manager.gestionar_tema_aplicacion(theme_to_apply)
+           
+        self.save_app_theme_preference() # Guardar la elección del usuario (system, light, dark)
+        if hasattr(self, 'update_theme_menu_state'):
+            self.update_theme_menu_state()
+        # Forzar actualización de la UI de widgets principales
+        if self.widget:
+            self.widget.update()
+        self.update()
+
+
+    def update_theme_menu_state(self):
+        if not hasattr(self, 'light_theme_action') or not hasattr(self, 'dark_theme_action') or not hasattr(self, 'system_theme_action'):
+            return # Menú aún no creado
+            
+        # self.current_app_theme guarda la elección del usuario: 'system', 'light', o 'dark'
+        if self.current_app_theme == 'system':
+            self.system_theme_action.setChecked(True)
+        elif self.current_app_theme == 'light':
+            self.light_theme_action.setChecked(True)
+        elif self.current_app_theme == 'dark':
+            self.dark_theme_action.setChecked(True)
+    # --- FIN NUEVAS FUNCIONES PARA TEMA ---
+
+    # --- NUEVO MÉTODO PARA MANEJAR CAMBIOS DE TEMA DEL SO EN TIEMPO REAL ---
+    def _handle_system_theme_change(self, color_scheme):
+        # Este slot se activa cuando el esquema de color del sistema operativo cambia.
+        # Solo actuamos si la preferencia del usuario está configurada en 'system'.
+        if self.current_app_theme == 'system':
+            theme_to_apply = 'light' # Default a light
+            if color_scheme == Qt.ColorScheme.Dark:
+                theme_to_apply = 'dark'
+            
+            # Aplicar el tema detectado
+            if hasattr(self, 'theme_manager') and self.theme_manager:
+                self.theme_manager.gestionar_tema_aplicacion(theme_to_apply)
+            
+            # No guardamos la preferencia aquí, porque la elección del usuario sigue siendo 'system'.
+            # No es necesario actualizar el menú, 'System Theme' debe permanecer marcado.
+            
+            # Forzar actualización de la UI de widgets principales
+            if self.widget:
+                self.widget.update()
+            self.update()
+    # --- FIN NUEVO MÉTODO ---
 
 # Clase para la ventana de saldo total
 class BalanceWindow(QWidget):
@@ -2513,6 +2709,10 @@ class PowerpoineatorWidget(QWidget):
                 self.imagen_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
         
         if hasattr(self.parent(), 'api_key') and self.parent().api_key:
+            self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4.1 [$0.0056]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4.1-nano [$0.00028]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'o4-mini [$0.0028]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4o-mini [$0.00042]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/deepseek.png")), 'deepseek-r1 [$0.007]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.7-sonnet [$0.0105]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-sonnet [$0.01312]')
@@ -2925,6 +3125,9 @@ class PowerpoineatorWidget(QWidget):
         # Deshabilitar elementos del menú si la ventana principal está disponible
         if self.parent() and hasattr(self.parent(), 'disable_menu_during_generation'):
             self.parent().disable_menu_during_generation()
+        # También actualizar el estilo de los checkboxes directamente desde el widget si es necesario
+        elif self.parent() and hasattr(self.parent(), 'theme_manager'):
+            self.parent().theme_manager.set_generating_state(True)
 
     # Método para habilitar la interfaz después de la generación
     def enable_ui_after_generation(self):
@@ -3021,6 +3224,9 @@ class PowerpoineatorWidget(QWidget):
         # Habilitar elementos del menú si la ventana principal está disponible
         if self.parent() and hasattr(self.parent(), 'enable_menu_after_generation'):
             self.parent().enable_menu_after_generation()
+        # También actualizar el estilo de los checkboxes directamente desde el widget si es necesario  
+        elif self.parent() and hasattr(self.parent(), 'theme_manager'):
+            self.parent().theme_manager.set_generating_state(False)
 
     # Modificación del método de generación de presentación para usar la lógica integrada
     def generar_presentacion_event(self):
@@ -4056,6 +4262,9 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(resource_path("iconos/icon.png")))
     
+    # Establecer el estilo globalmente al inicio
+    QApplication.setStyle(QStyleFactory.create('Plastique'))
+
     while not verificar_conexion_internet():
         if mostrar_error_conexion() == QMessageBox.Cancel:
             sys.exit()
@@ -4067,7 +4276,19 @@ if __name__ == "__main__":
     splash.show()
     app.processEvents()
     
-    window = MainWindow()
+    window = MainWindow() # MainWindow.__init__ carga la preferencia de tema
+    
+    # Aplicar el tema cargado ANTES de mostrar la ventana y DESPUÉS de QApplication.setStyle
+    theme_to_apply_on_startup = window.current_app_theme
+    if window.current_app_theme == 'system':
+        color_scheme = QGuiApplication.styleHints().colorScheme()
+        if color_scheme == Qt.ColorScheme.Dark:
+            theme_to_apply_on_startup = 'dark'
+        else: # Incluye Qt.ColorScheme.Light y Qt.ColorScheme.Unknown (default a light)
+            theme_to_apply_on_startup = 'light'
+
+    if hasattr(window, 'theme_manager'):
+        window.theme_manager.gestionar_tema_aplicacion(theme_to_apply_on_startup) # USAR theme_to_apply_on_startup
     
     # Función para verificar y mostrar la ventana principal
     def check_and_show_main_window():
