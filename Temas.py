@@ -1,3 +1,4 @@
+import sys, platform
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPalette, QColor, QGuiApplication
 from PySide6.QtWidgets import QApplication, QStyleFactory, QWidget
@@ -79,6 +80,18 @@ class ThemeManager:
             
             # Aplicar estilos específicos para submenús según el tema
             if tema_nombre == "light":
+                # Determinar si es Windows 10
+                is_win10 = False
+                if sys.platform == "win32":
+                    try:
+                        release, version, csd, ptype = platform.win32_ver()
+                        build_number_str = version.split('.')[2] if len(version.split('.')) > 2 else version.split('.')[0]
+                        build_number = int(build_number_str)
+                        if build_number < 22000: # Windows 10 o anterior
+                            is_win10 = True
+                    except Exception:
+                        pass # Fallback, no se pudo determinar, is_win10 permanece False
+
                 # Definir el estilo base para el tema claro
                 light_style = f"""
                     QMenuBar::item:selected {{ /* Cuando se pasa el cursor sobre un elemento de la barra de menú */
@@ -166,6 +179,25 @@ class ThemeManager:
                         background-color: #FFBF80;  /* Aún más intenso al pulsar */
                     }}
                 """
+
+                # Estilos para QProgressBar según el sistema operativo y estado
+                if not is_win10:
+                    # Aplicar estilos personalizados solo para sistemas NO Windows 10
+                    light_style += """
+                    QProgressBar {
+                        border: 1px solid #AAAAAA;
+                        border-radius: 4px;
+                        text-align: center;
+                        background-color: #F0F0F0;
+                        height: 20px;
+                    }
+                    QProgressBar::chunk {
+                        background-color: #4285F4;
+                        width: 10px;
+                        margin: 0.5px;
+                    }
+                    """
+                # Si es Windows 10, no se aplica estilo personalizado a QProgressBar
                 
                 # Añadir el estilo de checkbox según si hay generación o no
                 if self.is_generating:
@@ -187,30 +219,47 @@ class ThemeManager:
                         border: 1px solid #BBBBBB; /* Sin efecto hover */
                     }
                     """
-                else:
-                    # Estilo normal para checkboxes
-                    light_style += f"""
-                    QCheckBox::indicator {{
-                        width: 15px;
-                        height: 15px;
-                        border: 1px solid #888888;
-                        border-radius: 2px;
-                        background-color: white;
-                    }}
-                    QCheckBox::indicator:checked {{
-                        background-color: {highlight_color_hex}; /* Usar color de resaltado del sistema */
-                        border: 1px solid #555555;
-                        image: url(iconos/tick.png);
-                    }}
-                    QCheckBox::indicator:hover {{
-                        border: 1px solid #555555;
-                    }}
-                    """
+                else: # No se está generando
+                    if is_win10:
+                        # Para Windows 10 con tema claro, no aplicar estilo personalizado de QCheckBox::indicator
+                        # para usar los checkboxes predeterminados del sistema.
+                        pass # No se añade nada a light_style para los checkboxes
+                    else:
+                        # Estilo normal para checkboxes en otros SO o Win11+ con tema claro
+                        light_style += f"""
+                        QCheckBox::indicator {{
+                            width: 15px;
+                            height: 15px;
+                            border: 1px solid #888888;
+                            border-radius: 2px;
+                            background-color: white;
+                        }}
+                        QCheckBox::indicator:checked {{
+                            background-color: {highlight_color_hex}; /* Usar color de resaltado del sistema */
+                            border: 1px solid #555555;
+                            image: url(iconos/tick.png);
+                        }}
+                        QCheckBox::indicator:hover {{
+                            border: 1px solid #555555;
+                        }}
+                        """
                 
                 # Aplicar el estilo completo
                 app.setStyleSheet(light_style)
             elif tema_nombre == "dark":
-                app.setStyleSheet(f"""
+                # También aplicar la misma lógica para el tema oscuro
+                is_win10 = False
+                if sys.platform == "win32":
+                    try:
+                        release, version, csd, ptype = platform.win32_ver()
+                        build_number_str = version.split('.')[2] if len(version.split('.')) > 2 else version.split('.')[0]
+                        build_number = int(build_number_str)
+                        if build_number < 22000: # Windows 10 o anterior
+                            is_win10 = True
+                    except Exception:
+                        pass # Fallback, no se pudo determinar, is_win10 permanece False
+                
+                dark_style = f"""
                     QMenu {{
                         background-color: #333333;
                         color: white;
@@ -293,7 +342,27 @@ class ThemeManager:
                     QPushButton:default:pressed {{
                         background-color: #432712;  /* Más oscuro al pulsar */
                     }}
-                """)
+                """
+                
+                # Añadir estilos para QProgressBar solo si no es Windows 10
+                if not is_win10:
+                    dark_style += """
+                    QProgressBar {
+                        border: 1px solid #555555;
+                        border-radius: 4px;
+                        text-align: center;
+                        background-color: #303030;
+                        color: white;
+                        height: 20px;
+                    }
+                    QProgressBar::chunk {
+                        background-color: #4285F4;
+                        width: 10px;
+                        margin: 0.5px;
+                    }
+                    """
+                
+                app.setStyleSheet(dark_style)
 
         # Actualizar la interfaz de la ventana principal
         if self.main_window_instance:

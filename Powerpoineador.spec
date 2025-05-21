@@ -34,6 +34,7 @@ a = Analysis(
         'modelos/IA_grok2.py',
         'modelos/IA_grok3.py',
         'modelos/IA_grok3_mini.py',
+        'modelos/IA_grok3_mini_fast.py',
         'modelos/IA_grok2_image.py',
         'modelos/IA_gemini2_5_flash.py',
         'modelos/IA_gemini2_flash_thinking.py',

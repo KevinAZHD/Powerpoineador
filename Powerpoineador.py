@@ -3540,60 +3540,110 @@ class PowerpoineatorWidget(QWidget):
     # Función para cargar la selección de modelos
     def load_combo_selection(self):
         try:
+            config = {}
+            # Intentar cargar la configuración existente
             if os.path.exists(CONFIG_FILE):
                 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-                    
-                    texto_modelo = config.get('texto_modelo', '')
-                    imagen_modelo = config.get('imagen_modelo', '')
-                    
-                    parent = self.parent()
-                    if texto_modelo and self.texto_combo.count() > 0:
-                        if texto_modelo == 'grok-2-1212':
-                            if parent and parent.grok_api_key and parent.validate_grok_api():
-                                index = self.texto_combo.findText(texto_modelo)
-                                if index >= 0:
-                                    self.texto_combo.setCurrentIndex(index)
-                            else:
-                                self.texto_combo.setCurrentIndex(0)
-                                config['texto_modelo'] = self.texto_combo.currentText()
-                                with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-                                    json.dump(config, f, ensure_ascii=False, indent=4)
-                        elif texto_modelo == 'gemini-2.0-pro-exp-02-05':
-                            if parent and parent.google_api_key and parent.validate_google_api():
-                                index = self.texto_combo.findText(texto_modelo)
-                                if index >= 0:
-                                    self.texto_combo.setCurrentIndex(index)
-                            else:
-                                self.texto_combo.setCurrentIndex(0)
-                                config['texto_modelo'] = self.texto_combo.currentText()
-                                with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-                                    json.dump(config, f, ensure_ascii=False, indent=4)
+            
+            texto_modelo_guardado = config.get('texto_modelo', '')
+            imagen_modelo_guardado = config.get('imagen_modelo', '')
+            # parent = self.parent() # No se necesita parent aquí ya que populate_fields ya filtró
+
+            # --- Manejo de texto_combo ---
+            if self.texto_combo.count() > 0: # Solo proceder si el combo tiene items
+                if texto_modelo_guardado:
+                    index = self.texto_combo.findText(texto_modelo_guardado)
+                    if index >= 0:
+                        # El modelo guardado existe en el combo actual
+                        self.texto_combo.setCurrentIndex(index)
+                    else:
+                        # El modelo guardado no está en el combo actual (API desactivada o modelo ya no existe)
+                        # Seleccionar el primer modelo disponible y actualizar la configuración.
+                        self.texto_combo.setCurrentIndex(0)
+                        config['texto_modelo'] = self.texto_combo.currentText()
+                        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                            json.dump(config, f, ensure_ascii=False, indent=4)
+                else:
+                    # No hay modelo guardado, o el combo estaba vacío pero ahora tiene items.
+                    # Seleccionar el primero por defecto y guardarlo.
+                    self.texto_combo.setCurrentIndex(0)
+                    config['texto_modelo'] = self.texto_combo.currentText()
+                    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(config, f, ensure_ascii=False, indent=4)
+            
+            # --- Manejo de imagen_combo ---
+            if self.imagen_combo.isEnabled() and self.imagen_combo.count() > 0: # Solo proceder si el combo está habilitado y tiene items
+                if imagen_modelo_guardado:
+                    index = self.imagen_combo.findText(imagen_modelo_guardado)
+                    if index >= 0:
+                        self.imagen_combo.setCurrentIndex(index)
+                        # Re-aplicar lógica de mostrar/ocultar botones para modelos específicos
+                        if imagen_modelo_guardado in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                            self.cargar_imagen_btn.show()
+                            self.ver_imagen_btn.show()
+                            self.cargar_imagen_btn.setEnabled(True)
+                            self.ver_imagen_btn.setEnabled(True)
                         else:
-                            if parent.api_key or (parent and parent.google_api_key and parent.validate_google_api()):
-                                index = self.texto_combo.findText(texto_modelo)
-                                if index >= 0:
-                                    self.texto_combo.setCurrentIndex(index)
-                            else:
-                                self.texto_combo.setCurrentIndex(0)
-                    
-                    if imagen_modelo and self.imagen_combo.isEnabled() and self.imagen_combo.count() > 0:
-                        index = self.imagen_combo.findText(imagen_modelo)
-                        if index >= 0:
-                            self.imagen_combo.setCurrentIndex(index)
-                            if imagen_modelo in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
-                                self.cargar_imagen_btn.show()
-                                self.ver_imagen_btn.show()
-                                self.cargar_imagen_btn.setEnabled(True)
-                                self.ver_imagen_btn.setEnabled(True)
-                            else:
-                                self.cargar_imagen_btn.hide()
-                                self.ver_imagen_btn.hide()
-                                self.cargar_imagen_btn.setEnabled(False)
-                                self.ver_imagen_btn.setEnabled(False)
-                                self.imagen_personalizada = None
+                            self.cargar_imagen_btn.hide()
+                            self.ver_imagen_btn.hide()
+                            # self.imagen_personalizada = None # on_imagen_combo_changed se encarga de esto
+                    else:
+                        # El modelo guardado no está en el combo actual
+                        self.imagen_combo.setCurrentIndex(0)
+                        config['imagen_modelo'] = self.imagen_combo.currentText()
+                        # Re-aplicar lógica de botones para el nuevo modelo seleccionado (índice 0)
+                        current_img_model_at_0 = self.imagen_combo.currentText()
+                        if current_img_model_at_0 in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                             self.cargar_imagen_btn.show(); self.ver_imagen_btn.show()
+                             self.cargar_imagen_btn.setEnabled(True); self.ver_imagen_btn.setEnabled(True)
+                        else:
+                             self.cargar_imagen_btn.hide(); self.ver_imagen_btn.hide()
+                             # self.imagen_personalizada = None
+                        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                            json.dump(config, f, ensure_ascii=False, indent=4)
+                else:
+                    # No hay modelo de imagen guardado. Seleccionar el primero y guardarlo.
+                    self.imagen_combo.setCurrentIndex(0)
+                    config['imagen_modelo'] = self.imagen_combo.currentText()
+                    current_img_model_at_0 = self.imagen_combo.currentText()
+                    if current_img_model_at_0 in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                            self.cargar_imagen_btn.show(); self.ver_imagen_btn.show()
+                            self.cargar_imagen_btn.setEnabled(True); self.ver_imagen_btn.setEnabled(True)
+                    else:
+                            self.cargar_imagen_btn.hide(); self.ver_imagen_btn.hide()
+                            # self.imagen_personalizada = None
+                    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(config, f, ensure_ascii=False, indent=4)
+                        
+        except (FileNotFoundError, json.JSONDecodeError):
+            # Archivo de configuración no existe o está corrupto.
+            # Si los combos tienen items, seleccionar el primero. save_combo_selection se llamará después si es necesario.
+            if self.texto_combo.count() > 0:
+                self.texto_combo.setCurrentIndex(0)
+            if self.imagen_combo.isEnabled() and self.imagen_combo.count() > 0:
+                self.imagen_combo.setCurrentIndex(0)
+                # Actualizar botones para el modelo en el índice 0 de imagen_combo
+                current_img_model_at_0 = self.imagen_combo.currentText()
+                if current_img_model_at_0 in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                        self.cargar_imagen_btn.show(); self.ver_imagen_btn.show()
+                        self.cargar_imagen_btn.setEnabled(True); self.ver_imagen_btn.setEnabled(True)
+                else:
+                        self.cargar_imagen_btn.hide(); self.ver_imagen_btn.hide()
         except Exception as e:
             print(f"Error al cargar la selección de modelos: {str(e)}")
+            # Fallback: seleccionar el primer item si hay alguno
+            if self.texto_combo.count() > 0:
+                self.texto_combo.setCurrentIndex(0)
+            if self.imagen_combo.isEnabled() and self.imagen_combo.count() > 0:
+                self.imagen_combo.setCurrentIndex(0)
+                # Actualizar botones para el modelo en el índice 0 de imagen_combo
+                current_img_model_at_0 = self.imagen_combo.currentText()
+                if current_img_model_at_0 in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                        self.cargar_imagen_btn.show(); self.ver_imagen_btn.show()
+                        self.cargar_imagen_btn.setEnabled(True); self.ver_imagen_btn.setEnabled(True)
+                else:
+                        self.cargar_imagen_btn.hide(); self.ver_imagen_btn.hide()
 
     # Función para guardar la selección de modelos cuando cambia el texto
     def on_texto_combo_changed(self, texto):
@@ -4290,9 +4340,28 @@ class PowerpoineatorWidget(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(resource_path("iconos/icon.png")))
-    
-    # Establecer el estilo globalmente al inicio
-    QApplication.setStyle(QStyleFactory.create('Plastique'))
+
+    # Importar platform para la detección del SO
+    import platform
+
+    # Establecer el estilo globalmente al inicio según la versión de Windows
+    if sys.platform == "win32":
+        try:
+            release, version, csd, ptype = platform.win32_ver()
+            # Extraer el build number. El formato es 'X.Y.BUILD.Z' o 'X.Y.BUILD'
+            build_number_str = version.split('.')[2] if len(version.split('.')) > 2 else version.split('.')[0] 
+            build_number = int(build_number_str)
+            
+            if build_number < 22000: # Es Windows 10 o anterior
+                QApplication.setStyle(QStyleFactory.create('windows'))
+            else: # Es Windows 11 o posterior
+                QApplication.setStyle(QStyleFactory.create('Plastique'))
+        except (IndexError, ValueError, TypeError):
+            # Fallback si no se puede determinar la versión correctamente
+            QApplication.setStyle(QStyleFactory.create('Plastique'))
+    else:
+        # Para otros sistemas operativos (Linux, macOS, etc.)
+        QApplication.setStyle(QStyleFactory.create('Plastique'))
 
     while not verificar_conexion_internet():
         if mostrar_error_conexion() == QMessageBox.Cancel:
