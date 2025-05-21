@@ -1,15 +1,5 @@
-import replicate, ast, time
+import requests, ast, time, os
 from Traducciones import obtener_traduccion
-
-# Función para eliminar el contenido del think antes de procesar
-def eliminar_think(texto):
-    while True:
-        inicio = texto.find('<think>')
-        fin = texto.find('</think>')
-        if inicio == -1 or fin == -1:
-            break
-        texto = texto[:inicio] + texto[fin + 8:]
-    return texto.strip()
 
 # Función para obtener respuesta del modelo con reintentos
 def obtener_respuesta_modelo(nuevo_string, signals=None):
@@ -42,48 +32,67 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
         "vehicles, and in education for personalized learning.\" })"
     )
     
+    # Definir los encabezados para la solicitud HTTP
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {os.environ.get('GROK_API_KEY')}"
+    }
+    
+    # Definir los datos para la solicitud HTTP
+    data = {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that generates the text for PowerPoint presentations in a tuple structure of python. You only generate the text for the PowerPoint presentations, you do not generate any other text. The structure of the tuple is {Title1:Content1,Title2:Content2,Title3:Content3}"
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        "model": "grok-3-mini-fast",
+        "reasoning_effort": "high",
+        "stream": False,
+        "temperature": 0.6
+    }
+    
     # Inicializar la respuesta como una cadena vacía
     respuesta_completa = ""
     
     try:
-        # Ejecutar el modelo para obtener la respuesta
-        for event in replicate.stream(
-            "deepseek-ai/deepseek-r1",
-            input={
-                "prompt": prompt,
-                "top_p": 1,
-                "max_tokens": 20480,
-                "temperature": 0.1,
-                "presence_penalty": 0,
-                "frequency_penalty": 0
-            }
-        ):
-            # Imprimir el evento actual
-            print(event, end="")
-            # Agregar el evento actual a la respuesta completa
-            respuesta_completa += str(event)
-
-        # Limpieza y procesamiento de la respuesta
-        respuesta_limpia = eliminar_think(respuesta_completa)
-        respuesta_procesada = extraer_entre_llaves(respuesta_limpia)
+        # Realizar la solicitud HTTP
+        response = requests.post(
+            "https://api.x.ai/v1/chat/completions",
+            headers=headers,
+            json=data
+        )
         
-        # Imprimir la respuesta completa y procesada
-        log_message(obtener_traduccion('respuesta_completa_modelo', current_language).format(respuesta=respuesta_completa))
-        log_message(obtener_traduccion('respuesta_procesada', current_language).format(respuesta=respuesta_procesada))
-        
-        # Intentar evaluar la respuesta procesada como un diccionario
-        try:
-            contenido = ast.literal_eval(respuesta_procesada)
-            return contenido
-        except:
-            return respuesta_procesada
+        # Verificar si la solicitud fue exitosa
+        if response.status_code == 200:
+            respuesta_completa = response.json()['choices'][0]['message']['content']
+            log_message(obtener_traduccion('respuesta_completa_modelo', current_language).format(respuesta=respuesta_completa))
             
+            # Extraer el contenido entre llaves de la respuesta completa
+            respuesta_procesada = extraer_entre_llaves(respuesta_completa)
+            log_message(obtener_traduccion('respuesta_procesada', current_language).format(respuesta=respuesta_procesada))
+            
+            # Intentar evaluar la respuesta procesada como un diccionario
+            try:
+                contenido = ast.literal_eval(respuesta_procesada)
+                return contenido
+            except:
+                return respuesta_procesada
+        else:
+            error_msg = f"Error: {response.status_code}\nResponse: {response.text}"
+            log_message(error_msg)
+            return None
+
     except Exception as e:
         # Manejar cualquier error que ocurra durante la generación de respuesta
         log_message(obtener_traduccion('error_generacion_respuesta', current_language).format(error=str(e)))
         return None
-    finally:
-        # Limpiar las variables de respuesta
+    finally: 
+        # Limpiar las variables de respuesta    
         respuesta_completa = None
         respuesta_procesada = None
 
@@ -115,10 +124,11 @@ def intentar_obtener_respuesta(descripcion, signals=None):
     while True:
         try:
             # Imprimir un mensaje indicando que se está intentando generar una respuesta
-            log_message(obtener_traduccion('intentando_generar_respuesta', current_language).format(modelo="DeepSeek"))
+            log_message(obtener_traduccion('intentando_generar_respuesta', current_language).format(modelo="Grok"))
             
             # Obtener la respuesta del modelo
             respuesta = obtener_respuesta_modelo(descripcion, signals)
+            
             # Verificar si la respuesta es un diccionario válido
             if isinstance(respuesta, dict):
                 log_message(obtener_traduccion('respuesta_generada_exitosamente', current_language))
@@ -130,4 +140,4 @@ def intentar_obtener_respuesta(descripcion, signals=None):
         except Exception as e:
             # Imprimir un mensaje indicando que ocurrió un error al obtener la respuesta
             log_message(obtener_traduccion('error_intento', current_language).format(intento=1, error=str(e)))
-            time.sleep(3) 
+            time.sleep(3)

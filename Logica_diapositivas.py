@@ -75,13 +75,16 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         elif modelo == 'grok-2-1212':
             from modelos.IA_grok2 import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
-        elif modelo == 'grok-3-beta':
+        elif modelo == 'grok-3':
             from modelos.IA_grok3 import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
-        elif modelo == 'grok-3-mini-beta':
+        elif modelo == 'grok-3-mini':
             from modelos.IA_grok3_mini import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
-        elif modelo == 'gemini-2.5-flash-preview-04-17':
+        elif modelo == 'grok-3-mini-fast':
+            from modelos.IA_grok3_mini_fast import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'gemini-2.5-flash-preview-05-20':
             from modelos.IA_gemini2_5_flash import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'gemini-2.0-flash':
@@ -104,6 +107,9 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'gpt-4o-mini [$0.00042]':
             from modelos.IA_gpt4o_mini import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'gpt-4o [$0.00112]':
+            from modelos.IA_gpt4o import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
         else:
             from modelos.IA_dolphin import intentar_obtener_respuesta
@@ -179,13 +185,16 @@ def generar_texto_ia(tipo, contenido_actual, descripcion, modelo, signals=None):
         elif modelo == 'grok-2-1212':
             from modelos.IA_grok2 import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
-        elif modelo == 'grok-3-beta':
+        elif modelo == 'grok-3':
             from modelos.IA_grok3 import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
-        elif modelo == 'grok-3-mini-beta':
+        elif modelo == 'grok-3-mini':
             from modelos.IA_grok3_mini import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
-        elif modelo == 'gemini-2.5-flash-preview-04-17':
+        elif modelo == 'grok-3-mini-fast':
+            from modelos.IA_grok3_mini_fast import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'gemini-2.5-flash-preview-05-20':
             from modelos.IA_gemini2_5_flash import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
         elif modelo == 'gemini-2.0-flash':
@@ -208,6 +217,9 @@ def generar_texto_ia(tipo, contenido_actual, descripcion, modelo, signals=None):
             texto_generado = generar_texto_simple(prompt, signals)
         elif modelo == 'gpt-4o-mini [$0.00042]':
             from modelos.IA_gpt4o_mini import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'gpt-4o [$0.00112]':
+            from modelos.IA_gpt4o import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
         else:
             from modelos.IA_dolphin import generar_texto_simple
@@ -261,7 +273,7 @@ def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
             return generar_imagen_fluxschnell(section, content, descripcion, signals, False)
         elif modelo == 'hyper-flux-8step [$0.027]':
             return generar_imagen_flux8(section, content, descripcion, signals, False)
-        elif modelo == 'photomaker [$0.0070]':
+        elif modelo == 'photomaker [$0.0067]':
             return generar_imagen_photomaker(section, content, descripcion, None, signals, False)
         elif modelo == 'hyper-flux-16step [$0.020]':
             return generar_imagen_flux16(section, content, descripcion, signals, False)
@@ -338,7 +350,7 @@ def generar_presentacion(modelo_texto, modelo_imagen, descripcion, auto_open, im
             log_message(obtener_traduccion('generando_imagen', current_language).format(numero=slide_number, total=total_slides))
             try:
                 # Verificar cuál es el modelo que se está utilizando
-                if modelo_imagen in ['flux-pulid [$0.027]', 'photomaker [$0.0011]']:
+                if modelo_imagen in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
                     if imagen_personalizada and os.path.exists(imagen_personalizada):
                         if modelo_imagen == 'flux-pulid [$0.027]':
                             img = generar_imagen_flux(section, content, descripcion, imagen_personalizada, signals, False)
@@ -865,10 +877,19 @@ def generar_imagen_gemini_flash(section, content, descripcion, signals=None, pri
         if print_log:
             log_message(f"{obtener_traduccion('intentando_generar_imagen', current_language)} (GeminiFlash)")
         
-        # Importar la función original
-        from modelos.IA_gemini2_flash_image import generar_imagen
-        return generar_imagen(section, content, descripcion)
+        # Importar la función original y la excepción personalizada
+        from modelos.IA_gemini2_flash_image import generar_imagen, RegionCompatibilityError
+        
+        try:
+            return generar_imagen(section, content, descripcion, signals)
+        except RegionCompatibilityError as e:
+            # Propagar directamente el mensaje de error personalizado sin prefijo
+            raise RuntimeError(str(e))
+    except RuntimeError as e:
+        # Ya capturamos RegionCompatibilityError y formateamos el mensaje, solo propagamos RuntimeError
+        raise
     except Exception as e:
+        # Para otros errores, usar el formato estándar
         raise RuntimeError(obtener_traduccion('error_generar_imagen', current_language).format(error=str(e)))
 
 # Función para generar una imagen con el modelo Dall-e-2

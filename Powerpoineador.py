@@ -16,6 +16,7 @@ from PyPDF2 import PdfReader
 from Vista_previa import PPTX_AVAILABLE
 from Plantillas import StyleSelectionDialog
 from Temas import ThemeManager
+import subprocess
 
 # Definir la ruta de la carpeta de datos de la aplicación según el sistema operativo
 if sys.platform == 'win32':
@@ -2239,6 +2240,13 @@ class PowerpoineatorWidget(QWidget):
                     self.log_toggle_btn.setText(obtener_traduccion('ocultar_log', idioma))
                 else:
                     self.log_toggle_btn.setText(obtener_traduccion('mostrar_log', idioma))
+            
+            # Actualizar los tooltips y texto del botón para cargar y ver imágenes
+            if hasattr(self, 'cargar_imagen_btn'):
+                self.cargar_imagen_btn.setToolTip(obtener_traduccion('cargar_imagen_personalizada_tooltip', idioma))
+            if hasattr(self, 'ver_imagen_btn'):
+                self.ver_imagen_btn.setToolTip(obtener_traduccion('ver_imagen_personalizada_tooltip', idioma))
+                self.ver_imagen_btn.setText(obtener_traduccion('revisar_pdf', idioma))
                     
             # Actualizar el texto del botón de generar si está en modo cancelar
             if hasattr(self, 'worker') and self.worker and self.worker.isRunning():
@@ -2319,13 +2327,13 @@ class PowerpoineatorWidget(QWidget):
             botones_layout.setSpacing(5)  # Aumentar espacio entre botones
             
             self.cargar_imagen_btn = QPushButton('+')
-            self.cargar_imagen_btn.setToolTip('Cargar imagen personalizada')
+            self.cargar_imagen_btn.setToolTip(obtener_traduccion('cargar_imagen_personalizada_tooltip', current_language))
             self.cargar_imagen_btn.setFixedSize(30, 24)  # Aumentar tamaño del botón +
             self.cargar_imagen_btn.clicked.connect(self.cargar_imagen_personalizada)
             self.cargar_imagen_btn.hide()
             
-            self.ver_imagen_btn = QPushButton('Revisar')
-            self.ver_imagen_btn.setToolTip('Ver imagen seleccionada')
+            self.ver_imagen_btn = QPushButton(obtener_traduccion('revisar_pdf', current_language))
+            self.ver_imagen_btn.setToolTip(obtener_traduccion('ver_imagen_personalizada_tooltip', current_language))
             self.ver_imagen_btn.setFixedSize(70, 24)  # Aumentar ancho para que quepa todo el texto
             self.ver_imagen_btn.clicked.connect(self.ver_imagen_personalizada)
             self.ver_imagen_btn.hide()
@@ -2363,14 +2371,14 @@ class PowerpoineatorWidget(QWidget):
             imagen_combo_layout.addWidget(self.imagen_combo)
             
             self.cargar_imagen_btn = QPushButton('+')
-            self.cargar_imagen_btn.setToolTip('Cargar imagen personalizada')
+            self.cargar_imagen_btn.setToolTip(obtener_traduccion('cargar_imagen_personalizada_tooltip', current_language))
             self.cargar_imagen_btn.setFixedSize(30, 24)  # Aumentar tamaño del botón +
             self.cargar_imagen_btn.clicked.connect(self.cargar_imagen_personalizada)
             self.cargar_imagen_btn.hide()
             imagen_combo_layout.addWidget(self.cargar_imagen_btn)
 
-            self.ver_imagen_btn = QPushButton('Revisar')
-            self.ver_imagen_btn.setToolTip('Ver imagen seleccionada')
+            self.ver_imagen_btn = QPushButton(obtener_traduccion('revisar_pdf', current_language))
+            self.ver_imagen_btn.setToolTip(obtener_traduccion('ver_imagen_personalizada_tooltip', current_language))
             self.ver_imagen_btn.setFixedSize(70, 24)  # Aumentar ancho para que quepa todo el texto
             self.ver_imagen_btn.clicked.connect(self.ver_imagen_personalizada)
             self.ver_imagen_btn.hide()
@@ -2494,73 +2502,69 @@ class PowerpoineatorWidget(QWidget):
         
         # Layout para los botones de PDF
         pdf_layout = QHBoxLayout()
+        # Crear un contenedor central para los botones de PDF y alinearlo al centro
+        pdf_buttons_layout = QHBoxLayout()
+        pdf_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        pdf_buttons_layout.setSpacing(5)
+        
         self.cargar_pdf_btn = QPushButton(obtener_traduccion('cargar_pdf', current_language))
-        self.cargar_pdf_btn.setFixedWidth(150)
+        pdf_buttons_layout.addWidget(self.cargar_pdf_btn)
         self.cargar_pdf_btn.clicked.connect(self.cargar_pdf)
-        pdf_layout.addWidget(self.cargar_pdf_btn)
         
         self.pdf_label = QLabel("")
         self.pdf_label.setStyleSheet("color: gray;")
-        pdf_layout.addWidget(self.pdf_label)
+        self.pdf_label.hide()
+        pdf_buttons_layout.addWidget(self.pdf_label)
         
         # Nuevo botón para revisar documento
         self.revisar_pdf_btn = QPushButton(obtener_traduccion('revisar_pdf', current_language))
         self.revisar_pdf_btn.setFixedWidth(100)
         self.revisar_pdf_btn.clicked.connect(self.revisar_pdf)
         self.revisar_pdf_btn.hide()
-        pdf_layout.addWidget(self.revisar_pdf_btn)
+        pdf_buttons_layout.addWidget(self.revisar_pdf_btn)
         
         self.eliminar_pdf_btn = QPushButton(obtener_traduccion('eliminar_pdf', current_language))
         self.eliminar_pdf_btn.setFixedWidth(100)
         self.eliminar_pdf_btn.clicked.connect(self.eliminar_pdf)
         self.eliminar_pdf_btn.hide()
-        pdf_layout.addWidget(self.eliminar_pdf_btn)
+        pdf_buttons_layout.addWidget(self.eliminar_pdf_btn)
+        
+        # Añadir espaciado flexible izquierdo y derecho para centrar el layout de botones
+        pdf_layout.addStretch(1)
+        pdf_layout.addLayout(pdf_buttons_layout)
+        pdf_layout.addStretch(1)
         
         left_layout.addLayout(pdf_layout)
 
+        # Reorganizar el contador_checkbox_layout con tres secciones equilibradas
         self.contador_checkbox_layout = QHBoxLayout()
         
+        # Sección izquierda - Checkbox auto abrir
+        left_section = QHBoxLayout()
         self.auto_open_checkbox = QCheckBox(obtener_traduccion('auto_open', current_language))
         self.auto_open_checkbox.setChecked(False)
         self.auto_open_checkbox.stateChanged.connect(self.save_auto_open_state)
-        self.contador_checkbox_layout.addWidget(self.auto_open_checkbox)
+        left_section.addWidget(self.auto_open_checkbox)
+        left_section.addStretch(1)
         
-        # >>> ELIMINAR EL CHECKBOX DE DISEÑOS ALEATORIOS <<<
-        # self.disenos_aleatorios_checkbox = QCheckBox(obtener_traduccion('disenos_aleatorios', current_language))
-        # self.disenos_aleatorios_checkbox.setChecked(True)
-        # self.disenos_aleatorios_checkbox.stateChanged.connect(self.save_disenos_aleatorios_state)
-        # self.disenos_aleatorios_checkbox.stateChanged.connect(self.toggle_style_button_visibility)
-        # self.contador_checkbox_layout.addWidget(self.disenos_aleatorios_checkbox)
-        
-        # >>> MODIFICAR EL BOTÓN DE SELECCIÓN DE ESTILO (siempre visible) <<<
+        # Sección central - Botón y etiqueta de estilos
+        center_section = QHBoxLayout()
+        center_section.setAlignment(Qt.AlignCenter)
         self.select_style_btn = QPushButton(obtener_traduccion('select_style', current_language))
         self.select_style_btn.setToolTip(obtener_traduccion('select_style_tooltip', current_language))
         self.select_style_btn.clicked.connect(self.select_slide_style)
-        self.contador_checkbox_layout.addWidget(self.select_style_btn)
+        center_section.addWidget(self.select_style_btn)
         
-        # >>> AÑADIR ETIQUETA DE ESTILO ACTUAL <<<
         self.current_style_label = QLabel("")
         self.current_style_label.setStyleSheet("color: gray;")
-        self.contador_checkbox_layout.addWidget(self.current_style_label)
+        center_section.addWidget(self.current_style_label)
         
-        left_stretch = 1
-        left_spacing = 0
-        right_stretch = 1
-        
-        if current_language == 'en':
-            right_spacing = 26
-        else:
-            right_spacing = 18
-        
-        self.contador_checkbox_layout.addStretch(left_stretch)
-        self.contador_checkbox_layout.addSpacing(left_spacing)
-        
-        self.contador_checkbox_layout.addStretch(right_stretch)
-        self.contador_checkbox_layout.addSpacing(right_spacing)
-        
-        diapositivas_layout = QHBoxLayout()
+        # Sección derecha - Controles de diapositivas
+        right_section = QHBoxLayout()
+        right_section.addStretch(1)  # Añadir stretch al inicio empuja los widgets a la derecha
         self.diapositivas_label = QLabel(obtener_traduccion('num_diapositivas', current_language))
-        diapositivas_layout.addWidget(self.diapositivas_label)
+        right_section.addWidget(self.diapositivas_label)
+        
         self.num_diapositivas_spin = QSpinBox()
         self.num_diapositivas_spin.setRange(3, 30)
         self.num_diapositivas_spin.setValue(8)
@@ -2568,9 +2572,13 @@ class PowerpoineatorWidget(QWidget):
         self.num_diapositivas_spin.setReadOnly(False)
         self.num_diapositivas_spin.setButtonSymbols(QSpinBox.UpDownArrows)
         self.num_diapositivas_spin.setKeyboardTracking(False)
-        diapositivas_layout.addWidget(self.num_diapositivas_spin)
-        
-        self.contador_checkbox_layout.addLayout(diapositivas_layout)
+        right_section.addWidget(self.num_diapositivas_spin)
+        # Eliminar el stretch final que empuja los widgets a la izquierda
+
+        # Añadir las tres secciones al layout principal con proporciones iguales
+        self.contador_checkbox_layout.addLayout(left_section, 1)
+        self.contador_checkbox_layout.addLayout(center_section, 1)
+        self.contador_checkbox_layout.addLayout(right_section, 1)
         
         left_layout.addLayout(self.contador_checkbox_layout)
 
@@ -2698,7 +2706,7 @@ class PowerpoineatorWidget(QWidget):
         self.imagen_combo.clear()
 
         if hasattr(self.parent(), 'google_api_key') and self.parent().google_api_key and self.parent().validate_google_api():
-            self.texto_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.5-flash-preview-04-17')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.5-flash-preview-05-20')
             self.texto_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.0-flash')
             self.texto_combo.addItem(QIcon(resource_path("iconos/gemini.png")), 'gemini-2.0-flash-thinking-exp-01-21')
             
@@ -2712,6 +2720,7 @@ class PowerpoineatorWidget(QWidget):
             self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4.1 [$0.0056]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4.1-nano [$0.00028]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'o4-mini [$0.0028]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4o [$0.00112]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4o-mini [$0.00042]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/deepseek.png")), 'deepseek-r1 [$0.007]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.7-sonnet [$0.0105]')
@@ -2720,7 +2729,7 @@ class PowerpoineatorWidget(QWidget):
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-scout-instruct [$0.00046]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-maverick-instruct [$0.00067]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct [$0.0067]')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.037]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.043]')
             
             self.imagen_combo.setEnabled(True)
             self.imagen_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
@@ -2729,19 +2738,20 @@ class PowerpoineatorWidget(QWidget):
             self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell [$0.003]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 [$0.05]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast [$0.025]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.0015]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.084]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana-sprint-1.6b [$0.0015]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker [$0.0070]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid [$0.026]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker [$0.0067]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid [$0.027]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step [$0.027]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step [$0.020]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step [$0.0014]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step [$0.060]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step [$0.0028]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/lightweight.png")), 'model3_4 [$0.00098]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/dgmtnzflux.png")), 'dgmtnzflux [$0.03]')
         
         if hasattr(self.parent(), 'grok_api_key') and self.parent().grok_api_key and self.parent().validate_grok_api():
-            self.texto_combo.addItem(QIcon(resource_path("iconos/grok.jpg")), 'grok-3-mini-beta')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/grok.jpg")), 'grok-3-beta')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/grok.jpg")), 'grok-3')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/grok.jpg")), 'grok-3-mini')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/grok.jpg")), 'grok-3-mini-fast')
             self.texto_combo.addItem(QIcon(resource_path("iconos/grok.jpg")), 'grok-2-1212')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/grok.jpg")), 'grok-2-image-1212')
             if not (hasattr(self.parent(), 'api_key') and self.parent().api_key):
@@ -3282,7 +3292,7 @@ class PowerpoineatorWidget(QWidget):
                                obtener_traduccion('empty_description', current_language))
             return
         
-        if modelo_imagen in ['photomaker [$0.0070]', 'flux-pulid [$0.026]']:
+        if modelo_imagen in ['photomaker [$0.0067]', 'flux-pulid [$0.027]']:
             if not self.imagen_personalizada or not os.path.exists(self.imagen_personalizada):
                 QMessageBox.warning(self, obtener_traduccion('error', current_language), 
                                    obtener_traduccion('image_required', current_language))
@@ -3445,25 +3455,30 @@ class PowerpoineatorWidget(QWidget):
     def cargar_imagen_personalizada(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
-            "Seleccionar imagen",
+            obtener_traduccion('seleccionar_imagen_personalizada', self.current_language),
             "",
-            "Imágenes (*.jpg)"
+            obtener_traduccion('imagen_filter', self.current_language) + " (*.jpg)"
         )
         if file_path:
+            self.imagen_personalizada_path = file_path # Guardar la ruta en una variable temporal
             try:
-                if os.path.exists(file_path):
-                    self.imagen_personalizada = file_path
-                    QMessageBox.information(self, 'Éxito', 'Imagen cargada correctamente')
+                # Verificar que la ruta existe y es un archivo
+                if os.path.exists(self.imagen_personalizada_path) and os.path.isfile(self.imagen_personalizada_path):
+                    self.imagen_personalizada = self.imagen_personalizada_path # Guardar la ruta si es válida
+                    QMessageBox.information(self, obtener_traduccion('edit_save_pptx_success_title', self.current_language),
+                                            obtener_traduccion('imagen_cargada_exito_mensaje', self.current_language))
                 else:
-                    QMessageBox.critical(self, 'Error', 'La ruta de la imagen no es válida')
+                    QMessageBox.critical(self, obtener_traduccion('error', self.current_language),
+                                         obtener_traduccion('ruta_imagen_invalida_mensaje', self.current_language))
                     self.imagen_personalizada = None
             except Exception as e:
                 self.imagen_personalizada = None
-                QMessageBox.critical(self, 'Error', f'Error al cargar la imagen: {str(e)}')
+                QMessageBox.critical(self, obtener_traduccion('error', self.current_language),
+                                     obtener_traduccion('error_cargar_imagen_mensaje', self.current_language).format(str(e)))
 
     # Función para manejar el cambio en la selección de modelos de imagen
     def on_imagen_combo_changed(self, texto):
-        if texto in ['flux-pulid [$0.026]', 'photomaker [$0.0070]']:
+        if texto in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
             self.cargar_imagen_btn.show()
             self.ver_imagen_btn.show()
             self.cargar_imagen_btn.setEnabled(True)
@@ -3482,7 +3497,9 @@ class PowerpoineatorWidget(QWidget):
 
     # Función para ver la imagen personalizada
     def ver_imagen_personalizada(self):
+        # Verificar que hay una imagen seleccionada y que existe
         if hasattr(self, 'imagen_personalizada') and self.imagen_personalizada and os.path.exists(self.imagen_personalizada):
+            # Abrir la imagen con el visor predeterminado del sistema
             try:
                 # Usar QDesktopServices.openUrl para compatibilidad multiplataforma
                 from PySide6.QtGui import QDesktopServices
@@ -3491,7 +3508,10 @@ class PowerpoineatorWidget(QWidget):
             except Exception as e:
                 QMessageBox.critical(self, 'Error', f'Error al abrir la imagen: {str(e)}')
         else:
-            QMessageBox.warning(self, 'Aviso', 'No hay ninguna imagen seleccionada o la imagen no es válida')
+            # Usar las traducciones para el mensaje de error
+            idioma_actual = self.current_language if hasattr(self, 'current_language') else 'es'
+            QMessageBox.warning(self, obtener_traduccion('no_imagen_seleccionada_titulo', idioma_actual), 
+                                obtener_traduccion('no_imagen_seleccionada_mensaje', idioma_actual))
             self.imagen_personalizada = None
 
     # Función para guardar la descripción cuando cambia el texto
@@ -3561,7 +3581,7 @@ class PowerpoineatorWidget(QWidget):
                         index = self.imagen_combo.findText(imagen_modelo)
                         if index >= 0:
                             self.imagen_combo.setCurrentIndex(index)
-                            if imagen_modelo in ['flux-pulid [$0.026]', 'photomaker [$0.0070]']:
+                            if imagen_modelo in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
                                 self.cargar_imagen_btn.show()
                                 self.ver_imagen_btn.show()
                                 self.cargar_imagen_btn.setEnabled(True)
@@ -3799,6 +3819,7 @@ class PowerpoineatorWidget(QWidget):
                 
                 self.pdf_cargado = doc_path
                 self.pdf_label.setText(obtener_traduccion('pdf_cargado', current_language).format(os.path.basename(doc_path)))
+                self.pdf_label.show() # <--- Mostrar la etiqueta
                 
                 # Mostrar y habilitar los botones
                 self.eliminar_pdf_btn.show()
@@ -3838,6 +3859,7 @@ class PowerpoineatorWidget(QWidget):
     def eliminar_pdf(self):
         self.pdf_cargado = None
         self.pdf_label.setText("")
+        self.pdf_label.hide() # <--- Ocultar la etiqueta
         self.eliminar_pdf_btn.hide()
         self.save_pdf_path()
         self.revisar_pdf_btn.hide()
@@ -3870,6 +3892,7 @@ class PowerpoineatorWidget(QWidget):
                             # Obtener el idioma del archivo de configuración para asegurar coherencia
                             current_language = config.get('language', 'es')
                             self.pdf_label.setText(obtener_traduccion('pdf_cargado', current_language).format(os.path.basename(pdf_path)))
+                            self.pdf_label.show() # <--- Mostrar la etiqueta
                             # Mostrar y habilitar los botones
                             self.eliminar_pdf_btn.show()
                             self.eliminar_pdf_btn.setEnabled(True)
@@ -3877,9 +3900,15 @@ class PowerpoineatorWidget(QWidget):
                             self.revisar_pdf_btn.setEnabled(True)
                     else:
                         self.pdf_cargado = None
+                        if hasattr(self, 'pdf_label'): # <--- Asegurarse de que existe antes de ocultar
+                            self.pdf_label.setText("")
+                            self.pdf_label.hide()
         except Exception as e:
             print(f"Error al cargar la ruta del PDF: {str(e)}")
             self.pdf_cargado = None
+            if hasattr(self, 'pdf_label'): # <--- Asegurarse de que existe antes de ocultar
+                self.pdf_label.setText("")
+                self.pdf_label.hide()
 
     def revisar_pdf(self):
         if self.pdf_cargado and os.path.exists(self.pdf_cargado):

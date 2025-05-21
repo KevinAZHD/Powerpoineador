@@ -50,7 +50,7 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
                 "content": prompt
             }
         ],
-        "model": "grok-3-beta",
+        "model": "grok-3",
         "stream": False,
         "temperature": 0.6
     }

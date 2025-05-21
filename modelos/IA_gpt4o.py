@@ -8,7 +8,7 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
         print(msg)
         if signals:
             signals.update_log.emit(str(msg))
-
+            
     # Obtener el idioma actual
     current_language = 'es'
     if signals and hasattr(signals, 'current_language'):
@@ -38,12 +38,15 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
     try:
         # Ejecutar el modelo para obtener la respuesta
         for event in replicate.stream(
-            "anthropic/claude-3.5-sonnet",
+            "openai/gpt-4o",
             input={
                 "prompt": prompt,
-                "max_tokens": 8192,
+                "top_p": 1,
+                "temperature": 1,
                 "system_prompt": "You are a helpful assistant that generates the text for the PowerPoint presentations in a tuple structure of python, you only generate the text for the PowerPoint presentations, you do not generate any other text. The structure of the tuple is {Title1:Content1,Title2:Content2,Title3:Content3}",
-                "max_image_resolution": 0.5
+                "presence_penalty": 0,
+                "frequency_penalty": 0,
+                "max_completion_tokens": 4096
             }
         ):
             # Imprimir el evento actual
@@ -66,24 +69,30 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
             return respuesta_procesada
             
     except Exception as e:
-        # Imprimir un mensaje indicando que ocurrió un error al obtener la respuesta
+        # Manejar cualquier error que ocurra durante la generación de respuesta
         log_message(obtener_traduccion('error_generacion_respuesta', current_language).format(error=str(e)))
         return None
     finally:
-        # Limpiar la memoria
-        import gc
-        gc.collect()
+        # Limpiar las variables de respuesta
+        respuesta_completa = None
+        respuesta_procesada = None
 
-# Función para extraer el contenido entre llaves
+# Función para extraer texto entre llaves {} de una cadena
 def extraer_entre_llaves(texto):
     inicio = texto.find('{')
-    fin = texto.rfind('}')
-    if inicio != -1 and fin != -1:
-        return texto[inicio:fin+1]
-    return texto
+    fin = texto.rfind('}') + 1
+    if inicio >= 0 and fin > 0:
+        return texto[inicio:fin]
+    return None
 
 # Función para obtener respuesta del modelo con reintentos
 def intentar_obtener_respuesta(descripcion, signals=None):
+    # Función interna para manejar logs
+    def log_message(msg):
+        print(msg)
+        if signals:
+            signals.update_log.emit(str(msg))
+            
     # Obtener el idioma actual
     current_language = 'es'
     if signals and hasattr(signals, 'current_language'):
@@ -92,17 +101,23 @@ def intentar_obtener_respuesta(descripcion, signals=None):
         current_language = signals.parent.current_language
     elif signals and hasattr(signals, 'parent') and hasattr(signals.parent, 'parent') and hasattr(signals.parent.parent, 'current_language'):
         current_language = signals.parent.parent.current_language
-        
-    max_intentos = 3
-    for intento in range(max_intentos):
+
+    while True:
         try:
+            # Imprimir un mensaje indicando que se está intentando generar una respuesta
+            log_message(obtener_traduccion('intentando_generar_respuesta', current_language).format(modelo="GPT-4o"))
+            
             # Obtener la respuesta del modelo
             respuesta = obtener_respuesta_modelo(descripcion, signals)
-            if respuesta:
+            # Verificar si la respuesta es un diccionario válido
+            if isinstance(respuesta, dict):
+                log_message(obtener_traduccion('respuesta_generada_exitosamente', current_language))
                 return respuesta
+            else:
+                # Imprimir un mensaje indicando que la respuesta no es un diccionario válido
+                log_message(obtener_traduccion('respuesta_no_valida', current_language))
+                time.sleep(3)
         except Exception as e:
             # Imprimir un mensaje indicando que ocurrió un error al obtener la respuesta
-            if signals:
-                signals.update_log.emit(obtener_traduccion('error_intento', current_language).format(intento=intento + 1, error=str(e)))
-            time.sleep(2)
-    return None 
+            log_message(obtener_traduccion('error_intento', current_language).format(intento=1, error=str(e)))
+            time.sleep(3)

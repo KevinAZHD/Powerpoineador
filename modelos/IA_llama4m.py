@@ -1,5 +1,4 @@
 import replicate, time, ast
-import os
 from Traducciones import obtener_traduccion
 
 # Función para obtener respuesta del modelo con reintentos

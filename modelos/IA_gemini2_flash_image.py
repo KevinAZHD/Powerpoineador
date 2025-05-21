@@ -5,6 +5,10 @@ from PIL import Image
 from io import BytesIO
 from Traducciones import obtener_traduccion
 
+# Excepción personalizada para errores de compatibilidad regional
+class RegionCompatibilityError(Exception):
+    pass
+
 # Función para generar una imagen basada en la sección, contenido y descripción del usuario
 def generar_imagen(section, content, nuevo_string, signals=None):
     # Obtener el idioma actual
@@ -78,7 +82,18 @@ def generar_imagen(section, content, nuevo_string, signals=None):
         
     except Exception as e:
         error_message = str(e)
-        print(obtener_traduccion('error_generacion_imagen_gemini', current_language).format(error=error_message))
-        if signals:
-            signals.update_log.emit(obtener_traduccion('error_generacion_imagen_gemini', current_language).format(error=error_message))
-        raise
+        # Verificar si el error es el específico que queremos manejar
+        if "models/gemini-2.0-flash-preview-image-generation is not found" in error_message and "NOT_FOUND" in error_message:
+            custom_error_key = 'error_gemini_region_incompatible'
+            custom_error_message = obtener_traduccion(custom_error_key, current_language)
+            print(custom_error_message)
+            if signals:
+                signals.update_log.emit(custom_error_message)
+            # Lanzar una excepción personalizada que será capturada específicamente
+            raise RegionCompatibilityError(custom_error_message)
+        else:
+            # Manejo de otros errores como estaba antes
+            print(obtener_traduccion('error_generacion_imagen_gemini', current_language).format(error=error_message))
+            if signals:
+                signals.update_log.emit(obtener_traduccion('error_generacion_imagen_gemini', current_language).format(error=error_message))
+            raise

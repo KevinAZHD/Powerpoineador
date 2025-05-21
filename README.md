@@ -38,9 +38,14 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 
 ### Modelos de Texto:
 
-- **gemini-2.5-flash-preview-04-17** - Nuevo modelo de Google optimizado para pensamiento adaptativo y rentabilidad.
+- **gemini-2.5-flash-preview-05-20** - Nuevo modelo de Google optimizado para pensamiento adaptativo y rentabilidad.
 - **gemini-2.0-flash** - Modelo de Google optimizado para funciones y velocidad de nueva generación.
 - **gemini-2.0-flash-thinking-exp-01-21** - Modelo razonador de Google con alta estructuración.
+- **gpt-4.1** - Nuevo modelo insignia de OpenAI para tareas complejas.
+- **gpt-4.1-nano** - La versión más reducida de GPT-4.1 pero más rápido y económico.
+- **o4-mini** - Modelo rápido y ligero de razonamiento de OpenAI.
+- **gpt-4o** - Un modelo de chat de alta inteligencia de OpenAI.
+- **gpt-4o-mini** - La versión económica y más rápida del modelo GPT-4o.
 - **deepseek-r1** - Modelo chino optimizado para razonamiento y estructuración lógica.
 - **claude-3.7-sonnet** - Nuevo modelo de Anthropic, el más inteligente y con mejor capacidad de razonamiento.
 - **claude-3.5-sonnet** - Modelo equilibrado de Anthropic con buena capacidad de comprensión.
@@ -49,9 +54,10 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **meta-llama-4-maverick-instruct** - Última versión del modelo de Meta con mejor rendimiento.
 - **meta-llama-3.1-405b-instruct** - Modelo de Meta con controles de contenido.
 - **dolphin-2.9-llama3-70b-gguf** - Modelo sin censura para contenido más flexible.
-- **grok-3-mini-beta** - Versión ligera del nuevo modelo de xAI.
-- **grok-3-beta** - Nuevo modelo completo y mejorado de xAI.
-- **grok-2-1212** - Modelo de xAI.
+- **grok-3** - Nuevo modelo completo y mejorado de xAI.
+- **grok-3-mini** - Versión ligera y económica razonadora de grok-3.
+- **grok-3-mini-fast** - La versión rápida de grok-3-mini.
+- **grok-2-1212** - Modelo estándar y original de xAI.
 
 ### Modelos de Imagen:
 
@@ -166,6 +172,6 @@ Por favor, tenga en cuenta que este proyecto se mantiene con la intención de se
 ## Créditos
 
 - Este proyecto ha sido desarrollado por [Kevin Adán Zamora](https://github.com/KevinAZHD), [Diego Martínez Fernández](https://github.com/Dgmtnz), y [Leandro Pérez Martínez](https://github.com/Skade2050)
-- Interfaz gráfica desarrollada con PySide6 gracias a [Kevin Adán Zamora](https://github.com/KevinAZHD)
+- Interfaz gráfica desarrollada con PySide6 gracias a [Kevin Adán Zamora](https://github.com/KevinAZHD) y [Leandro Pérez Martínez](https://github.com/Skade2050)
 - Todos los enlaces proporcionados anteriormente.
 - Gracias por leer y utilizar esta guía de Powerpoineador.
