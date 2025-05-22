@@ -65,8 +65,9 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **dall-e-3** - Modelo de OpenAI capacitado para crear imágenes y arte realista.
 - **dall-e-2** - Modelo económico de OpenAI clásico y original.
 - **flux-schnell** - Modelo rápido con buena calidad.
-- **imagen-3** - Modelo de Google con la mejor calidad de imagen.
-- **imagen-3-fast** - Modelo de Google rápido y económico.
+- **imagen-4** - Nuevo modelo de Google mejor avanzado de generación de imágenes.
+- **imagen-3** - Modelo de Google con buena calidad de imagen.
+- **imagen-3-fast** - Modelo de Google rápido y económico de imagen-3.
 - **sana** - Modelo de NVIDIA equilibrado entre calidad y velocidad.
 - **sana-sprint-1.6b** - Modelo de NVIDIA mucho más rápido y económico.
 - **photomaker** - Modelo especializado en caras (requiere imagen de referencia).

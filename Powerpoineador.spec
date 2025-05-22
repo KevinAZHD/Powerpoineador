@@ -50,6 +50,7 @@ a = Analysis(
         'modelos/IA_photomaker.py',
         'modelos/IA_sdxl.py',
         'modelos/IA_deepseek.py',
+        'modelos/IA_imagen4.py',
         'modelos/IA_imagen3.py',
         'modelos/IA_imagen3fast.py',
         'modelos/IA_sana.py',

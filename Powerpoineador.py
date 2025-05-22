@@ -2736,6 +2736,7 @@ class PowerpoineatorWidget(QWidget):
             self.imagen_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'dall-e-3 [$0.12]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'dall-e-2 [$0.02]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/fluxschnell.png")), 'flux-schnell [$0.003]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-4 [$0.05]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 [$0.05]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast [$0.025]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.084]')

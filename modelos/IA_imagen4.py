@@ -13,7 +13,7 @@ def generar_imagen(section, content, nuevo_string):
     
     # Ejecutar el modelo para generar la imagen
     output = replicate.run(
-        "google/imagen-3-fast",
+        "google/imagen-4",
         input=image_input
     )
     

@@ -20,8 +20,9 @@ def generar_imagen(section, content, nuevo_string):
     
     # Definir los parámetros de entrada para el modelo
     image_input = {
-        "prompt": f"{section_en} {content_en}, a photo in the context of the PowerPoint of {nuevo_string_en}, professional photographers style with soft lighting, high resolution and exceptional clarity, professional color grading",
-        "aspect_ratio": "1:1"
+        "prompt": f"a photo in the context of the PowerPoint of {content_en} {section_en}, professional photographers style with soft lighting and exceptional clarity",
+        "aspect_ratio": "1:1",
+        "safety_filter_level": "block_only_high"
     }
     
     # Ejecutar el modelo para generar la imagen
