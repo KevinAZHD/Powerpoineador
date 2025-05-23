@@ -47,7 +47,8 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 - **gpt-4o** - Un modelo de chat de alta inteligencia de OpenAI.
 - **gpt-4o-mini** - La versión económica y más rápida del modelo GPT-4o.
 - **deepseek-r1** - Modelo chino optimizado para razonamiento y estructuración lógica.
-- **claude-3.7-sonnet** - Nuevo modelo de Anthropic, el más inteligente y con mejor capacidad de razonamiento.
+- **claude-4-sonnet** - Nuevo modelo de Anthropic, el más avanzado en razonamiento con mayor precisión de respuestas.
+- **claude-3.7-sonnet** - Modelo de Anthropic inteligente y con capacidad de razonamiento.
 - **claude-3.5-sonnet** - Modelo equilibrado de Anthropic con buena capacidad de comprensión.
 - **claude-3.5-haiku** - Versión económica de Claude, excelente relación calidad-precio.
 - **meta-llama-4-scout-instruct** - Nuevo modelo de Meta enfocado en la velocidad y costes bajos.

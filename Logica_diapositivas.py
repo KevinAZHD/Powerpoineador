@@ -64,6 +64,9 @@ def obtener_respuesta_ia(descripcion, modelo, signals=None):
         elif modelo == 'meta-llama-4-maverick-instruct [$0.00067]':
             from modelos.IA_llama4m import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
+        elif modelo == 'claude-4-sonnet [$0.0105]':
+            from modelos.IA_sonnet4 import intentar_obtener_respuesta
+            respuesta = intentar_obtener_respuesta(descripcion, signals)
         elif modelo == 'claude-3.7-sonnet [$0.0105]':
             from modelos.IA_sonnet3_7 import intentar_obtener_respuesta
             respuesta = intentar_obtener_respuesta(descripcion, signals)
@@ -173,6 +176,9 @@ def generar_texto_ia(tipo, contenido_actual, descripcion, modelo, signals=None):
             texto_generado = generar_texto_simple(prompt, signals)
         elif modelo == 'meta-llama-4-maverick-instruct [$0.00067]':
             from modelos.IA_llama4m import generar_texto_simple
+            texto_generado = generar_texto_simple(prompt, signals)
+        elif modelo == 'claude-4-sonnet [$0.0105]':
+            from modelos.IA_sonnet4 import generar_texto_simple
             texto_generado = generar_texto_simple(prompt, signals)
         elif modelo == 'claude-3.7-sonnet [$0.0105]':
             from modelos.IA_sonnet3_7 import generar_texto_simple

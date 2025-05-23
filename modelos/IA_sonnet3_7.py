@@ -42,8 +42,7 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
             input={
                 "prompt": prompt,
                 "max_tokens": 8192,
-                "system_prompt": "You are a helpful assistant that generates the text for the PowerPoint presentations in a tuple structure of python, you only generate the text for the PowerPoint presentations, you do not generate any other text. The structure of the tuple is {Title1:Content1,Title2:Content2,Title3:Content3}",
-                "max_image_resolution": 0.5
+                "system_prompt": "You are a helpful assistant that generates the text for the PowerPoint presentations in a tuple structure of python, you only generate the text for the PowerPoint presentations, you do not generate any other text. The structure of the tuple is {Title1:Content1,Title2:Content2,Title3:Content3}"
             }
         ):
             # Imprimir el evento actual

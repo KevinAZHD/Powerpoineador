@@ -2698,7 +2698,7 @@ class PowerpoineatorWidget(QWidget):
 
     # Función para poblar los campos de selección de modelos
     def populate_fields(self):
-        # Resto del código sin cambios...
+
         self.texto_combo.blockSignals(True)
         self.imagen_combo.blockSignals(True)
         
@@ -2723,6 +2723,7 @@ class PowerpoineatorWidget(QWidget):
             self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4o [$0.00112]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/openai.png")), 'gpt-4o-mini [$0.00042]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/deepseek.png")), 'deepseek-r1 [$0.007]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-4-sonnet [$0.0105]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.7-sonnet [$0.0105]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-sonnet [$0.01312]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/claude.png")), 'claude-3.5-haiku [$0.0035]')
@@ -2766,10 +2767,9 @@ class PowerpoineatorWidget(QWidget):
         self.load_description()
         self.load_auto_open_state()
         self.load_num_diapositivas()
-        self.load_format_settings()  # Cargar configuraciones de formato
+        self.load_format_settings()
         self.load_selected_style() 
         self.update_style_label()
-        # Actualizar contador
         self.actualizar_contador()
         
         self.texto_combo.setMaxVisibleItems(self.texto_combo.count())

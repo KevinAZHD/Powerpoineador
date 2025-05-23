@@ -27,6 +27,7 @@ a = Analysis(
         'modelos/IA_haiku.py',
         'modelos/IA_sonnet3_5.py',
         'modelos/IA_sonnet3_7.py',
+        'modelos/IA_sonnet4.py',
         'modelos/IA_flux8.py',
         'modelos/IA_flux16.py',
         'modelos/IA_fluxpulid.py',
