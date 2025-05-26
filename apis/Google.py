@@ -29,7 +29,7 @@ class GoogleAPIKeyWindow(QWidget):
             
         self.setWindowTitle(obtener_traduccion('google_api_config_window', self.current_language))
         self.setFixedSize(400, 300)
-        self.setWindowIcon(QIcon(resource_path("iconos/google.png")))
+        self.setWindowIcon(QIcon(resource_path("iconos/googleAI.png")))
         self.setWindowModality(Qt.ApplicationModal)
         
         # Timer para limpiar mensajes de estado
@@ -51,7 +51,7 @@ class GoogleAPIKeyWindow(QWidget):
         
         # Configuración del logo
         logo_label = QLabel()
-        pixmap = QPixmap(resource_path("iconos/google.png"))
+        pixmap = QPixmap(resource_path("iconos/googleAI.png"))
         if not pixmap.isNull():
             scaled_pixmap = pixmap.scaled(150, 150, Qt.KeepAspectRatio)
             logo_label.setPixmap(scaled_pixmap)
