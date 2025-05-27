@@ -41,7 +41,7 @@ def obtener_respuesta_modelo(nuevo_string, signals=None):
             "anthropic/claude-3.7-sonnet",
             input={
                 "prompt": prompt,
-                "max_tokens": 8192,
+                "max_tokens": 64000,
                 "system_prompt": "You are a helpful assistant that generates the text for the PowerPoint presentations in a tuple structure of python, you only generate the text for the PowerPoint presentations, you do not generate any other text. The structure of the tuple is {Title1:Content1,Title2:Content2,Title3:Content3}"
             }
         ):
