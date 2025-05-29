@@ -274,19 +274,19 @@ def generar_imagen_ia(section, content, descripcion, modelo, signals=None):
     try:
         # Ya no imprimir mensaje aquí, ya se hace en generar_presentacion
         
-        if modelo == 'sdxl-lightning-4step [$0.0014]':
+        if modelo == 'sdxl-lightning-4step [$0.0037]':
             return generar_imagen_sdxl(section, content, descripcion, signals, False)
         elif modelo == 'flux-schnell [$0.003]':
             return generar_imagen_fluxschnell(section, content, descripcion, signals, False)
-        elif modelo == 'hyper-flux-8step [$0.027]':
+        elif modelo == 'hyper-flux-8step [$0.045]':
             return generar_imagen_flux8(section, content, descripcion, signals, False)
-        elif modelo == 'photomaker [$0.0067]':
+        elif modelo == 'photomaker [$0.0070]':
             return generar_imagen_photomaker(section, content, descripcion, None, signals, False)
-        elif modelo == 'hyper-flux-16step [$0.020]':
+        elif modelo == 'hyper-flux-16step [$0.047]':
             return generar_imagen_flux16(section, content, descripcion, signals, False)
         elif modelo == 'dgmtnzflux [$0.03]':
             return generar_imagen_diego(section, content, descripcion, signals, False)
-        elif modelo == 'sana [$0.0015]':
+        elif modelo == 'sana [$0.0067]':
             return generar_imagen_sana(section, content, descripcion, signals, False)
         elif modelo == 'sana-sprint-1.6b [$0.0015]':
             return generar_imagen_sana_sprint(section, content, descripcion, signals, False)

@@ -2730,7 +2730,7 @@ class PowerpoineatorWidget(QWidget):
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-scout-instruct [$0.00046]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-4-maverick-instruct [$0.00067]')
             self.texto_combo.addItem(QIcon(resource_path("iconos/meta.png")), 'meta-llama-3.1-405b-instruct [$0.0067]')
-            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.043]')
+            self.texto_combo.addItem(QIcon(resource_path("iconos/dolphin.png")), 'dolphin-2.9-llama3-70b-gguf [$0.050]')
             
             self.imagen_combo.setEnabled(True)
             self.imagen_combo.setAttribute(Qt.WA_TransparentForMouseEvents, False)
@@ -2740,13 +2740,13 @@ class PowerpoineatorWidget(QWidget):
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-4 [$0.05]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3 [$0.05]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/google.png")), 'imagen-3-fast [$0.025]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.084]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana [$0.0067]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/nvidia.png")), 'sana-sprint-1.6b [$0.0015]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker [$0.0067]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid [$0.027]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step [$0.027]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step [$0.060]')
-            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step [$0.0028]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/photomaker.png")), 'photomaker [$0.0070]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'flux-pulid [$0.032]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-8step [$0.045]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'hyper-flux-16step [$0.047]')
+            self.imagen_combo.addItem(QIcon(resource_path("iconos/bytedance.png")), 'sdxl-lightning-4step [$0.0037]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/lightweight.png")), 'model3_4 [$0.00098]')
             self.imagen_combo.addItem(QIcon(resource_path("iconos/dgmtnzflux.png")), 'dgmtnzflux [$0.03]')
         
@@ -3293,7 +3293,7 @@ class PowerpoineatorWidget(QWidget):
                                obtener_traduccion('empty_description', current_language))
             return
         
-        if modelo_imagen in ['photomaker [$0.0067]', 'flux-pulid [$0.027]']:
+        if modelo_imagen in ['photomaker [$0.0070]', 'flux-pulid [$0.032]']:
             if not self.imagen_personalizada or not os.path.exists(self.imagen_personalizada):
                 QMessageBox.warning(self, obtener_traduccion('error', current_language), 
                                    obtener_traduccion('image_required', current_language))
@@ -3479,7 +3479,7 @@ class PowerpoineatorWidget(QWidget):
 
     # Función para manejar el cambio en la selección de modelos de imagen
     def on_imagen_combo_changed(self, texto):
-        if texto in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+        if texto in ['flux-pulid [$0.032]', 'photomaker [$0.0070]']:
             self.cargar_imagen_btn.show()
             self.ver_imagen_btn.show()
             self.cargar_imagen_btn.setEnabled(True)
@@ -3580,7 +3580,7 @@ class PowerpoineatorWidget(QWidget):
                     if index >= 0:
                         self.imagen_combo.setCurrentIndex(index)
                         # Re-aplicar lógica de mostrar/ocultar botones para modelos específicos
-                        if imagen_modelo_guardado in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                        if imagen_modelo_guardado in ['flux-pulid [$0.032]', 'photomaker [$0.0070]']:
                             self.cargar_imagen_btn.show()
                             self.ver_imagen_btn.show()
                             self.cargar_imagen_btn.setEnabled(True)
@@ -3595,7 +3595,7 @@ class PowerpoineatorWidget(QWidget):
                         config['imagen_modelo'] = self.imagen_combo.currentText()
                         # Re-aplicar lógica de botones para el nuevo modelo seleccionado (índice 0)
                         current_img_model_at_0 = self.imagen_combo.currentText()
-                        if current_img_model_at_0 in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                        if current_img_model_at_0 in ['flux-pulid [$0.032]', 'photomaker [$0.0070]']:
                              self.cargar_imagen_btn.show(); self.ver_imagen_btn.show()
                              self.cargar_imagen_btn.setEnabled(True); self.ver_imagen_btn.setEnabled(True)
                         else:
@@ -3608,7 +3608,7 @@ class PowerpoineatorWidget(QWidget):
                     self.imagen_combo.setCurrentIndex(0)
                     config['imagen_modelo'] = self.imagen_combo.currentText()
                     current_img_model_at_0 = self.imagen_combo.currentText()
-                    if current_img_model_at_0 in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                    if current_img_model_at_0 in ['flux-pulid [$0.032]', 'photomaker [$0.0070]']:
                             self.cargar_imagen_btn.show(); self.ver_imagen_btn.show()
                             self.cargar_imagen_btn.setEnabled(True); self.ver_imagen_btn.setEnabled(True)
                     else:
@@ -3626,7 +3626,7 @@ class PowerpoineatorWidget(QWidget):
                 self.imagen_combo.setCurrentIndex(0)
                 # Actualizar botones para el modelo en el índice 0 de imagen_combo
                 current_img_model_at_0 = self.imagen_combo.currentText()
-                if current_img_model_at_0 in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                if current_img_model_at_0 in ['flux-pulid [$0.032]', 'photomaker [$0.0070]']:
                         self.cargar_imagen_btn.show(); self.ver_imagen_btn.show()
                         self.cargar_imagen_btn.setEnabled(True); self.ver_imagen_btn.setEnabled(True)
                 else:
@@ -3640,7 +3640,7 @@ class PowerpoineatorWidget(QWidget):
                 self.imagen_combo.setCurrentIndex(0)
                 # Actualizar botones para el modelo en el índice 0 de imagen_combo
                 current_img_model_at_0 = self.imagen_combo.currentText()
-                if current_img_model_at_0 in ['flux-pulid [$0.027]', 'photomaker [$0.0067]']:
+                if current_img_model_at_0 in ['flux-pulid [$0.032]', 'photomaker [$0.0070]']:
                         self.cargar_imagen_btn.show(); self.ver_imagen_btn.show()
                         self.cargar_imagen_btn.setEnabled(True); self.ver_imagen_btn.setEnabled(True)
                 else:
