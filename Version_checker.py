@@ -9,7 +9,7 @@ def obtener_ultima_version():
     try:
         response = requests.get("https://github.com/KevinAZHD/Powerpoineador/releases")
         if response.status_code == 200:
-            version_match = re.search(r'href="/KevinAZHD/Powerpoineador/releases/tag/(v\d+\.\d+\.\d+b)"', response.text)
+            version_match = re.search(r'href="/KevinAZHD/Powerpoineador/releases/tag/(v\d+\.\d+\.\d+(?:b)?)"', response.text)
             if version_match:
                 return version_match.group(1)
     except Exception as e:
