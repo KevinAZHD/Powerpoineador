@@ -181,23 +181,19 @@ class ThemeManager:
                 """
 
                 # Estilos para QProgressBar según el sistema operativo y estado
-                if not is_win10:
-                    # Aplicar estilos personalizados solo para sistemas NO Windows 10
-                    light_style += """
-                    QProgressBar {
-                        border: 1px solid #AAAAAA;
-                        border-radius: 4px;
-                        text-align: center;
-                        background-color: #F0F0F0;
-                        height: 20px;
-                    }
-                    QProgressBar::chunk {
-                        background-color: #4285F4;
-                        width: 10px;
-                        margin: 0.5px;
-                    }
-                    """
-                # Si es Windows 10, no se aplica estilo personalizado a QProgressBar
+                # Aplicar estilos para todas las versiones de Windows
+                light_style += f"""
+                QProgressBar {{
+                    border: 1px solid #AAAAAA;
+                    border-radius: 4px;
+                    text-align: center;
+                    background-color: #F0F0F0;
+                    height: 20px;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {highlight_color_hex}; /* Usar el color de resaltado del sistema */
+                }}
+                """
                 
                 # Añadir el estilo de checkbox según si hay generación o no
                 if self.is_generating:
@@ -344,23 +340,20 @@ class ThemeManager:
                     }}
                 """
                 
-                # Añadir estilos para QProgressBar solo si no es Windows 10
-                if not is_win10:
-                    dark_style += """
-                    QProgressBar {
-                        border: 1px solid #555555;
-                        border-radius: 4px;
-                        text-align: center;
-                        background-color: #303030;
-                        color: white;
-                        height: 20px;
-                    }
-                    QProgressBar::chunk {
-                        background-color: #4285F4;
-                        width: 10px;
-                        margin: 0.5px;
-                    }
-                    """
+                # Aplicar estilos para QProgressBar en tema oscuro para todas las versiones de Windows
+                dark_style += f"""
+                QProgressBar {{
+                    border: 1px solid #555555;
+                    border-radius: 4px;
+                    text-align: center;
+                    background-color: #303030;
+                    color: white;
+                    height: 20px;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {highlight_color_hex}; /* Usar color de resaltado del sistema */
+                }}
+                """
                 
                 app.setStyleSheet(dark_style)
 
