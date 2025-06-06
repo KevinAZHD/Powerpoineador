@@ -336,7 +336,7 @@ class MainWindow(QMainWindow):
             self.get_google_api_action = QAction(QIcon(resource_path("iconos/web.png")), obtener_traduccion('obtener_google_api', self.current_language), self)
             self.get_google_api_action.setMenuRole(QAction.NoRole) # is_darwin es True
             self.get_google_api_action.setObjectName('get_google_api_action')
-            self.get_google_api_action.triggered.connect(lambda: webbrowser.open('https://aistudio.google.com/app/apikey'))
+            self.get_google_api_action.triggered.connect(lambda: webbrowser.open('https://ai.dev/apikey'))
             self.get_google_api_action.setEnabled(not bool(self.google_api_key))
             self.google_menu.addAction(self.get_google_api_action)
             

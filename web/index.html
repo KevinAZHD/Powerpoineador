@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Powerpoineador</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            animation: {
+              marquee: "marquee 80s linear infinite",
+            },
+            keyframes: {
+              marquee: {
+                "0%": { transform: "translateX(0%)" },
+                "100%": { transform: "translateX(-50%)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-100 dark:bg-gray-900 font-sans min-h-screen flex flex-col"
+  >
+    <div
+      class="container mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg flex flex-col min-h-screen px-0"
+    >
+      <header class="bg-[#FF9900] rounded-t-lg">
+        <div
+          class="flex flex-col md:flex-row items-center justify-between px-6 py-4"
+        >
+          <div class="flex items-center gap-2">
+            <img
+              src="iconos web/icon.png"
+              alt="Powerpoineador"
+              class="h-12 w-12"
+            />
+            <span class="text-2xl font-bold text-white tracking-tight"
+              >Powerpoineador</span
+            >
+          </div>
+          <div class="flex items-center mt-4 md:mt-0">
+            <nav class="flex flex-wrap gap-2">
+              <a
+                href="#"
+                id="nav-inicio"
+                class="tab-link px-4 py-2 text-white rounded-t-lg font-semibold hover:bg-white hover:text-[#FF9900] dark:hover:bg-gray-700 transition-transform duration-300 hover:scale-105"
+                >Inicio</a
+              >
+              <a
+                href="#"
+                id="nav-descargas"
+                class="tab-link px-4 py-2 text-white rounded-t-lg font-semibold hover:bg-white hover:text-[#FF9900] dark:hover:bg-gray-700 transition-transform duration-300 hover:scale-105"
+                >Descargas</a
+              >
+              <a
+                href="#"
+                id="nav-quienes"
+                class="tab-link px-4 py-2 text-white rounded-t-lg font-semibold hover:bg-white hover:text-[#FF9900] dark:hover:bg-gray-700 transition-transform duration-300 hover:scale-105"
+                >¿Quiénes somos?</a
+              >
+              <a
+                href="#"
+                id="nav-contactar"
+                class="tab-link px-4 py-2 text-white rounded-t-lg font-semibold hover:bg-white hover:text-[#FF9900] dark:hover:bg-gray-700 transition-transform duration-300 hover:scale-105"
+                >Contactar</a
+              >
+              <a
+                href="#"
+                id="nav-faq"
+                class="tab-link px-4 py-2 text-white rounded-t-lg font-semibold hover:bg-white hover:text-[#FF9900] dark:hover:bg-gray-700 transition-transform duration-300 hover:scale-105"
+                >FAQ</a
+              >
+            </nav>
+            <button
+              id="darkModeToggle"
+              class="ml-4 p-2 text-white font-semibold rounded-lg hover:bg-white hover:text-[#FF9900] dark:hover:bg-gray-700 transition-transform duration-300 hover:scale-105 border-2 border-white"
+            ></button>
+          </div>
+        </div>
+      </header>
+      <main class="flex-1 p-4 md:p-8">
+        <!-- INICIO -->
+        <div class="main-content" id="main-content">
+          <section
+            class="flex flex-col md:flex-row items-center bg-[#FFF8F0] dark:bg-gray-800 rounded-xl shadow p-6 mb-8 gap-6 border-2 border-[#FF9900] dark:border-orange-400"
+          >
+            <div class="flex-shrink-0">
+              <img
+                src="iconos web/powerpoint.png"
+                alt="Caja Powerpoineador"
+                class="w-40 rounded-lg shadow-md"
+              />
+            </div>
+            <div>
+              <h2 class="text-xl md:text-2xl font-bold text-[#FF9900] mb-3">
+                La herramienta que necesitas para crear, editar y presentar tus
+                ideas de forma profesional
+              </h2>
+              <p class="text-[#232323] dark:text-gray-300 text-lg">
+                Ahorra tiempo y esfuerzo generando presentaciones impactantes en
+                segundos.<br />
+                <span class="font-semibold text-[#FF9900]"
+                  >¡Ideal para estudiantes, docentes y profesionales!</span
+                >
+              </p>
+              <div class="mt-5">
+                <a
+                  href="https://github.com/KevinAZHD/Powerpoineador/releases/latest"
+                  class="inline-block bg-[#FF9900] hover:bg-[#e67700] text-white font-semibold px-6 py-2 rounded shadow transition"
+                  >Descargar ahora</a
+                >
+              </div>
+            </div>
+          </section>
+          <section class="mt-8">
+            <h3 class="text-xl font-bold text-[#FF9900] mb-2">
+              ¿Qué es Powerpoineador?
+            </h3>
+            <p class="text-[#232323] dark:text-gray-300">
+              Powerpoineador es un programa de escritorio que genera
+              automáticamente presentaciones de PowerPoint utilizando diferentes
+              modelos de Inteligencia Artificial, tanto para la generación de
+              texto como para las imágenes. Ofrece una interfaz gráfica
+              intuitiva y múltiples opciones de personalización, facilitando la
+              creación de presentaciones profesionales en pocos segundos.
+            </p>
+          </section>
+
+          <section
+            class="features bg-white dark:bg-gray-800 rounded-lg shadow px-6 py-5"
+          >
+            <h3 class="text-xl font-bold text-[#FF9900] mb-4">
+              ¿Por qué elegir Powerpoineador?
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div
+                class="bg-white dark:bg-gray-700 border-2 border-[#FF9900] dark:border-orange-400 p-4 rounded-lg text-center transform transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <span class="text-2xl font-bold text-[#FF9900]"
+                  >🚀 Potente</span
+                >
+                <p class="mt-2 text-[#232323] dark:text-gray-300">
+                  Genera presentaciones completas a partir de un solo tema.
+                </p>
+              </div>
+
+              <div
+                class="bg-white dark:bg-gray-700 border-2 border-[#FF9900] dark:border-orange-400 p-4 rounded-lg text-center transform transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <span class="text-2xl font-bold text-[#FF9900]"
+                  >🔒 Seguro
+                </span>
+                <p class="mt-2 text-[#232323] dark:text-gray-300">
+                  Tus datos y archivos siempre protegidos y privados.
+                </p>
+              </div>
+              <div
+                class="bg-white dark:bg-gray-700 border-2 border-[#FF9900] dark:border-orange-400 p-4 rounded-lg text-center transform transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <span class="text-2xl font-bold text-[#FF9900]"
+                  >📈 Escalable</span
+                >
+                <p class="mt-2 text-[#232323] dark:text-gray-300">
+                  Ideal para proyectos personales o grandes equipos.
+                </p>
+              </div>
+            </div>
+          </section>
+          <section class="mt-10">
+            <h3 class="text-xl font-bold text-[#FF9900] mb-4">
+              ¿Cómo funciona?
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <div class="text-4xl mb-2">📝</div>
+                <span class="font-semibold text-[#FF9900]"
+                  >1. Escribe tu tema</span
+                >
+                <p class="text-[#232323] dark:text-gray-300">
+                  Elige el tema de tu presentación y ajusta los parámetros.
+                </p>
+              </div>
+              <div>
+                <div class="text-4xl mb-2">🤖</div>
+                <span class="font-semibold text-[#FF9900]"
+                  >2. Elige modelo IA</span
+                >
+                <p class="text-[#232323] dark:text-gray-300">
+                  Selecciona el modelo de inteligencia artificial preferido.
+                </p>
+              </div>
+              <div>
+                <div class="text-4xl mb-2">⚡</div>
+                <span class="font-semibold text-[#FF9900]"
+                  >3. Genera tu presentación</span
+                >
+                <p class="text-[#232323] dark:text-gray-300">
+                  En pocos segundos tendrás tus diapositivas listas.
+                </p>
+              </div>
+              <div>
+                <div class="text-4xl mb-2">🎉</div>
+                <span class="font-semibold text-[#FF9900]"
+                  >4. Descarga y presenta</span
+                >
+                <p class="text-[#232323] dark:text-gray-300">
+                  Abre el archivo y personaliza si lo necesitas.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="mt-10">
+            <h3 class="text-xl font-bold text-[#FF9900] mb-4">
+              Lo que dicen nuestros usuarios
+            </h3>
+            <div
+              id="testimonial-carousel"
+              class="w-full overflow-x-auto cursor-grab no-scrollbar select-none"
+            >
+              <div class="flex whitespace-nowrap py-4">
+                <!-- Original Testimonials -->
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Nunca había sido tan fácil crear una presentación
+                    profesional en minutos."
+                  </p>
+                  <span class="block font-semibold mt-2">María G. Docente</span>
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Ideal para automatizar trabajos y sorprender en las
+                    reuniones."
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Luis R. Consultor</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>"La IA te ahorra muchísimo tiempo. ¡Recomendado!"</p>
+                  <span class="block font-semibold mt-2"
+                    >Carmen S. Estudiante</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Incluso para mis presentaciones sobre hormigas, esta
+                    herramienta es sorprendentemente útil."
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Mario C. Experto en hormigas</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Lo que empezó siendo una broma entre clases ha acabado
+                    siendo una herramienta con un gran potencial."
+                  </p>
+                  <span class="block font-semibold mt-2">Diego M. Teleco</span>
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Robusta y directa al grano. Como informático, valoro las
+                    herramientas que funcionan sin complicaciones."
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Pedro Antonio M. Informático</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "¡Desde Perú, usando esta maravilla! Me ayuda a preparar mis
+                    exposiciones para la universidad."
+                  </p>
+                  <span class="block font-semibold mt-2">Zapata. Peruano</span>
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Ahorra horas de trabajo repetitivo. ¡Una joya para
+                    cualquier desarrollador!"
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Javier C. Programador</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Perfecto para los trabajos de última hora. Me ha salvado
+                    más de una vez."
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Iván A. Estudiante</span
+                  >
+                </div>
+
+                <!-- Duplicated Testimonials -->
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Nunca había sido tan fácil crear una presentación
+                    profesional en minutos."
+                  </p>
+                  <span class="block font-semibold mt-2">María G. Docente</span>
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Ideal para automatizar trabajos y sorprender en las
+                    reuniones."
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Luis R. Consultor</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>"La IA te ahorra muchísimo tiempo. ¡Recomendado!"</p>
+                  <span class="block font-semibold mt-2"
+                    >Carmen S. Estudiante</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Incluso para mis presentaciones sobre hormigas, esta
+                    herramienta es sorprendentemente útil."
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Mario C. Experto en hormigas</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Simplifica la creación de informes técnicos. Un gran ahorro
+                    de tiempo."
+                  </p>
+                  <span class="block font-semibold mt-2">Diego M. Teleco</span>
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Robusta y directa al grano. Como informático, valoro las
+                    herramientas que funcionan sin complicaciones."
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Pedro Antonio M. Informático</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "¡Desde Perú, usando esta maravilla! Me ayuda a preparar mis
+                    exposiciones para la universidad."
+                  </p>
+                  <span class="block font-semibold mt-2">Zapata. Peruano</span>
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Ahorra horas de trabajo repetitivo. ¡Una joya para
+                    cualquier desarrollador!"
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Javier C. Programador</span
+                  >
+                </div>
+                <div
+                  class="flex-shrink-0 w-80 mx-4 whitespace-normal bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 shadow text-[#232323] dark:text-gray-300"
+                >
+                  <p>
+                    "Perfecto para los trabajos de última hora. Me ha salvado
+                    más de una vez."
+                  </p>
+                  <span class="block font-semibold mt-2"
+                    >Iván A. Estudiante</span
+                  >
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <!-- DESCARGAS -->
+        <div class="descargas-content hidden" id="descargas-content">
+          <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold text-[#FF9900] mb-4">
+              Descargas disponibles
+            </h2>
+            <ul class="space-y-4 text-lg text-[#232323] dark:text-gray-300">
+              <li>
+                <span class="font-semibold">Powerpoineador para Windows</span>
+                <a
+                  href="https://github.com/KevinAZHD/Powerpoineador/releases/latest"
+                  download
+                  class="ml-4 bg-[#FF9900] hover:bg-[#e67700] text-white px-5 py-2 rounded shadow font-semibold text-lg transition"
+                  >Descargar</a
+                >
+              </li>
+              <li>
+                <span class="font-semibold"
+                  >Powerpoineador para Linux (experimental)</span
+                >
+                <span class="text-gray-400 dark:text-gray-500 ml-2"
+                  >(Próximamente)</span
+                >
+              </li>
+              <li>
+                <span class="font-semibold"
+                  >Powerpoineador para MacOS (experimental)</span
+                >
+                <span class="text-gray-400 dark:text-gray-500 ml-2"
+                  >(Próximamente)</span
+                >
+              </li>
+            </ul>
+            <div class="mt-6">
+              <h3 class="text-xl font-bold text-[#FF9900] mb-4">¿Problemas?</h3>
+              <ul class="list-disc ml-8 mt-2 text-gray-700 dark:text-gray-300">
+                <li>
+                  Visita la pestaña
+                  <span class="font-bold">Contactar</span> para contáctanos.
+                </li>
+              </ul>
+            </div>
+          </section>
+          <section class="mt-8">
+            <h3 class="text-lg font-bold text-[#FF9900] mb-2">
+              Preguntas frecuentes sobre la descarga
+            </h3>
+            <div class="space-y-2">
+              <div>
+                <span class="font-semibold text-[#FF9900]"
+                  >¿El archivo es seguro?</span
+                >
+                <p class="text-[#232323] dark:text-gray-300 mb-0">
+                  Sí, el instalador está verificado y libre de virus. Puedes
+                  consultar el código fuente en nuestro GitHub.
+                </p>
+              </div>
+              <div>
+                <span class="font-semibold text-[#FF9900]"
+                  >¿Necesito tener PowerPoint instalado?</span
+                >
+                <p class="text-[#232323] dark:text-gray-300 mb-0">
+                  No es obligatorio, pero podrás abrir tus presentaciones
+                  directamente si tienes Microsoft PowerPoint o LibreOffice
+                  Impress.
+                </p>
+              </div>
+              <div>
+                <span class="font-semibold text-[#FF9900]"
+                  >¿Hay soporte para Mac y Linux?</span
+                >
+                <p class="text-[#232323] dark:text-gray-300 mb-0">
+                  Actualmente hay versiones experimentales para Linux y MacOS.
+                  Estamos trabajando en mejorar la compatibilidad.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="mt-8">
+            <h3 class="text-xl font-bold text-[#FF9900] mb-2">Instalación</h3>
+            <p class="text-[#232323] dark:text-gray-300 mb-3">
+              Puedes instalar Powerpoineador de dos formas:
+            </p>
+            <ul class="list-disc ml-6 text-[#232323] dark:text-gray-300 mb-2">
+              <li>
+                <b>Ejecutable:</b> Descarga la última versión desde la sección
+                <b>Releases</b> y ejecuta <b>Powerpoineador.exe</b> (Windows) o
+                <b>Powerpoineador.app</b> (MacOS).
+              </li>
+              <li>
+                <b>Código fuente:</b>
+                <ul class="list-disc ml-6">
+                  <li>Instala la última versión de Python.</li>
+                  <li>
+                    Clona el repositorio:
+                    <code
+                      class="bg-gray-200 dark:bg-gray-700 text-red-500 p-1 rounded"
+                      >git clone
+                      https://github.com/KevinAZHD/Powerpoineador.git</code
+                    >
+                  </li>
+                  <li>
+                    Instala las dependencias:
+                    <code
+                      class="bg-gray-200 dark:bg-gray-700 text-red-500 p-1 rounded"
+                      >pip install -r requirements.txt</code
+                    >
+                  </li>
+                  <li>
+                    Ejecuta el programa:
+                    <code
+                      class="bg-gray-200 dark:bg-gray-700 text-red-500 p-1 rounded"
+                      >python Powerpoineador.pyw</code
+                    >
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <h4 class="font-bold text-[#FF9900] mt-4">Requisitos:</h4>
+            <ul class="list-disc ml-6 text-[#232323] dark:text-gray-300">
+              <li>
+                Windows (soportado), Linux (experimental) o MacOS (muy
+                experimental).
+              </li>
+              <li>Conexión a Internet.</li>
+              <li>Microsoft PowerPoint o LibreOffice Impress (opcionales).</li>
+              <li>Una clave API válida (Google, Replicate, o xAI).</li>
+              <li>
+                Python actualizado (solo si ejecutas desde código fuente).
+              </li>
+            </ul>
+          </section>
+        </div>
+        <!-- QUIENES SOMOS -->
+        <div class="quienes-content hidden" id="quienes-content">
+          <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold text-[#FF9900] mb-4">
+              ¿Quiénes somos?
+            </h2>
+            <p class="mb-4 text-gray-700 dark:text-gray-300">
+              <b>Powerpoineador</b> es un proyecto creado por Leandro Pérez,
+              apasionado por la tecnología y la educación.<br />
+              Nuestra misión es facilitar la creación de presentaciones
+              profesionales de manera rápida y sencilla para todos.
+            </p>
+            <h3 class="text-xl font-bold text-[#FF9900] mb-2">
+              Nuestra historia
+            </h3>
+            <p class="text-[#232323] dark:text-gray-300">
+              Powerpoineador nació al detectar lo difícil que era crear
+              presentaciones de calidad de manera rápida. Queríamos una
+              herramienta que ayudara tanto a estudiantes como a profesionales a
+              ahorrar tiempo y mejorar el impacto de sus ideas.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+              <div>
+                <h3 class="text-xl font-bold text-[#FF9900] mb-4">Misión</h3>
+                <p class="text-gray-700 dark:text-gray-300">
+                  Hacer accesible la generación de presentaciones de calidad a
+                  cualquier persona, sin importar su experiencia técnica.
+                </p>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-[#FF9900] mb-4">Visión</h3>
+                <p class="text-gray-700 dark:text-gray-300">
+                  Convertirnos en la herramienta de referencia para
+                  presentaciones inteligentes en el mundo hispanohablante.
+                </p>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-[#FF9900] mb-4">Valores</h3>
+                <ul class="list-disc ml-6 text-gray-700 dark:text-gray-300">
+                  <li>Innovación</li>
+                  <li>Facilidad de uso</li>
+                  <li>Compromiso con el usuario</li>
+                </ul>
+              </div>
+              <h3 class="text-xl font-bold text-[#FF9900] mb-2">
+                Nuestro equipo
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <a
+                  href="https://github.com/Skade2050"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block transform transition-transform duration-300 hover:scale-105 hover:shadow-xl rounded-lg"
+                >
+                  <div
+                    class="bg-[#FFF8F0] dark:bg-gray-700 p-4 rounded-lg shadow flex items-center gap-4 h-full"
+                  >
+                    <img
+                      src="iconos web/194114295.png"
+                      alt="Leandro Pérez Martínez"
+                      class="w-16 h-16 rounded-full object-cover border-2 border-[#FF9900]"
+                    />
+                    <div>
+                      <div class="font-bold text-[#FF9900]">
+                        Leandro Pérez Martínez
+                      </div>
+                      <div class="text-[#232323] dark:text-gray-300 text-sm">
+                        Desarrollador principal, UI y documentación
+                      </div>
+                    </div>
+                  </div>
+                </a>
+                <a
+                  href="https://github.com/KevinAZHD"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block transform transition-transform duration-300 hover:scale-105 hover:shadow-xl rounded-lg"
+                >
+                  <div
+                    class="bg-[#FFF8F0] dark:bg-gray-700 p-4 rounded-lg shadow flex items-center gap-4 h-full"
+                  >
+                    <img
+                      src="iconos web/kevin.png"
+                      alt="Kevin Adán Zamora"
+                      class="w-16 h-16 rounded-full object-cover border-2 border-[#FF9900]"
+                    />
+                    <div>
+                      <div class="font-bold text-[#FF9900]">
+                        Kevin Adán Zamora
+                      </div>
+                      <div class="text-[#232323] dark:text-gray-300 text-sm">
+                        Desarrollador principal, backend y APIs IA
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+            <section class="mt-8">
+              <h3 class="text-xl font-bold text-[#FF9900] mb-2">
+                Sobre el proyecto
+              </h3>
+              <p class="text-[#232323] dark:text-gray-300 mb-2">
+                Powerpoineador es una herramienta creada para facilitar la
+                creación de presentaciones profesionales aprovechando el poder
+                de la Inteligencia Artificial.
+              </p>
+              <ul class="list-disc ml-6 text-[#232323] dark:text-gray-300 mb-2">
+                <li>
+                  Desarrollado por Kevin Adán Zamora y Leandro Pérez Martínez.
+                </li>
+                <li>Interfaz gráfica construida con PySide6.</li>
+                <li>
+                  El proyecto es completamente Open-Source bajo la licencia GPL.
+                </li>
+              </ul>
+              <p class="text-[#232323] dark:text-gray-300 mt-2">
+                Si tienes ideas para mejorar Powerpoineador o quieres colaborar,
+                ¡no dudes en contactarnos!
+              </p>
+            </section>
+            <h3 class="text-xl font-bold text-[#FF9900] mb-2">
+              Nuestra misión y valores
+            </h3>
+            <ul class="list-disc ml-6 text-[#232323] dark:text-gray-300">
+              <li>
+                Facilitar la creatividad y productividad de cualquier persona.
+              </li>
+              <li>
+                Promover el acceso a la tecnología de IA de forma ética y
+                sencilla.
+              </li>
+              <li>
+                Escuchar siempre a nuestra comunidad de usuarios para mejorar
+                día a día.
+              </li>
+            </ul>
+            <div class="mt-6">
+              <h3 class="text-xl font-bold text-[#FF9900] mb-4">
+                ¿Quieres colaborar?
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300">
+                Buscamos ideas y personas que quieran aportar a la educación y
+                tecnología. ¡Contáctanos!
+              </p>
+            </div>
+          </section>
+        </div>
+        <!-- CONTACTAR -->
+        <div class="contactar-content hidden" id="contactar-content">
+          <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 class="text-2xl font-bold text-[#FF9900] mb-4">Contacto</h2>
+            <div class="mt-6">
+              <h3 class="font-bold text-[#FF9900]">Soporte y Contribuciones</h3>
+              <p class="text-[#232323] dark:text-gray-300">
+                Si tienes dudas, encuentras un bug o quieres contribuir al
+                desarrollo, escríbenos por email o abre un issue en GitHub.
+                ¡Cualquier sugerencia para mejorar es bienvenida!
+              </p>
+            </div>
+
+            <p class="text-[#232323] dark:text-gray-300 mb-2">Escríbenos a:</p>
+            <ul class="text-lg mb-3">
+              <li>
+                <span class="font-semibold text-[#232323] dark:text-gray-300"
+                  >Email:</span
+                >
+                <a
+                  class="text-[#FF9900] hover:underline font-semibold"
+                  href="mailto:leandro.perez@colegiomiralmonte.es"
+                  >leandro.perez@colegiomiralmonte.es</a
+                >
+              </li>
+            </ul>
+            <form
+              class="bg-[#FFF8F0] dark:bg-gray-700 rounded-lg p-4 max-w-md mt-4 shadow"
+              action="#"
+              method="POST"
+            >
+              <div class="mb-3">
+                <label class="block text-[#FF9900] font-semibold mb-1"
+                  >Tu nombre</label
+                >
+                <input
+                  type="text"
+                  class="w-full px-3 py-2 rounded border border-[#FF9900] dark:bg-gray-600 dark:text-white dark:border-orange-400 focus:outline-none focus:ring-2 focus:ring-[#FF9900] dark:focus:ring-orange-400"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="block text-[#FF9900] font-semibold mb-1"
+                  >Email</label
+                >
+                <input
+                  type="email"
+                  class="w-full px-3 py-2 rounded border border-[#FF9900] dark:bg-gray-600 dark:text-white dark:border-orange-400 focus:outline-none focus:ring-2 focus:ring-[#FF9900] dark:focus:ring-orange-400"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="block text-[#FF9900] font-semibold mb-1"
+                  >Mensaje</label
+                >
+                <textarea
+                  class="w-full px-3 py-2 rounded border border-[#FF9900] dark:bg-gray-600 dark:text-white dark:border-orange-400 focus:outline-none focus:ring-2 focus:ring-[#FF9900] dark:focus:ring-orange-400"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                class="bg-[#FF9900] hover:bg-[#e67700] text-white font-bold px-6 py-2 rounded transition"
+              >
+                Enviar
+              </button>
+            </form>
+          </section>
+        </div>
+        <!-- FAQ -->
+        <div class="faq-content hidden" id="faq-content">
+          <section
+            class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 max-w-3xl mx-auto"
+          >
+            <h2 class="text-2xl font-bold text-[#FF9900] mb-6">
+              Preguntas Frecuentes (FAQ)
+            </h2>
+
+            <div id="faq-list" class="space-y-4">
+              <!-- Cada pregunta -->
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Qué es Powerpoineador?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  Powerpoineador es una aplicación de escritorio que genera
+                  presentaciones de PowerPoint usando modelos de Inteligencia
+                  Artificial para crear texto e imágenes de manera automática.
+                </div>
+              </div>
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Es gratuito?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  El programa es gratuito y de código abierto, pero necesitas
+                  claves API para los servicios que usa (Google, Replicate o
+                  xAI). Algunos servicios pueden tener costes asociados.
+                </div>
+              </div>
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Qué sistemas operativos son compatibles?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  - Windows (completamente compatible)<br />
+                  - Linux (experimental)<br />
+                  - MacOS (muy experimental)
+                </div>
+              </div>
+
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Cómo obtengo una clave API?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  Puedes conseguir una clave API desde:<br />
+                  -
+                  <a
+                    href="https://makersuite.google.com/app/apikey"
+                    class="text-blue-600 underline"
+                    >Google AI Studio</a
+                  ><br />
+                  -
+                  <a
+                    href="https://replicate.com"
+                    class="text-blue-600 underline"
+                    >Replicate</a
+                  ><br />
+                  -
+                  <a href="https://console.x.ai" class="text-blue-600 underline"
+                    >xAI Console</a
+                  >
+                </div>
+              </div>
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Qué modelos de IA soporta?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  Texto: Gemini, GPT-4, Claude, Llama, Grok, entre otros.<br />
+                  Imagen: DALL-E, Imagen, Sana, Flux, entre otros.
+                </div>
+              </div>
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Puedo personalizar las presentaciones?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  Sí, puedes personalizar fuentes, aplicar formatos, cargar
+                  archivos PDF/TXT, elegir modelo de IA y definir el límite de
+                  palabras.
+                </div>
+              </div>
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Cómo se controla el coste?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  Powerpoineador permite hacer seguimiento de los costes por
+                  cada API utilizada, para que puedas monitorizar tu gasto.
+                </div>
+              </div>
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Cómo puedo obtener ayuda?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  Consulta el README, abre un issue en GitHub o escríbenos al
+                  email de soporte.
+                </div>
+              </div>
+              <div class="faq-item">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿El programa se actualiza automáticamente?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-gray-700 dark:text-gray-400 transition-opacity duration-300 opacity-0"
+                >
+                  Sí, Powerpoineador incluye un sistema de comprobación
+                  automática de actualizaciones.
+                </div>
+              </div>
+              <div class="faq-item border-b dark:border-gray-600 pb-3">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Qué características ofrece Powerpoineador?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-[#232323] dark:text-gray-300 transition-opacity duration-300 opacity-0"
+                >
+                  - Interfaz fácil de usar<br />
+                  - Múltiples modelos de IA para texto e imágenes<br />
+                  - Soporte para imágenes personalizadas<br />
+                  - Guardado automático de configuraciones<br />
+                  - Vista previa de diapositivas y documentos cargados<br />
+                  - Soporte multiidioma y control de costes<br />
+                  - Personalización de fuentes y formatos<br />
+                  - Gestión avanzada de procesos y progreso en tiempo real
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button
+                  class="flex justify-between items-center w-full text-left font-semibold text-[#232323] dark:text-gray-300 hover:text-[#FF9900] focus:outline-none py-2 faq-question transition"
+                >
+                  ¿Qué modelos de IA puedo usar?
+                  <span class="text-[#FF9900] text-2xl leading-none">+</span>
+                </button>
+                <div
+                  class="faq-answer hidden mt-2 text-[#232323] dark:text-gray-300 transition-opacity duration-300 opacity-0"
+                >
+                  <b>Modelos de texto:</b> Gemini, GPT-4, Claude, Llama, Grok,
+                  entre otros.<br />
+                  <b>Modelos de imagen:</b> DALL-E, Imagen, Sana, Flux, y
+                  más.<br />
+                  Consulta la documentación para la lista completa.
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <footer class="bg-[#FF9900] text-white text-center py-4">
+        &copy; 2025 Powerpoineador. Todos los derechos reservados.
+      </footer>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>

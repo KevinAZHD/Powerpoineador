@@ -92,7 +92,7 @@ El programa ofrece una interfaz gráfica intuitiva, donde el usuario puede gener
 
 ### Método 1: Ejecutable
 
-1. Descarga la última actualización desde [Releases](https://github.com/KevinAZHD/Powerpoineador/releases/)
+1. Descarga la última actualización [aquí](https://github.com/KevinAZHD/Powerpoineador/releases/latest)
 2. Ejecuta `Powerpoineador.exe` para Windows, o `Powerpoineador.app` para MacOS
 
 ### Método 2: Código Fuente
@@ -113,7 +113,7 @@ pip install -r requirements.txt
 4. Ejecuta el programa:
 
 ```bash
-python Powerpoineador.py
+python Powerpoineador.pyw
 ```
 
 ## Obtención de APIs
@@ -157,7 +157,7 @@ python Powerpoineador.py
 
 #### Método 2: Manual
 
-1. Crea una cuenta en [Google AI Studio](https://makersuite.google.com/app/apikey)
+1. Crea una cuenta en [Google AI Studio](https://ai.dev/apikey)
 2. Genera una nueva clave API.
 3. Copia y pega la clave en el programa.
 
