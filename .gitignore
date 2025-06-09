@@ -2,6 +2,7 @@ __pycache__/
 apis/__pycache__/
 build/
 dist/
+venv/
 modelos/__pycache__/
 BIBLIOTECAS.bat
 BUILDER.bat

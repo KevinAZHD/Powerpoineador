@@ -2,7 +2,7 @@ import requests, re
 from packaging import version
 
 # Definir la versión actual de la aplicación
-VERSION_ACTUAL = "v0.2.0b"
+VERSION_ACTUAL = "v1.0.0"
 
 # Función para obtener la última versión disponible en GitHub
 def obtener_ultima_version():

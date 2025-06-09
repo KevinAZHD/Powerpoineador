@@ -13,7 +13,7 @@ icon_file = 'iconos/icon.icns' if is_mac else 'iconos/icon.ico'
 
 a = Analysis(
     [
-        'Powerpoineador.py',
+        'Powerpoineador.pyw',
         'Cifrado.py',
         'Plantillas.py',
         'Updater.py',
@@ -38,6 +38,7 @@ a = Analysis(
         'modelos/IA_grok3_mini_fast.py',
         'modelos/IA_grok2_image.py',
         'modelos/IA_gemini2_5_flash.py',
+        'modelos/IA_gemini2_flash.py',
         'modelos/IA_gemini2_flash_thinking.py',
         'modelos/IA_gemini2_flash_image.py',
         'modelos/IA_o4_mini.py',
@@ -137,8 +138,8 @@ if is_mac:
         bundle_identifier='com.powerpoineador.app',
         info_plist={
             'NSHighResolutionCapable': 'True',
-            'CFBundleShortVersionString': '0.2.0',
-            'CFBundleVersion': '0.2.0',
+            'CFBundleShortVersionString': '1.0.0',
+            'CFBundleVersion': '1.0.0',
             'NSHumanReadableCopyright': '© 2025 Powerpoineador',
             'NSPrincipalClass': 'NSApplication',
             'NSAppleScriptEnabled': False,
